@@ -4,6 +4,7 @@ import { SessionContext, UserProfileContext } from "src/App";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { SESSION_TOKEN_LOCAL_STORAGE } from "src/common/constants";
+import { FocusableElement, FocusableGroup } from "@arrow-navigation/react";
 export default function Login() {
   const sessionContext = useContext(SessionContext);
   const userContext = useContext(UserProfileContext);
@@ -59,22 +60,25 @@ export default function Login() {
                 <h3 className="fw-bold text-center">
                   <u>Login</u>
                 </h3>
-                <label className="mt-3">Email / Phone</label>
-                <input type="text" className="form-control" ref={inputId} />
-                <label className="mt-3">Password</label>
-                <input
-                  type="password"
-                  className="form-control"
-                  ref={inputPassword}
-                />
-                <div className="d-grid mt-4">
-                  <button
-                    className="btn btnGradient"
-                    onClick={onLoginButtonClick}
-                  >
-                    Login
-                  </button>
-                </div>
+                <FocusableGroup id="form-login">
+                  <label className="mt-3">Email / Phone</label>
+                  <input type="text" className="form-control" ref={inputId} />
+                  <label className="mt-3">Password</label>
+                  <input
+                    type="password"
+                    className="form-control"
+                    ref={inputPassword}
+                  />
+                  <div className="d-grid mt-4">
+                    <FocusableElement
+                      id="btn-login"
+                      className="btn btnGradient"
+                      onClick={onLoginButtonClick}
+                    >
+                      Login
+                    </FocusableElement>
+                  </div>
+                </FocusableGroup>
               </div>
             </div>
           </div>
