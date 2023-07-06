@@ -62,13 +62,25 @@ export default function Login() {
                 </h3>
                 <FocusableGroup id="form-login">
                   <label className="mt-3">Email / Phone</label>
-                  <input type="text" className="form-control" ref={inputId} />
+                  <FocusableElement
+                    id="input-username"
+                    as="a"
+                    className="focus-wrapper"
+                  >
+                    <input type="text" ref={inputId} className="form-control" />
+                  </FocusableElement>
                   <label className="mt-3">Password</label>
-                  <input
-                    type="password"
-                    className="form-control"
-                    ref={inputPassword}
-                  />
+                  <FocusableElement
+                    id="input-password"
+                    as="a"
+                    className="focus-wrapper"
+                  >
+                    <input
+                      type="password"
+                      className="form-control"
+                      ref={inputPassword}
+                    />
+                  </FocusableElement>
                   <div className="d-grid mt-4">
                     <FocusableElement
                       id="btn-login"

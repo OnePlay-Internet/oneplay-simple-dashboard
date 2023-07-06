@@ -96,6 +96,10 @@
   animation: spin 2s linear infinite;
 }
 
+a.focus-wrapper {
+   text-decoration: none;
+}
+
 @-webkit-keyframes spin {
   0% {
     -webkit-transform: rotate(0deg);
