@@ -1,9 +1,5 @@
 import axios from "axios";
-import {
-  API_BASE_URL,
-  API_CLIENT_URL,
-  SESSION_TOKEN_LOCAL_STORAGE,
-} from "./constants";
+import { API_BASE_URL, API_CLIENT_URL } from "./constants";
 
 export type LoginResponseDTO = {
   success: boolean;
@@ -309,7 +305,7 @@ export async function getClientToken(
   }
 }
 function handleError(error: any, operation: string = "") {
-  let errorMessage = null;
+  let errorMessage: string | null = null;
   if (error.response) {
     errorMessage =
       error.response.data?.message ?? error.response.data?.msg ?? null;

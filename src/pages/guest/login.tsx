@@ -1,4 +1,4 @@
-import { useContext, useEffect, useRef } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { getProfile, login } from "../../common/services";
 import { SessionContext, UserProfileContext } from "src/App";
 import { useNavigate } from "react-router-dom";
@@ -12,13 +12,13 @@ export default function Login() {
   const navigate = useNavigate();
   const inputId: any = useRef(null);
   const inputPassword: any = useRef(null);
+  const [currentFocus, setCurrentFocus] = useState<string>("");
   useEffect(() => {
     if (sessionContext.sessionToken) {
       navigate("/all-games");
     }
   }, [sessionContext, navigate]);
   const onLoginButtonClick = async () => {
-    alert("login button clicked");
     const loginResponse = await login(
       inputId?.current?.value,
       inputPassword?.current?.value,
@@ -27,7 +27,7 @@ export default function Login() {
     if (!loginResponse.success) {
       Swal.fire({
         title: "Error!",
-        text: loginResponse.message,
+        text: loginResponse.message ?? "",
         icon: "error",
         confirmButtonText: "OK",
       });
@@ -38,7 +38,7 @@ export default function Login() {
       if (!profileResp.success) {
         Swal.fire({
           title: "Error!",
-          text: profileResp.message,
+          text: profileResp.message ?? "",
           icon: "error",
           confirmButtonText: "OK",
         });
@@ -62,7 +62,7 @@ export default function Login() {
                 <SpatialNavigation>
                   <Focusable
                     onFocus={() => {
-                      console.log("header focused");
+                      setCurrentFocus("header");
                     }}
                     onClickEnter={() => {
                       alert("header clicked");
@@ -72,19 +72,37 @@ export default function Login() {
                       <u>Login</u>
                     </h3>
                   </Focusable>
-                  <label className="mt-3">Email / Phone</label>
-                  <input type="text" ref={inputId} className="form-control" />
-                  <label className="mt-3">Password</label>
-                  <input
-                    type="password"
-                    className="form-control"
-                    ref={inputPassword}
-                  />
+                  <Focusable
+                    onFocus={() => {
+                      setCurrentFocus("input-user-id");
+                    }}
+                    onClickEnter={() => {
+                      alert("input user id clicked");
+                    }}
+                  >
+                    <label className="mt-3">Email / Phone</label>
+                    <input type="text" ref={inputId} className="form-control" />
+                  </Focusable>
+                  <Focusable
+                    onFocus={() => {
+                      setCurrentFocus("input-password");
+                    }}
+                    onClickEnter={() => {
+                      alert("input password clicked");
+                    }}
+                  >
+                    <label className="mt-3">Password</label>
+                    <input
+                      type="password"
+                      className="form-control"
+                      ref={inputPassword}
+                    />
+                  </Focusable>
                   <div className="d-grid mt-4">
                     <Focusable
                       className="btn btnGradient"
                       onFocus={() => {
-                        console.log("button focused");
+                        setCurrentFocus("btn-login");
                       }}
                       onClickEnter={onLoginButtonClick}
                     >
@@ -98,6 +116,9 @@ export default function Login() {
                     </Focusable>
                   </div>
                 </SpatialNavigation>
+                <p style={{ color: "white" }}>
+                  Current focus element : {currentFocus}
+                </p>
               </div>
             </div>
           </div>

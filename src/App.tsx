@@ -33,7 +33,7 @@ function App() {
           localStorage.removeItem(SESSION_TOKEN_LOCAL_STORAGE);
           Swal.fire({
             title: "Error!",
-            text: profileResp.message,
+            text: profileResp.message ?? "",
             icon: "error",
             confirmButtonText: "OK",
           });

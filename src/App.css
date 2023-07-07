@@ -99,6 +99,9 @@
 a.focus-wrapper {
    text-decoration: none;
 }
+btn-focusable:focus button{
+  color: green !important;;
+}
 
 @-webkit-keyframes spin {
   0% {

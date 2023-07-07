@@ -1,15 +1,16 @@
-import brandLogo from '../../../assets/images/oneplayLogo.svg';
-import Games from '../../../assets/images/games/Rectangle 210.svg';
-import { NavLink } from "react-router-dom";
+import brandLogo from "../../../assets/images/oneplayLogo.svg";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useContext, useEffect, useState } from "react";
 import { SessionContext, UserProfileContext } from "src/App";
 import { getAllGames, logout } from "../../../common/services";
 import Swal from "sweetalert2";
 import { SESSION_TOKEN_LOCAL_STORAGE } from "src/common/constants";
+import SpatialNavigation, { Focusable } from "react-js-spatial-navigation";
 export default function AllGames() {
   const sessionContext = useContext(SessionContext);
   const userContext = useContext(UserProfileContext);
   const [allGames, setAllGames] = useState([]);
+  const navigate = useNavigate();
   useEffect(() => {
     if (sessionContext.sessionToken) {
       (async () => {
@@ -34,18 +35,24 @@ export default function AllGames() {
         className="col-md-4 col-lg-3 col-sm-6 col-6 mt-3"
         key={game.oplay_id}
       >
-        <NavLink
-          to={`/games-detail/${game.oplay_id}`}
-          className="text-decoration-none text-initial"
+        <Focusable
+          onClickEnter={() => {
+            navigate(`/games-detail/${game.oplay_id}`);
+          }}
         >
-          <img
-            src={game.poster_image}
-            className="img-fluid rounded w-100"
-            alt="games"
-          />
-          <h5 className="mt-3 mb-1 text-white">{game.title}</h5>
-          <p className="textOffWhite">{game.genre_mappings.join(", ")}</p>
-        </NavLink>
+          <NavLink
+            to={`/games-detail/${game.oplay_id}`}
+            className="text-decoration-none text-initial"
+          >
+            <img
+              src={game.poster_image}
+              className="img-fluid rounded w-100"
+              alt="games"
+            />
+            <h5 className="mt-3 mb-1 text-white">{game.title}</h5>
+            <p className="textOffWhite">{game.genre_mappings.join(", ")}</p>
+          </NavLink>
+        </Focusable>
       </div>
     );
   };
@@ -65,7 +72,7 @@ export default function AllGames() {
     sessionContext.setSessionToken(null);
   };
   return (
-    <>
+    <SpatialNavigation>
       <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
         <div className="container-fluid">
           <a className="navbar-brand" href="/">
@@ -105,6 +112,6 @@ export default function AllGames() {
           </div>
         </div>
       ) : null}
-    </>
+    </SpatialNavigation>
   );
 }
