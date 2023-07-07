@@ -4,9 +4,7 @@ import Routes from "./routes";
 import { getProfile } from "./common/services";
 import Swal from "sweetalert2";
 import { SESSION_TOKEN_LOCAL_STORAGE } from "./common/constants";
-import { initArrowNavigation } from "@arrow-navigation/react";
 
-initArrowNavigation();
 export const SessionContext = createContext<{
   sessionToken: string;
   setSessionToken: any;

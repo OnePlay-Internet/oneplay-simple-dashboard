@@ -4,7 +4,8 @@ import { SessionContext, UserProfileContext } from "src/App";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { SESSION_TOKEN_LOCAL_STORAGE } from "src/common/constants";
-import { FocusableElement, FocusableGroup } from "@arrow-navigation/react";
+import SpatialNavigation, { Focusable } from "react-js-spatial-navigation";
+
 export default function Login() {
   const sessionContext = useContext(SessionContext);
   const userContext = useContext(UserProfileContext);
@@ -17,6 +18,7 @@ export default function Login() {
     }
   }, [sessionContext, navigate]);
   const onLoginButtonClick = async () => {
+    alert("login button clicked");
     const loginResponse = await login(
       inputId?.current?.value,
       inputPassword?.current?.value,
@@ -57,40 +59,45 @@ export default function Login() {
           <div className="col-md-6 col-lg-3">
             <div className="card bg-dark">
               <div className="card-body text-white p-4">
-                <h3 className="fw-bold text-center">
-                  <u>Login</u>
-                </h3>
-                <FocusableGroup id="form-login">
+                <SpatialNavigation>
+                  <Focusable
+                    onFocus={() => {
+                      console.log("header focused");
+                    }}
+                    onClickEnter={() => {
+                      alert("header clicked");
+                    }}
+                  >
+                    <h3 className="fw-bold text-center">
+                      <u>Login</u>
+                    </h3>
+                  </Focusable>
                   <label className="mt-3">Email / Phone</label>
-                  <FocusableElement
-                    id="input-username"
-                    as="a"
-                    className="focus-wrapper"
-                  >
-                    <input type="text" ref={inputId} className="form-control" />
-                  </FocusableElement>
+                  <input type="text" ref={inputId} className="form-control" />
                   <label className="mt-3">Password</label>
-                  <FocusableElement
-                    id="input-password"
-                    as="a"
-                    className="focus-wrapper"
-                  >
-                    <input
-                      type="password"
-                      className="form-control"
-                      ref={inputPassword}
-                    />
-                  </FocusableElement>
+                  <input
+                    type="password"
+                    className="form-control"
+                    ref={inputPassword}
+                  />
                   <div className="d-grid mt-4">
-                    <FocusableElement
-                      id="btn-login"
+                    <Focusable
                       className="btn btnGradient"
-                      onClick={onLoginButtonClick}
+                      onFocus={() => {
+                        console.log("button focused");
+                      }}
+                      onClickEnter={onLoginButtonClick}
                     >
-                      Login
-                    </FocusableElement>
+                      <button
+                        id="btn-login"
+                        className="btn"
+                        onClick={onLoginButtonClick}
+                      >
+                        Login
+                      </button>
+                    </Focusable>
                   </div>
-                </FocusableGroup>
+                </SpatialNavigation>
               </div>
             </div>
           </div>
