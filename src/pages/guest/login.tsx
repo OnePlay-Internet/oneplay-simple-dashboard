@@ -34,7 +34,6 @@ export default function Login() {
         inputPassword.current.focus();
         break;
       case "btn-login":
-        onLoginButtonClick();
         break;
     }
   }, [remoteEnterClicked]);
@@ -86,11 +85,18 @@ export default function Login() {
     }
   }, [sessionContext, navigate]);
   const onLoginButtonClick = async () => {
-    const loginResponse = await login(
-      inputId?.current?.value,
-      inputPassword?.current?.value,
-      "tv"
-    );
+    const userId = inputId?.current?.value;
+    const pwd = inputPassword?.current?.value;
+    if (!userId || !pwd) {
+      Swal.fire({
+        title: "Error!",
+        text: "Validation failed",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
+      return;
+    }
+    const loginResponse = await login(userId, pwd, "tv");
     if (!loginResponse.success) {
       Swal.fire({
         title: "Error!",
@@ -167,6 +173,7 @@ export default function Login() {
                       <button
                         id="btn-login"
                         className="btn"
+                        onClick={onLoginButtonClick}
                         ref={buttonLoginRef}
                       >
                         Login
