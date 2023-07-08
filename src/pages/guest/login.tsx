@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { SESSION_TOKEN_LOCAL_STORAGE } from "src/common/constants";
 import SpatialNavigation, { Focusable } from "react-js-spatial-navigation";
+import { useSelector } from "react-redux";
 
 export default function Login() {
   const sessionContext = useContext(SessionContext);
@@ -12,7 +13,73 @@ export default function Login() {
   const navigate = useNavigate();
   const inputId: any = useRef(null);
   const inputPassword: any = useRef(null);
+  const buttonLoginRef: any = useRef(null);
   const [currentFocus, setCurrentFocus] = useState<string>("");
+  const remoteEnterClicked = useSelector(
+    (state: any) => state.remote.enterCliked
+  );
+  const remoteNextClicked = useSelector(
+    (state: any) => state.remote.nextClicked
+  );
+  const remotePrevClicked = useSelector(
+    (state: any) => state.remote.prevClicked
+  );
+  useEffect(() => {
+    console.log("login enter clicked : ", currentFocus);
+    switch (currentFocus) {
+      case "input-user-id":
+        inputId.current.focus();
+        break;
+      case "input-password":
+        inputPassword.current.focus();
+        break;
+      case "btn-login":
+        onLoginButtonClick();
+        break;
+    }
+  }, [remoteEnterClicked]);
+  useEffect(() => {
+    console.log("login next clicked : ", currentFocus);
+    switch (currentFocus) {
+      case "input-user-id":
+        inputPassword.current.focus();
+        setCurrentFocus("input-password");
+        break;
+      case "input-password":
+        buttonLoginRef.current.focus();
+        setCurrentFocus("btn-login");
+        break;
+      case "btn-login":
+        inputId.current.focus();
+        setCurrentFocus("input-user-id");
+        break;
+      default:
+        inputId.current.focus();
+        setCurrentFocus("input-user-id");
+        break;
+    }
+  }, [remoteNextClicked]);
+  useEffect(() => {
+    console.log("login prev clicked : ", currentFocus);
+    switch (currentFocus) {
+      case "input-user-id":
+        buttonLoginRef.current.focus();
+        setCurrentFocus("btn-login");
+        break;
+      case "input-password":
+        inputId.current.focus();
+        setCurrentFocus("input-user-id");
+        break;
+      case "btn-login":
+        inputPassword.current.focus();
+        setCurrentFocus("input-password");
+        break;
+      default:
+        inputId.current.focus();
+        setCurrentFocus("input-user-id");
+        break;
+    }
+  }, [remotePrevClicked]);
   useEffect(() => {
     if (sessionContext.sessionToken) {
       navigate("/all-games");
@@ -60,18 +127,10 @@ export default function Login() {
             <div className="card bg-dark">
               <div className="card-body text-white p-4">
                 <SpatialNavigation>
-                  <Focusable
-                    onFocus={() => {
-                      setCurrentFocus("header");
-                    }}
-                    onClickEnter={() => {
-                      alert("header clicked");
-                    }}
-                  >
-                    <h3 className="fw-bold text-center">
-                      <u>Login</u>
-                    </h3>
-                  </Focusable>
+                  <h3 className="fw-bold text-center">
+                    <u>Login</u>
+                  </h3>
+
                   <Focusable
                     onFocus={() => {
                       setCurrentFocus("input-user-id");
@@ -104,12 +163,11 @@ export default function Login() {
                       onFocus={() => {
                         setCurrentFocus("btn-login");
                       }}
-                      onClickEnter={onLoginButtonClick}
                     >
                       <button
                         id="btn-login"
                         className="btn"
-                        onClick={onLoginButtonClick}
+                        ref={buttonLoginRef}
                       >
                         Login
                       </button>
