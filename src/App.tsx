@@ -4,6 +4,7 @@ import Routes from "./routes";
 import { getProfile } from "./common/services";
 import Swal from "sweetalert2";
 import { SESSION_TOKEN_LOCAL_STORAGE } from "./common/constants";
+import { init, setKeyMap } from "@noriginmedia/norigin-spatial-navigation";
 
 export const SessionContext = createContext<{
   sessionToken: string;
@@ -18,6 +19,16 @@ export const UserProfileContext = createContext<{
 }>({
   userProfile: null,
   setUserProfile: () => {},
+});
+init({});
+// Optional
+setKeyMap({
+  left: 37,
+  up: 38,
+  right: 39,
+  down: [40, 65376],
+  enter: [32, 13],
+  remoteBack: 10009,
 });
 function App() {
   const [sessionToken, setSessionToken] = useState("");

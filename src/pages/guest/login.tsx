@@ -1,26 +1,48 @@
-import { useContext, useEffect, useRef } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { getProfile, login } from "../../common/services";
 import { SessionContext, UserProfileContext } from "src/App";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { SESSION_TOKEN_LOCAL_STORAGE } from "src/common/constants";
-export default function Login() {
+import {
+  FocusContext,
+  useFocusable,
+} from "@noriginmedia/norigin-spatial-navigation";
+
+import { styled } from "styled-components";
+
+export default function Login({
+  focusKey: focusKeyParam,
+}: FocusabelComponentProps) {
   const sessionContext = useContext(SessionContext);
   const userContext = useContext(UserProfileContext);
   const navigate = useNavigate();
-  const inputId: any = useRef(null);
-  const inputPassword: any = useRef(null);
+  const { focusSelf, focusKey } = useFocusable({
+    focusable: true,
+  });
+  const [userInputId, SetuserInputId] = useState("jasmin@oneplay.in");
+  const [userInputPwd, SetuserInputPwd] = useState("Jasmin@5690");
+
+  useEffect(() => {
+    focusSelf();
+  }, [focusSelf]);
+
   useEffect(() => {
     if (sessionContext.sessionToken) {
       navigate("/all-games");
     }
   }, [sessionContext, navigate]);
   const onLoginButtonClick = async () => {
-    const loginResponse = await login(
-      inputId?.current?.value,
-      inputPassword?.current?.value,
-      "tv"
-    );
+    if (!userInputId || !userInputPwd) {
+      Swal.fire({
+        title: "Error!",
+        text: "Please enter username and password field",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
+      return;
+    }
+    const loginResponse = await login(userInputId, userInputPwd, "tv");
     if (!loginResponse.success) {
       Swal.fire({
         title: "Error!",
@@ -49,8 +71,9 @@ export default function Login() {
       sessionContext.setSessionToken(loginResponse.sessionToken);
     }
   };
+
   return (
-    <>
+    <FocusContext.Provider value={focusKey}>
       <div className="container-fluid bg">
         <div className="row justify-content-center align-items-center vh-100">
           <div className="col-md-6 col-lg-3">
@@ -60,19 +83,31 @@ export default function Login() {
                   <u>Login</u>
                 </h3>
                 <label className="mt-3">Email / Phone</label>
-                <input type="text" className="form-control" ref={inputId} />
+                <FocusableInput
+                  type="text"
+                  className="form-control"
+                  defaultValue={userInputId}
+                  value={SetuserInputId}
+                />
                 <label className="mt-3">Password</label>
-                <input
+
+                <FocusableInput
                   type="password"
                   className="form-control"
-                  ref={inputPassword}
+                  defaultValue={userInputPwd}
+                  value={SetuserInputPwd}
                 />
                 <div className="d-grid mt-4">
+                  <FocusableButton onClick={onLoginButtonClick}>
+                    Login
+                  </FocusableButton>
                   <button
                     className="btn btnGradient"
-                    onClick={onLoginButtonClick}
+                    onClick={() => {
+                      window.location.replace("test.html");
+                    }}
                   >
-                    Login
+                    Moonlight
                   </button>
                 </div>
               </div>
@@ -80,6 +115,62 @@ export default function Login() {
           </div>
         </div>
       </div>
-    </>
+    </FocusContext.Provider>
   );
 }
+
+const FocusableInputStyled = styled.input<FocusableItemProps>`
+  background-color: white;
+  border-color: #86b7fe;
+  border-style: solid;
+  border-width: ${({ focused }) => (focused ? "6px" : 0)};
+  box-shadow: ${({ focused }) =>
+    focused ? "0 0 0 0.25rem rgba(13, 110, 253, 0.25)" : "none"};
+`;
+const FocusableButtonStyled = styled.button<FocusableItemProps>`
+  box-shadow: ${({ focused }) =>
+    focused ? "0 0 0 0.25rem rgba(13, 110, 253, 0.25)" : "none"};
+`;
+const FocusableInput = (props: any) => {
+  const { ref, focused } = useFocusable({
+    focusable: true,
+    onEnterPress: () => {
+      ref.current.focus();
+    },
+  });
+  const [inputValue, setInputValue] = useState(props.defaultValue);
+  useEffect(() => {
+    props.value(inputValue);
+  }, [inputValue]);
+  return (
+    <FocusableInputStyled
+      type={props.type}
+      ref={ref}
+      focused={focused}
+      className="form-control"
+      onChange={(e: any) => {
+        setInputValue(e.target.value);
+      }}
+      value={inputValue}
+    />
+  );
+};
+
+const FocusableButton = (props: any) => {
+  const { ref, focused } = useFocusable({
+    focusable: true,
+    onEnterPress: () => {
+      props.onClick();
+    },
+  });
+  return (
+    <FocusableButtonStyled
+      ref={ref}
+      focused={focused}
+      className="btn btnGradient"
+      onClick={props.onClick}
+    >
+      {props.children}
+    </FocusableButtonStyled>
+  );
+};

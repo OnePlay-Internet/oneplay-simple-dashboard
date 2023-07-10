@@ -10,14 +10,25 @@ import {
   getGameDetails,
   startGame,
   terminateGame,
+  getStreamingSessionInfo,
 } from "../../../common/services";
 import moment from "moment";
 import Swal from "sweetalert2";
+import {
+  FocusContext,
+  useFocusable,
+} from "@noriginmedia/norigin-spatial-navigation";
+import { styled } from "styled-components";
 
-export default function GamesDetail() {
+export default function GamesDetail({
+  focusKey: focusKeyParam,
+}: FocusabelComponentProps) {
   const sessionContext = useContext(SessionContext);
   let { id } = useParams();
   const navigate = useNavigate();
+  const { focusSelf, focusKey, setFocus } = useFocusable({
+    focusable: true,
+  });
   const [gameDetails, setGameDetails] = useState<any>(null);
   const [selectedStore, setSelectedStore] = useState<string | null>(null);
   const [activeSessionStatus, setActiveSessionStatus] = useState<GameStatusDTO>(
@@ -36,7 +47,9 @@ export default function GamesDetail() {
     number | null
   >(null);
   const [showLoading, setshowLoading] = useState(false);
-
+  useEffect(() => {
+    focusSelf();
+  }, [focusSelf]);
   useEffect(() => {
     if (startGameSession) {
       setClientTokenStartTime(Date.now());
@@ -73,7 +86,30 @@ export default function GamesDetail() {
       navigate("/all-games");
     }
   }, [sessionContext, id]);
-
+  useEffect(() => {
+    (async () => {
+      if (gameClientToken) {
+        const streamSessionResp = await getStreamingSessionInfo(
+          gameClientToken
+        );
+        if (!streamSessionResp.success) {
+          Swal.fire({
+            title: "Error!",
+            text: streamSessionResp.message,
+            icon: "error",
+            confirmButtonText: "OK",
+          });
+          return;
+        }
+         Swal.fire({
+           title: "Info!",
+           text: JSON.stringify(streamSessionResp.streamInfo),
+           icon: "success",
+           confirmButtonText: "OK",
+         });
+      }
+    })();
+  }, [gameClientToken]);
   const getActiveSessionStatus = async () => {
     const [userId, sessionId] = atob(sessionContext.sessionToken)?.split(":");
     if (userId && sessionId) {
@@ -129,25 +165,12 @@ export default function GamesDetail() {
         : "";
 
     return (
-      <a
-        key={store.name}
-        href="javascript:void(0)"
-        className={`font600 font20 text-white p-2 pr-3 store ${isSelected} 
-        `}
-      >
-        <img
-          src={`../store/${getStoreImage(store.name)}`}
-          height="32"
-          className="me-2"
-          alt=""
-        />
-        <input
-          type="checkbox"
-          className="checkbox"
-          checked={!!isSelected}
-          onChange={(event) => onSelectedStoreChange(event, store.name)}
-        />
-      </a>
+      <FocusableStore
+        store={store}
+        isSelected={isSelected}
+        getStoreImage={getStoreImage}
+        onChange={onSelectedStoreChange}
+      />
     );
   };
   const onResumeNowClicked = () => {
@@ -166,31 +189,28 @@ export default function GamesDetail() {
     ) {
       return (
         <>
-          <button
-            className="btn btnGradient px-4 m-1"
+          <FocusableButton
             onClick={() => {
               activeSessionStatus?.session_id &&
-                setStartGameSession(activeSessionStatus.session_id);
+                //setStartGameSession(activeSessionStatus.session_id);
+                onResumeNowClicked();
             }}
           >
             Resume Now
-          </button>
-          <button
-            className="btn btnGradient px-4 m-1"
+          </FocusableButton>
+          <FocusableButton
             onClick={() =>
               onTerminateGame(activeSessionStatus.session_id ?? null)
             }
           >
             Terminate
-          </button>
+          </FocusableButton>
           ;
         </>
       );
     } else if (activeSessionStatus.success) {
       return (
-        <button className="btn btnGradient px-4 m-1" onClick={onPlayNowClicked}>
-          Play Now
-        </button>
+        <FocusableButton onClick={onPlayNowClicked}>Play Now</FocusableButton>
       );
     } else {
       return <button className="btn btnGradient px-4 m-1">Loading...</button>;
@@ -297,6 +317,7 @@ export default function GamesDetail() {
           getClientTokenResp.data.client_token
         );
         setGameClientToken(getClientTokenResp.data.client_token);
+
         /* Swal.fire({
           title: "Success",
           text: getClientTokenResp.data.client_token,
@@ -332,13 +353,13 @@ export default function GamesDetail() {
       getActiveSessionStatus();
     }
   };
-  const onSelectedStoreChange = (event: any, store: string) => {
-    if (event.target.checked) {
+  const onSelectedStoreChange = (checked: boolean, store: string) => {
+    if (checked) {
       setSelectedStore(store);
     }
   };
   return gameDetails ? (
-    <>
+    <FocusContext.Provider value={focusKey}>
       <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
         <div className="container-fluid">
           <a className="navbar-brand" href="#">
@@ -358,9 +379,13 @@ export default function GamesDetail() {
           <div className="collapse navbar-collapse" id="navbarSupportedContent">
             <ul className="navbar-nav ms-auto mb-2 mb-lg-0">
               <li className="nav-item">
-                <NavLink to="/all-games" className="nav-link">
+                <FocusableAllGames
+                  onClick={() => {
+                    navigate("/all-games");
+                  }}
+                >
                   All Games
-                </NavLink>
+                </FocusableAllGames>
               </li>
             </ul>
           </div>
@@ -421,7 +446,7 @@ export default function GamesDetail() {
           </div>
         </div>
       )}
-    </>
+    </FocusContext.Provider>
   ) : (
     <div style={{ display: "flex" }} className="my-modal">
       <div className="my-modal-content">
@@ -431,3 +456,90 @@ export default function GamesDetail() {
     </div>
   );
 }
+
+const FocusableAllGamesStyled = styled.a<FocusableItemProps>`
+  box-shadow: ${({ focused }) =>
+    focused ? "0 0 0 0.25rem rgba(13, 110, 253, 0.25)" : "none"};
+`;
+
+const FocusableAllGames = (props: any) => {
+  const { ref, focused } = useFocusable({
+    focusable: true,
+    onEnterPress: () => {
+      props.onClick();
+    },
+    onFocus: () => {
+      ref.current.scrollIntoView({ behavior: "smooth" });
+    },
+  });
+  return (
+    <FocusableAllGamesStyled
+      ref={ref}
+      focused={focused}
+      href="#"
+      className="nav-link "
+      onClick={props.onClick}
+    >
+      {props.children}
+    </FocusableAllGamesStyled>
+  );
+};
+
+const FocusableButtonStyled = styled.button<FocusableItemProps>`
+  box-shadow: ${({ focused }) =>
+    focused ? "0 0 0 0.25rem rgba(13, 110, 253, 0.25)" : "none"};
+`;
+const FocusableButton = (props: any) => {
+  const { ref, focused } = useFocusable({
+    focusable: true,
+    onEnterPress: () => {
+      props.onClick();
+    },
+  });
+  return (
+    <FocusableButtonStyled
+      ref={ref}
+      focused={focused}
+      className="btn btnGradient px-4 m-1"
+      onClick={props.onClick}
+    >
+      {props.children}
+    </FocusableButtonStyled>
+  );
+};
+
+const FocusableStoreStyled = styled.a<FocusableItemProps>`
+  box-shadow: ${({ focused }) =>
+    focused ? "0 0 0 0.25rem rgba(13, 110, 253, 0.25)" : "none"};
+`;
+const FocusableStore = (props: any) => {
+  const { ref, focused } = useFocusable({
+    focusable: true,
+    onEnterPress: () => {
+      props.onChange(!props.isSelected, props.store.name);
+    },
+  });
+  return (
+    <FocusableStoreStyled
+      ref={ref}
+      focused={focused}
+      key={props.store.name}
+      href="javascript:void(0)"
+      className={`font600 font20 text-white p-2 pr-3 store ${props.isSelected} 
+        `}
+    >
+      <img
+        src={`../store/${props.getStoreImage(props.store.name)}`}
+        height="32"
+        className="me-2"
+        alt=""
+      />
+      <input
+        type="checkbox"
+        className="checkbox"
+        checked={!!props.isSelected}
+        onChange={() => props.onChange(!props.isSelected, props.store.name)}
+      />
+    </FocusableStoreStyled>
+  );
+};

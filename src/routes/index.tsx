@@ -18,13 +18,16 @@ export default function Router() {
   return useRoutes([
     {
       element: <GuestLayout />,
-      children: [{ path: "/", element: <Login /> }],
+      children: [{ path: "/", element: <Login focusKey="Login" /> }],
     },
     {
       element: <AuthLayout />,
       children: [
-        { path: "/all-games", element: <AllGames /> },
-        { path: "/games-detail/:id", element: <GamesDetail /> },
+        { path: "/all-games", element: <AllGames focusKey="AllGames" /> },
+        {
+          path: "/games-detail/:id",
+          element: <GamesDetail focusKey="GameDetail" />,
+        },
       ],
     },
   ]);

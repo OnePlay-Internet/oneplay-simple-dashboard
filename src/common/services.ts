@@ -2,6 +2,7 @@ import axios from "axios";
 import {
   API_BASE_URL,
   API_CLIENT_URL,
+  GAME_FETCH_LIMIT,
   SESSION_TOKEN_LOCAL_STORAGE,
 } from "./constants";
 
@@ -102,12 +103,14 @@ export async function getProfile(
   }
 }
 export async function getAllGames(
-  sessionToken: string
+  sessionToken: string,
+  page: number = 0,
+  limit: number = GAME_FETCH_LIMIT
 ): Promise<AllGameResponseDTO> {
   try {
     const allGameResp = await axios.get(
       API_BASE_URL +
-        "games?page=0&limit=20&textBackground=320x240&textLogo=640x480&background=1920x1080&poster=265x352",
+        `games?page=${page}&limit=${limit}&textBackground=320x240&textLogo=640x480&background=1920x1080&poster=265x352`,
       {
         headers: {
           session_token: sessionToken,
@@ -175,7 +178,7 @@ export async function getAnyActiveSessionStatus(
     formData.append("user_id", userId);
     formData.append("session_token", sessionId);
     const anyActiveSessionResp = await axios.post(
-      `${API_CLIENT_URL}/get_any_active_session_status`,
+      `${API_CLIENT_URL}/services/v2/get_any_active_session_status`,
       formData
     );
     if (anyActiveSessionResp.status !== 200) {
@@ -222,7 +225,7 @@ export async function startGame(
     formData.append("game_id", gameId);
     formData.append("launch_payload", JSON.stringify(payload));
     const startGameResp = await axios.post(
-      `${API_CLIENT_URL}/start_game`,
+      `${API_CLIENT_URL}/services/v2/start_game`,
       formData
     );
 
@@ -256,7 +259,7 @@ export async function terminateGame(
     formData.append("session_token", sessionToken);
     formData.append("session_id", sessionId);
     const terminateGameResp = await axios.post(
-      `${API_CLIENT_URL}/terminate_stream`,
+      `${API_CLIENT_URL}/services/v2/terminate_stream`,
       formData
     );
 
@@ -282,7 +285,7 @@ export async function getClientToken(
   formData.append("session_id", sessionId);
   try {
     const clinetTokenResp = await axios.post(
-      `${API_CLIENT_URL}/get_session`,
+      `${API_CLIENT_URL}/services/v2/get_session`,
       formData
     );
     if (clinetTokenResp.status !== 200) {
@@ -300,6 +303,36 @@ export async function getClientToken(
   } catch (error: any) {
     if (!error.response) {
       return handleError(error, "get client token");
+    }
+    return {
+      success: true,
+      code: error.response.data?.code,
+      message: error.response.data?.msg,
+    };
+  }
+}
+export async function getStreamingSessionInfo(
+  streamSessionToken: string
+): Promise<{ [key: string]: any }> {
+  const formData = new FormData();
+  formData.append("stream_session_token", streamSessionToken);
+
+  try {
+    const sessionInfoResp = await axios.post(
+      `${API_CLIENT_URL}/client/v2/get_session`,
+      formData
+    );
+    if (sessionInfoResp.status !== 200) {
+      return handleNon200Response(sessionInfoResp.data.msg);
+    }
+    return {
+      success: true,
+      message: sessionInfoResp.data?.msg,
+      streamInfo: sessionInfoResp.data,
+    };
+  } catch (error: any) {
+    if (!error.response) {
+      return handleError(error, "get stream session");
     }
     return {
       success: true,
