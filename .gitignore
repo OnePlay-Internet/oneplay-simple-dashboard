@@ -26,7 +26,4 @@ yarn-error.log*
 #tizen
 .project
 .tproject
-public/config.xml
-public/.settings/*
-public/.sign/*
-public/icon.png
+public/*

@@ -20,8 +20,8 @@ export default function Login({
   const { focusSelf, focusKey } = useFocusable({
     focusable: true,
   });
-  const [userInputId, SetuserInputId] = useState("jasmin@oneplay.in");
-  const [userInputPwd, SetuserInputPwd] = useState("Jasmin@5690");
+  const [userInputId, SetuserInputId] = useState("");
+  const [userInputPwd, SetuserInputPwd] = useState("");
 
   useEffect(() => {
     focusSelf();
@@ -101,14 +101,6 @@ export default function Login({
                   <FocusableButton onClick={onLoginButtonClick}>
                     Login
                   </FocusableButton>
-                  <button
-                    className="btn btnGradient"
-                    onClick={() => {
-                      window.location.replace("test.html");
-                    }}
-                  >
-                    Moonlight
-                  </button>
                 </div>
               </div>
             </div>

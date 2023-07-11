@@ -82,3 +82,10 @@ body {
      background: linear-gradient(270deg, #A83AFE 0%, #6E59FE 100%); 
     border-color: #A83AFE;
 }
+.gamePosterPlaceholder {
+  background: linear-gradient(300.3deg,#0575e6 9.6%,#ff0cf5 92.85%);
+  border: none !important;
+  border-radius: 60px !important;
+  height: 265px;
+  width: 352px;
+}

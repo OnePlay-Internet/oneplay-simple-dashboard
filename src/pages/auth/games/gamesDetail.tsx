@@ -101,15 +101,22 @@ export default function GamesDetail({
           });
           return;
         }
-         Swal.fire({
+        /*  Swal.fire({
            title: "Info!",
            text: JSON.stringify(streamSessionResp.streamInfo),
            icon: "success",
            confirmButtonText: "OK",
-         });
+         }); */
+        goToMoonLight(streamSessionResp.streamInfo.data);
       }
     })();
   }, [gameClientToken]);
+  const goToMoonLight = (streamInfo: any) => {
+    console.log("streamInfo : ", streamInfo);
+    window.location.replace(
+      `/moonlight.html?host_session_key=${streamInfo.host_session_key}&bitrate_kbps=${streamInfo.other_details.bitrate_kbps}&game_fps=${streamInfo.other_details.game_fps}&resolution=${streamInfo.other_details.resolution}&server_ip=${streamInfo.server_details.server_ip}&audio_port=${streamInfo.server_details.port_details.audio_port}&control_port=${streamInfo.server_details.port_details.control_port}&http_port=${streamInfo.server_details.port_details.http_port}&https_port=${streamInfo.server_details.port_details.https_port}&pin_port=${streamInfo.server_details.port_details.pin_port}&rtsp_port=${streamInfo.server_details.port_details.rtsp_port}&video_port=${streamInfo.server_details.port_details.video_port}&user_id=${streamInfo.user_details.user_id}`
+    );
+  };
   const getActiveSessionStatus = async () => {
     const [userId, sessionId] = atob(sessionContext.sessionToken)?.split(":");
     if (userId && sessionId) {
@@ -245,14 +252,6 @@ export default function GamesDetail({
         return;
       }
       if (startGameResp.data?.api_action === "call_session") {
-        /* this._initializedModalRef = this.ngbModal.open(this.initializedModal, {
-           centered: true,
-           modalDialogClass: "modal-sm",
-           backdrop: "static",
-           keyboard: false,
-         });
-         this.sessionToTerminate = data.data.session.id;
-         this.startGameWithClientToken(data.data.session.id); */
         if (startGameResp.data.session?.id) {
           setStartGameSession(startGameResp.data.session.id);
         }

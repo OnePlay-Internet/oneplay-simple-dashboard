@@ -15,7 +15,7 @@ import {
 } from "@noriginmedia/norigin-spatial-navigation";
 import { styled } from "styled-components";
 import InfiniteScroll from "react-infinite-scroller";
-
+import { LazyLoadImage } from "react-lazy-load-image-component";
 export default function AllGames({
   focusKey: focusKeyParam,
 }: FocusabelComponentProps) {
@@ -47,8 +47,8 @@ export default function AllGames({
     if (allGames && allGames.length) {
       console.log("setting foucs to first game");
       setTimeout(() => {
-        setFocus("game_" + allGames.at(0)?.oplay_id);  
-      }, 100);
+        setFocus("game_" + allGames.at(0)?.oplay_id);
+      }, 10);
     }
   };
   const renderSingleGame = (game: any) => {
@@ -104,7 +104,7 @@ export default function AllGames({
   };
   const loadNextGames = async () => {
     if (currentPage > 0 && sessionContext.sessionToken) {
-      loadMoreGames();
+      //loadMoreGames();
     }
   };
   return (
@@ -207,10 +207,13 @@ const FocusableGameWrapper = (props: any) => {
         to={`/games-detail/${props.game.oplay_id}`}
         className="text-decoration-none text-initial"
       >
-        <img
-          src={props.game.poster_image}
+        <LazyLoadImage
+          alt={props.game.title}
+          loading="lazy"
+          src={props.game.poster_image} // use normal <img> attributes as props
+          width={265}
+          height={352}
           className="img-fluid rounded w-100"
-          alt="games"
         />
         <h5 className="mt-3 mb-1 text-white">{props.game.title}</h5>
         <p className="textOffWhite">{props.game.genre_mappings.join(", ")}</p>
