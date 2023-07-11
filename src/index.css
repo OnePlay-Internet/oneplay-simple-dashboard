@@ -61,9 +61,9 @@ body {
   position: absolute;
   top: 2px;
   right: 8px;
-  
-  &:after {
-    border: 2px solid #fff;
+}
+.checkbox::after{
+   border: 2px solid #fff;
     border-top: 0;
     border-left: 0;
     content: "";
@@ -74,14 +74,18 @@ body {
     top: 0.2em;
     transform: rotate(45deg);
     width: 0.3em;
-  }
-  
-  &:focus {
-      box-shadow: 0 0 0 2px #A83AFE;
-    }
-  
-  &:checked {
-    background: linear-gradient(270deg, #A83AFE 0%, #6E59FE 100%);
+}
+.checkbox:focus{
+  box-shadow: 0 0 0 2px #A83AFE;
+}
+.checkbox:checked{
+     background: linear-gradient(270deg, #A83AFE 0%, #6E59FE 100%); 
     border-color: #A83AFE;
-  }
+}
+.gamePosterPlaceholder {
+  background: linear-gradient(300.3deg,#0575e6 9.6%,#ff0cf5 92.85%);
+  border: none !important;
+  border-radius: 60px !important;
+  height: 265px;
+  width: 352px;
 }
