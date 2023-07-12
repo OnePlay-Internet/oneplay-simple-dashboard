@@ -1,6 +1,5 @@
 body {
-  --bs-bg-opacity: 1;
-  background-color: rgba(var(--bs-dark-rgb), var(--bs-bg-opacity)) !important;
+  background-color: #151617 !important;
 }
 
 .btnGradient {
@@ -88,4 +87,196 @@ body {
   border-radius: 60px !important;
   height: 265px;
   width: 352px;
+}
+
+.inputControl {
+  color: #ffffff !important;
+  background-color: transparent !important;
+  border-bottom: 4px solid #3E4246 !important;
+  border-top: 0px !important;
+  border-left: 0px !important;
+  border-right: 0px !important;
+  border-radius: 0px !important;
+  font-size: 25px !important;
+  font-weight: 700 !important;
+}
+
+.inputControl:focus {
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.inputControl::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
+  color: #ffffff !important;
+  opacity: 1; /* Firefox */
+  font-size: 28px !important;
+  font-weight: 700 !important;
+}
+
+.inputControl:-ms-input-placeholder { /* Internet Explorer 10-11 */
+  color: #ffffffed !important;
+  font-size: 28px !important;
+  font-weight: 700 !important;
+}
+
+.inputControl::-ms-input-placeholder { /* Microsoft Edge */
+  color: #ffffff !important;
+  font-size: 28px !important;
+  font-weight: 700 !important;
+}
+
+.smallText {
+  font-size: 16px;
+  line-height: 26px;
+  font-weight: 500;
+  color: #DCDCDC;
+}
+
+.suggestionResult {
+  font-size: 28px;
+  line-height: 38px;
+  color: #959595;
+  font-weight: 700;
+}
+
+.suggestionResult.active {
+  color: #ffffff;
+}
+
+.heading {
+  font-size: 28px;
+  line-height: 38px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.GamesTitle {
+  font-size: 20px;
+  line-height: 30px;
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.gamesDescription {
+  font-size: 16px;
+  line-height: 26px;
+  color: #959595;
+  font-weight: 500;
+}
+
+.mainHeading {
+  font-size: 50px;
+  line-height: 70px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.settingsNavigation a {
+  font-size: 28px;
+  line-height: 38px;
+  font-weight: 700;
+  color: #959595;
+}
+
+.settingsNavigation a:focus {
+  color: #ffffff;
+}
+
+.borderLeft {
+  border-left: 2px solid #3E4246;
+  height: 100vh;
+}
+
+.transparentBg {
+  background-color: transparent !important;
+}
+
+.transparentBlackBg {
+  background: rgba(21, 21, 21, 0.5);
+}
+
+.inputType {
+  background-color: #212123 !important;
+  border: 0px !important;
+  font-size: 20px !important;
+  line-height: 30px !important;
+  font-weight: 500 !important;
+  color: #DCDCDC !important;
+}
+
+.btnGarident {
+  background: linear-gradient(270deg,#A83AFE 0%,#6E59FE 100%);
+  color: #ffffff !important;
+  font-weight: 500 !important;
+}
+
+.inputType::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
+  color: #959595 !important;
+  font-size: 16px !important;
+}
+
+.inputType:-ms-input-placeholder { /* Internet Explorer 10-11 */
+  color: #959595 !important;
+  font-size: 16px !important;
+}
+
+.inputType::-ms-input-placeholder { /* Microsoft Edge */
+  color: #959595 !important;
+  font-size: 16px !important;
+}
+
+.cardBG {
+  background-color: #212123 !important;
+  border-radius: 10px !important;
+}
+
+.price {
+  font-size: 38px;
+  line-height: 50px;
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.gradientBtn {
+  border-radius: 10px;
+  background: linear-gradient(300.3deg, #0575e6 9.6%, #ff0cf5 92.85%);
+  color: #ffffff !important;
+}
+
+.customTable th{
+  font-size: 16px !important;
+  line-height: 26px !important;
+  color: #959595 !important;
+  background-color: #151617 !important;
+}
+
+.customTable td {
+  font-size: 18px !important;
+  line-height: 20px !important;
+  color: #DCDCDC !important;
+  font-weight: 500 !important;
+  background-color: #151617 !important;
+}
+
+.gradientText {
+  background: linear-gradient(270deg, #a83afe 0%, #6e59fe 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-fill-color: transparent;
+  font-weight: 500;
+  font-size: 18px;
+  line-height: 20px;
+}
+
+.cancelgradientText {
+  background: linear-gradient(270deg, #8a54d0 -1.64%, #d71f7b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-fill-color: transparent;
+}
+
+.paddingTop90 {
+  padding-top: 90px;
 }

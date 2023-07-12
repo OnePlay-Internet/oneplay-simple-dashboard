@@ -7,6 +7,9 @@ import GamesDetail from "../pages/auth/games/gamesDetail";
 import { useContext, useEffect } from "react";
 import { SessionContext } from "src/App";
 
+import SearchGames from "../pages/auth/search";
+import Settings from "src/pages/auth/settings";
+
 export default function Router() {
   const sessionContext = useContext(SessionContext);
   const navigate = useNavigate();
@@ -23,11 +26,17 @@ export default function Router() {
     {
       element: <AuthLayout />,
       children: [
+        { path: "/settings", 
+          element: <Settings /> 
+        },
         { path: "/all-games", element: <AllGames focusKey="AllGames" /> },
         {
           path: "/games-detail/:id",
           element: <GamesDetail focusKey="GameDetail" />,
         },
+        { path: "/search", 
+          element: <SearchGames /> 
+        }
       ],
     },
   ]);

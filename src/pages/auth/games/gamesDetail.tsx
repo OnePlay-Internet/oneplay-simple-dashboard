@@ -359,7 +359,7 @@ export default function GamesDetail({
   };
   return gameDetails ? (
     <FocusContext.Provider value={focusKey}>
-      <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
+      {/* <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
         <div className="container-fluid">
           <a className="navbar-brand" href="#">
             <img src={brandLogo} className="img-fluid" alt="logo" />
@@ -389,8 +389,8 @@ export default function GamesDetail({
             </ul>
           </div>
         </div>
-      </nav>
-      <div className="container-fluid bg-dark">
+      </nav> */}
+      <div className="container-fluid paddingTop90">
         <div className="row">
           <div className="col-md-12">
             <div className="card border-0">
