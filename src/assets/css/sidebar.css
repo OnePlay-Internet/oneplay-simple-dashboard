@@ -1,0 +1,14 @@
+.sidebar a{
+    color: #959595;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: block;
+    font-size: 20px;
+    padding: 2px;
+}
+
+.sidebar a:focus {
+    color: #ffffff;
+    border: 2px solid #A83AFE;
+}

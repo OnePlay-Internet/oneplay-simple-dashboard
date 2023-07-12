@@ -109,7 +109,7 @@ export default function AllGames({
   };
   return (
     <FocusContext.Provider value={focusKey}>
-      <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
+      {/* <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
         <div className="container-fluid">
           <a className="navbar-brand" href="/">
             <img src={brandLogo} className="img-fluid" alt="logo" />
@@ -140,7 +140,7 @@ export default function AllGames({
             </ul>
           </div>
         </div>
-      </nav>
+      </nav> */}
       <InfiniteScroll
         pageStart={0}
         hasMore={haveMoreGames}
@@ -151,7 +151,7 @@ export default function AllGames({
           </div>
         }
       >
-        <div className="row" style={{ padding: "0 18px" }}>
+        <div className="row" style={{ padding: "60px 18px" }}>
           {allGames?.map((game) => renderSingleGame(game))}
         </div>
       </InfiniteScroll>
