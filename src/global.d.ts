@@ -7,3 +7,4 @@ interface FocusableItemProps {
 }
 declare module "react-infinite-scroller";
 declare module "react-lazy-load-image-component";
+declare module "lodash.debounce";

@@ -11,6 +11,7 @@ import {
   startGame,
   terminateGame,
   getStreamingSessionInfo,
+  setPin,
 } from "../../../common/services";
 import moment from "moment";
 import Swal from "sweetalert2";
@@ -19,6 +20,7 @@ import {
   useFocusable,
 } from "@noriginmedia/norigin-spatial-navigation";
 import { styled } from "styled-components";
+import { getCoords } from "src/common/utils";
 
 export default function GamesDetail({
   focusKey: focusKeyParam,
@@ -26,9 +28,7 @@ export default function GamesDetail({
   const sessionContext = useContext(SessionContext);
   let { id } = useParams();
   const navigate = useNavigate();
-  const { focusSelf, focusKey, setFocus } = useFocusable({
-    focusable: true,
-  });
+
   const [gameDetails, setGameDetails] = useState<any>(null);
   const [selectedStore, setSelectedStore] = useState<string | null>(null);
   const [activeSessionStatus, setActiveSessionStatus] = useState<GameStatusDTO>(
@@ -47,6 +47,12 @@ export default function GamesDetail({
     number | null
   >(null);
   const [showLoading, setshowLoading] = useState(false);
+  const { focusSelf, focusKey, setFocus } = useFocusable({
+    focusable: true,
+    trackChildren: true,
+    focusKey: focusKeyParam,
+    isFocusBoundary: false,
+  });
   useEffect(() => {
     focusSelf();
   }, [focusSelf]);
@@ -72,6 +78,7 @@ export default function GamesDetail({
             confirmButtonText: "OK",
           });
           navigate("/all-games");
+          return;
         }
         setGameDetails(gameResp.game);
         setSelectedStore(
@@ -101,18 +108,22 @@ export default function GamesDetail({
           });
           return;
         }
-        /*  Swal.fire({
-           title: "Info!",
-           text: JSON.stringify(streamSessionResp.streamInfo),
-           icon: "success",
-           confirmButtonText: "OK",
-         }); */
+        /* Swal.fire({
+          title: "Info!",
+          text: JSON.stringify(streamSessionResp.streamInfo),
+          icon: "success",
+          confirmButtonText: "OK",
+        }); */
         goToMoonLight(streamSessionResp.streamInfo.data);
       }
     })();
   }, [gameClientToken]);
-  const goToMoonLight = (streamInfo: any) => {
-    console.log("streamInfo : ", streamInfo);
+  const goToMoonLight = async (streamInfo: any) => {
+    await setPin(
+      streamInfo.server_details.server_ip,
+      streamInfo.server_details.port_details.pin_port,
+      streamInfo.host_session_key
+    );
     window.location.replace(
       `/moonlight.html?host_session_key=${streamInfo.host_session_key}&bitrate_kbps=${streamInfo.other_details.bitrate_kbps}&game_fps=${streamInfo.other_details.game_fps}&resolution=${streamInfo.other_details.resolution}&server_ip=${streamInfo.server_details.server_ip}&audio_port=${streamInfo.server_details.port_details.audio_port}&control_port=${streamInfo.server_details.port_details.control_port}&http_port=${streamInfo.server_details.port_details.http_port}&https_port=${streamInfo.server_details.port_details.https_port}&pin_port=${streamInfo.server_details.port_details.pin_port}&rtsp_port=${streamInfo.server_details.port_details.rtsp_port}&video_port=${streamInfo.server_details.port_details.video_port}&user_id=${streamInfo.user_details.user_id}`
     );
@@ -173,6 +184,7 @@ export default function GamesDetail({
 
     return (
       <FocusableStore
+        key={store.name}
         store={store}
         isSelected={isSelected}
         getStoreImage={getStoreImage}
@@ -190,13 +202,14 @@ export default function GamesDetail({
     if (
       activeSessionStatus.is_running &&
       !activeSessionStatus.is_user_connected &&
-      activeSessionStatus.resume_in_this_device &&
+     // activeSessionStatus.resume_in_this_device &&
       activeSessionStatus.game_id &&
       activeSessionStatus.game_id === id
     ) {
       return (
         <>
           <FocusableButton
+            focusKeyParam="play-now"
             onClick={() => {
               activeSessionStatus?.session_id &&
                 //setStartGameSession(activeSessionStatus.session_id);
@@ -217,7 +230,9 @@ export default function GamesDetail({
       );
     } else if (activeSessionStatus.success) {
       return (
-        <FocusableButton onClick={onPlayNowClicked}>Play Now</FocusableButton>
+        <FocusableButton onClick={onPlayNowClicked} focusKeyParam="play-now">
+          Play Now
+        </FocusableButton>
       );
     } else {
       return <button className="btn btnGradient px-4 m-1">Loading...</button>;
@@ -227,10 +242,11 @@ export default function GamesDetail({
     if (!id) {
       return;
     }
-    setClientTokenStartTime(null);
-    setshowLoading(true);
+
     const [userId, sessionId] = atob(sessionContext.sessionToken)?.split(":");
-    if (gameDetails && userId && sessionId && selectedStore) {
+    if (gameDetails && userId && sessionId) {
+      setClientTokenStartTime(null);
+      setshowLoading(true);
       const startGameResp = await startGame(
         userId,
         sessionId,
@@ -239,7 +255,7 @@ export default function GamesDetail({
         true,
         60,
         20,
-        selectedStore
+        selectedStore ? selectedStore : ""
       );
       if (!startGameResp.success || startGameResp.code !== 200) {
         Swal.fire({
@@ -357,56 +373,32 @@ export default function GamesDetail({
       setSelectedStore(store);
     }
   };
+  useEffect(() => {
+    if (activeSessionStatus.success) {
+      setFocus("play-now");
+    }
+  }, [activeSessionStatus]);
   return gameDetails ? (
     <FocusContext.Provider value={focusKey}>
-      {/* <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div className="container-fluid">
-          <a className="navbar-brand" href="#">
-            <img src={brandLogo} className="img-fluid" alt="logo" />
-          </a>
-          <button
-            className="navbar-toggler"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#navbarSupportedContent"
-            aria-controls="navbarSupportedContent"
-            aria-expanded="false"
-            aria-label="Toggle navigation"
-          >
-            <span className="navbar-toggler-icon"></span>
-          </button>
-          <div className="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul className="navbar-nav ms-auto mb-2 mb-lg-0">
-              <li className="nav-item">
-                <FocusableAllGames
-                  onClick={() => {
-                    navigate("/all-games");
-                  }}
-                >
-                  All Games
-                </FocusableAllGames>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </nav> */}
-      <div className="container-fluid paddingTop90">
-        <div className="row">
+      <div className="mainContainer">
+        <div className="row" style={{ paddingTop: "20px" }}>
           <div className="col-md-12">
             <div className="card border-0">
               <img
                 className="card-img banner"
-                src={gameDetails?.background_image ?? Games}
+                src={gameDetails?.background_image ?? "/img/default_bg.webp"}
                 alt="games"
               />
               <div className="card-img-overlay customOverlay p-lg-4 pl-lg-5">
                 <div className="row h-100">
                   <div className="col-md-12 align-self-end">
-                    <img
-                      className="text-logo"
-                      alt={gameDetails?.title}
-                      src={gameDetails?.text_logo}
-                    />
+                    {gameDetails?.text_logo ? (
+                      <img
+                        className="text-logo"
+                        alt={gameDetails?.title}
+                        src={gameDetails?.text_logo}
+                      />
+                    ) : null}
                     <p className="text-white fw-bold">
                       {moment(gameDetails?.release_date).format("MMM, YYYY")}
                       {" - "}
@@ -427,9 +419,9 @@ export default function GamesDetail({
           </div>
           <div className="col-md-6">
             <div className="col-auto pr-lg-5 mt-4">
-              {gameDetails?.stores_mappings?.length && (
+              {gameDetails?.stores_mappings?.length ? (
                 <p className="font500 text-white">Store</p>
-              )}
+              ) : null}
               {gameDetails?.stores_mappings?.map((store: any, index: number) =>
                 renderSingleStore(store, index)
               )}
@@ -456,43 +448,26 @@ export default function GamesDetail({
   );
 }
 
-const FocusableAllGamesStyled = styled.a<FocusableItemProps>`
-  box-shadow: ${({ focused }) =>
-    focused ? "0 0 0 0.25rem rgba(13, 110, 253, 0.25)" : "none"};
-`;
-
-const FocusableAllGames = (props: any) => {
-  const { ref, focused } = useFocusable({
-    focusable: true,
-    onEnterPress: () => {
-      props.onClick();
-    },
-    onFocus: () => {
-      ref.current.scrollIntoView({ behavior: "smooth" });
-    },
-  });
-  return (
-    <FocusableAllGamesStyled
-      ref={ref}
-      focused={focused}
-      href="#"
-      className="nav-link "
-      onClick={props.onClick}
-    >
-      {props.children}
-    </FocusableAllGamesStyled>
-  );
-};
-
 const FocusableButtonStyled = styled.button<FocusableItemProps>`
   box-shadow: ${({ focused }) =>
     focused ? "0 0 0 0.25rem rgba(13, 110, 253, 0.25)" : "none"};
 `;
 const FocusableButton = (props: any) => {
-  const { ref, focused } = useFocusable({
+  const { ref, focused, setFocus } = useFocusable({
     focusable: true,
+    focusKey: props.focusKeyParam,
     onEnterPress: () => {
       props.onClick();
+    },
+    onArrowPress: (direction, keyProps, detils) => {
+      if (
+        (direction === "left" || direction === "top") &&
+        getCoords(ref.current).left < 130
+      ) {
+        setFocus("sidebar-search");
+        return false;
+      }
+      return true;
     },
   });
   return (

@@ -133,13 +133,13 @@ body {
 }
 
 .suggestionResult {
-  font-size: 28px;
+  font-size: 18px;
   line-height: 38px;
   color: #959595;
   font-weight: 700;
 }
 
-.suggestionResult.active {
+.suggestionResult.active, .setting-menu.current {
   color: #ffffff;
 }
 
@@ -165,7 +165,7 @@ body {
 }
 
 .mainHeading {
-  font-size: 50px;
+  font-size: 42px;
   line-height: 70px;
   font-weight: 800;
   color: #ffffff;
@@ -279,4 +279,13 @@ body {
 
 .paddingTop90 {
   padding-top: 90px;
+}
+.mainContainer {
+  padding: 70px 18px 60px 60px;
+}
+.focusedElement{
+   box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) ;
+}
+.focusedSearch {
+box-shadow: 0px 15px 10px -15px rgba(13, 110, 253, 0.25) ;
 }

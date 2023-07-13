@@ -1,78 +1,244 @@
-import Clock from '../../../assets/images/setting/Alarm.svg'
+import { useNavigate } from "react-router-dom";
+import Clock from "../../../assets/images/setting/Alarm.svg";
+import { useContext, useEffect, useState } from "react";
+import { SessionContext } from "src/App";
+import { getCurrentSubscriptions } from "src/common/services";
+import Swal from "sweetalert2";
+import { SESSION_TOKEN_LOCAL_STORAGE } from "src/common/constants";
+import moment from "moment";
+import {
+  FocusContext,
+  useFocusable,
+} from "@noriginmedia/norigin-spatial-navigation";
+import styled from "styled-components";
 
-export default function Subscription() {
-    return(
-        <>
-            <div className="row paddingTop90">
-                <div className="col-lg-9 col-md-11 ps-4">
-                    <p className="GamesTitle">Current Subscription</p>
-                    <div className="card cardBG border-0">
-                        <div className="card-body">
-                            <div className="row">
-                                <div className="col">
-                                    <p className="gamesDescription mb-0">Weekly</p>
-                                    <h1 className="price">$8.99</h1>
-                                    <img src={Clock} className="img-fluid me-2" alt="" /><span className="smallText">10 hours left .</span><span className="gamesDescription">Expires on 16th Sep 2022</span>
-                                </div>
-                                <div className="col-auto align-self-center">
-                                    <button className="btn gradientBtn px-4 border-0">Renew</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <p className="GamesTitle mt-4">Subscription History</p>
-                    <div className="table-responsive">
-                        <table className="table table-dark align-middle customTable table-lg">
-                            <thead>
-                                <tr>
-                                    <th>Date of Purchase</th>
-                                    <th>Subscription Type</th>
-                                    <th>Price</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>12.10.2022</td>
-                                    <td>
-                                        <p className="mb-1">Starter Edition</p>
-                                        <p className="mb-0 gamesDescription">Weekly - 15 Hours</p>
-                                    </td>
-                                    <td>$8.99</td>
-                                    <td className="gradientText">Current</td>
-                                </tr>
-                                <tr>
-                                    <td>12.10.2022</td>
-                                    <td>
-                                        <p className="mb-1">Starter Edition</p>
-                                        <p className="mb-0 gamesDescription">Weekly - 15 Hours</p>
-                                    </td>
-                                    <td>$8.99</td>
-                                    <td>Completed</td>
-                                </tr>
-                                <tr>
-                                    <td>12.10.2022</td>
-                                    <td>
-                                        <p className="mb-1">Starter Edition</p>
-                                        <p className="mb-0 gamesDescription">Weekly - 15 Hours</p>
-                                    </td>
-                                    <td>$8.99</td>
-                                    <td>Completed</td>
-                                </tr>
-                                <tr>
-                                    <td>12.10.2022</td>
-                                    <td>
-                                        <p className="mb-1">Starter Edition</p>
-                                        <p className="mb-0 gamesDescription">Weekly - 15 Hours</p>
-                                    </td>
-                                    <td>$8.99</td>
-                                    <td className="cancelgradientText">Cancelled</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+export default function SubscriptionComponent({
+  focusKey: focusKeyParam,
+}: FocusabelComponentProps) {
+  const navigate = useNavigate();
+  const sessionContext = useContext(SessionContext);
+  const [subscriptions, setSubscriptions] = useState<any[]>([]);
+  const { focusSelf, focusKey, setFocus } = useFocusable({
+    trackChildren: true,
+    focusKey: focusKeyParam,
+  });
+
+  useEffect(() => {
+    (async () => {
+      const subscriptionResp: any = await getCurrentSubscriptions(
+        sessionContext.sessionToken
+      );
+      if (!subscriptionResp.success) {
+        Swal.fire({
+          title: "Error!",
+          text: subscriptionResp.message,
+          icon: "error",
+          confirmButtonText: "OK",
+        });
+        localStorage.removeItem(SESSION_TOKEN_LOCAL_STORAGE);
+        sessionContext.setSessionToken(null);
+        navigate("/");
+        return;
+      }
+      setSubscriptions(subscriptionResp.subscriptions);
+      if (
+        subscriptionResp.subscriptions.length &&
+        subscriptionResp.subscriptions.at(0).subscription_status === "active"
+      ) {
+        setFocus("current-renew");
+      } else {
+        setFocus("buy-now");
+      }
+    })();
+  }, [sessionContext]);
+
+  const renderCurrentPlan = () => {
+    if (
+      subscriptions.length &&
+      subscriptions.at(0).subscription_status === "active"
+    ) {
+      const currenSub = subscriptions.at(0);
+      return (
+        <div className="card cardBG border-0">
+          <div className="card-body">
+            <div className="row">
+              <div className="col">
+                <p className="gamesDescription mb-0">
+                  {currenSub.subscriptionPackage.plan_name} (
+                  {currenSub.subscriptionPackage.package_type === "base"
+                    ? "Base Plan"
+                    : "Addon"}
+                  )
+                </p>
+                <h1 className="price">
+                  ₹ {parseFloat(currenSub.brought_price).toFixed(2)}
+                </h1>
+                <img src={Clock} className="img-fluid me-2" alt="" />
+                <span className="smallText">
+                  {(Math.floor(currenSub.remaining_tokens / 60) > 0
+                    ? Math.floor(currenSub.remaining_tokens / 60) + "h "
+                    : "") +
+                    (currenSub.remaining_tokens % 60 > 0
+                      ? (currenSub.remaining_tokens % 60).toFixed(0) + "m"
+                      : "")}
+                  /
+                  {(Math.floor(
+                    currenSub.subscriptionPackage.total_offered_tokens / 60
+                  ) > 0
+                    ? Math.floor(
+                        currenSub.subscriptionPackage.total_offered_tokens / 60
+                      ) + "h "
+                    : "") +
+                    (currenSub.subscriptionPackage.total_offered_tokens % 60 > 0
+                      ? (
+                          currenSub.subscriptionPackage.total_offered_tokens %
+                          60
+                        ).toFixed(0) + "m"
+                      : "")}
+                  letf.{" "}
+                </span>
+                <span className="gamesDescription">
+                  Expires on{" "}
+                  {moment(currenSub.subscription_active_till).format(
+                    "MMM DD, YYYY"
+                  )}
+                </span>
+              </div>
+              <div className="col-auto align-self-center">
+                <FocusableButton
+                  focusKeyParam="current-renew"
+                  onClick={() => {
+                    window.location.replace(
+                      "https://www.oneream.com/subscription.html"
+                    );
+                  }}
+                >
+                  Renew
+                </FocusableButton>
+              </div>
             </div>
-        </>
+          </div>
+        </div>
+      );
+    } else {
+      return null;
+    }
+  };
+  const renderSingleSubscriptionRow = (subscription: any) => {
+    return (
+      <FocusableTr
+        key={subscription.id}
+        focusKeyParam={"sub_" + subscription.id}
+      >
+        <td>
+          {moment(subscription.subscription_brought_at_time).format(
+            "DD.MM.YYYY"
+          )}
+        </td>
+        <td>
+          <p className="mb-1">{subscription.subscriptionPackage.plan_name}</p>
+          <p className="mb-0 gamesDescription">
+            {subscription.subscriptionPackage.plan_description}
+          </p>
+        </td>
+        <td> ₹ {parseFloat(subscription.brought_price).toFixed(2)}</td>
+        <td className="gradientText" style={{ textTransform: "capitalize" }}>
+          {subscription.subscription_status}
+        </td>
+        <td className="mb-1">
+          {moment(subscription.subscription_active_from).format("DD.MM.YYYY")}
+        </td>
+        <td className="mb-1">
+          {moment(subscription.subscription_active_till).format("DD.MM.YYYY")}
+        </td>
+      </FocusableTr>
     );
+  };
+  return (
+    <FocusContext.Provider value={focusKey}>
+      <div className="row">
+        <div className="col-lg-12 col-md-11 ps-4">
+          {subscriptions.length &&
+          subscriptions.at(0).subscription_status === "active" ? (
+            <p className="GamesTitle">Current Subscription</p>
+          ) : (
+            <div className="col-auto align-self-center">
+              <p className="GamesTitle">You don't have active subscription.</p>
+              <FocusableButton
+                focusKeyParam="buy-now"
+                onClick={() => {
+                  window.location.replace(
+                    "https://www.oneream.com/subscription.html"
+                  );
+                }}
+              >
+                Buy Now
+              </FocusableButton>
+            </div>
+          )}
+          {renderCurrentPlan()}
+          <p className="GamesTitle mt-4">Subscription History</p>
+          <div className="table-responsive">
+            <table className="table table-dark align-middle customTable table-lg">
+              <thead>
+                <tr>
+                  <th>Date of Purchase</th>
+                  <th>Subscription Type</th>
+                  <th>Price</th>
+                  <th>Status</th>
+                  <th>Start Date</th>
+                  <th>End Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {subscriptions.map((sub) => renderSingleSubscriptionRow(sub))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </FocusContext.Provider>
+  );
 }
+
+const FocusableButtonStyled = styled.button<FocusableItemProps>`
+  box-shadow: ${({ focused }) =>
+    focused ? "0 0 0 0.25rem rgba(13, 110, 253, 0.25)" : "none"};
+`;
+const FocusableButton = (props: any) => {
+  const { ref, focused } = useFocusable({
+    focusable: true,
+    focusKey: props.focusKeyParam,
+    onEnterPress: () => {
+      props.onClick();
+    },
+  });
+  return (
+    <FocusableButtonStyled
+      ref={ref}
+      focused={focused}
+      className="btn gradientBtn px-4 border-0"
+      onClick={props.onClick}
+    >
+      {props.children}
+    </FocusableButtonStyled>
+  );
+};
+
+const FocusableTrStyled = styled.tr<FocusableItemProps>`
+  box-shadow: ${({ focused }) =>
+    focused ? "0 0 0 0.25rem rgba(13, 110, 253, 0.25)" : "none"};
+`;
+const FocusableTr = (props: any) => {
+  const { ref, focused } = useFocusable({
+    focusable: true,
+    focusKey: props.focusKeyParam,
+    trackChildren: true,
+    onEnterPress: () => {},
+  });
+  return (
+    <FocusableTrStyled ref={ref} focused={focused}>
+      {props.children}
+    </FocusableTrStyled>
+  );
+};

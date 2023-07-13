@@ -102,6 +102,36 @@ export async function getProfile(
     return handleError(error, "get profile.");
   }
 }
+
+export async function updateProfile(
+  sessionToken: string,
+  body: { [key: string]: string | Blob }
+): Promise<UserProfileResponseDTO> {
+  try {
+    const formData = new FormData();
+    for (const key in body) {
+      if (Object.prototype.hasOwnProperty.call(body, key)) {
+        formData.append(key, body[key]);
+      }
+    }
+    console.log("update profile form data : ", formData);
+    const profileResp = await axios.put(
+      API_BASE_URL + "accounts/profile",
+      formData,
+      {
+        headers: {
+          session_token: sessionToken,
+        },
+      }
+    );
+    if (profileResp.status !== 200) {
+      return handleNon200Response(profileResp.data.message);
+    }
+    return { success: true, profile: profileResp.data };
+  } catch (error: any) {
+    return handleError(error, "get profile.");
+  }
+}
 export async function getAllGames(
   sessionToken: string,
   page: number = 0,
@@ -120,7 +150,10 @@ export async function getAllGames(
     if (allGameResp.status !== 200) {
       return handleNon200Response(allGameResp.data.message);
     }
-    return { success: true, games: allGameResp.data };
+    return {
+      success: true,
+      games: allGameResp.data,
+    };
   } catch (error: any) {
     return handleError(error, "get games");
   }
@@ -144,6 +177,73 @@ export async function getGameDetails(
     return { success: true, game: gameDetailResp.data };
   } catch (error: any) {
     return handleError(error, "get game details");
+  }
+}
+export async function searchGame(
+  sessionToken: string,
+  query: string,
+  page: number = 0,
+  limit: number = GAME_FETCH_LIMIT
+): Promise<AllGameResponseDTO> {
+  try {
+    const gameSearchResponse = await axios.get(
+      `${API_BASE_URL}games/search?query=${query}&page=${page}&limit=${limit}`,
+      {
+        headers: {
+          session_token: sessionToken,
+        },
+      }
+    );
+    if (gameSearchResponse.status !== 200) {
+      return handleNon200Response(gameSearchResponse.data.message);
+    }
+    return { success: true, games: gameSearchResponse.data.results };
+  } catch (error: any) {
+    return handleError(error, "search games");
+  }
+}
+export async function customFeedGames(
+  sessionToken: string,
+  body: {
+    [key: string]: string | number | boolean;
+  },
+  page: number = 0,
+  limit: number = GAME_FETCH_LIMIT
+): Promise<AllGameResponseDTO> {
+  try {
+    const gameSearchResponse = await axios.post(
+      `${API_BASE_URL}games/feed/custom?page=${page}&limit=${limit}`,
+      body,
+      {
+        headers: {
+          session_token: sessionToken,
+        },
+      }
+    );
+    if (gameSearchResponse.status !== 200) {
+      return handleNon200Response(gameSearchResponse.data.message);
+    }
+    return { success: true, games: gameSearchResponse.data };
+  } catch (error: any) {
+    return handleError(error, "custom feed");
+  }
+}
+export async function getCurrentSubscriptions(sessionToken: string) {
+  try {
+    const subscriptionListResponse = await axios.get(
+      `${API_BASE_URL}accounts/subscription/current`,
+      {
+        headers: {
+          session_token: sessionToken,
+        },
+      }
+    );
+    if (subscriptionListResponse.status !== 200) {
+      return handleNon200Response(subscriptionListResponse.data.message);
+    }
+    return { success: true, subscriptions: subscriptionListResponse.data };
+  } catch (error: any) {
+    return handleError(error, "current subscriptions");
   }
 }
 export async function logout(sessionToken: string): Promise<LogoutResponseDTO> {
@@ -333,6 +433,37 @@ export async function getStreamingSessionInfo(
   } catch (error: any) {
     if (!error.response) {
       return handleError(error, "get stream session");
+    }
+    return {
+      success: true,
+      code: error.response.data?.code,
+      message: error.response.data?.msg,
+    };
+  }
+}
+export async function setPin(
+  host: string,
+  port: string,
+  sessionKey: string
+): Promise<{ [key: string]: any }> {
+  try {
+    const url = `https://${host}:${port}/api/setpin`;
+    const pin = sessionKey;
+    const sessionInfoResp = await axios.get(
+      `https://svrdev.oneplay.in/backend/redirect?url=${url}&pin=${pin}`
+    );
+    if (sessionInfoResp.status !== 200) {
+      return handleNon200Response(sessionInfoResp.data.msg);
+    }
+    console.log("set pin resp : ", sessionInfoResp);
+    return {
+      success: true,
+      message: sessionInfoResp.data?.msg,
+      streamInfo: sessionInfoResp.data,
+    };
+  } catch (error: any) {
+    if (!error.response) {
+      return handleError(error, "setpin");
     }
     return {
       success: true,

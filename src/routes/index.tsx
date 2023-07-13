@@ -24,19 +24,15 @@ export default function Router() {
       children: [{ path: "/", element: <Login focusKey="Login" /> }],
     },
     {
-      element: <AuthLayout />,
+      element: <AuthLayout focusKey="Sidebar" />,
       children: [
-        { path: "/settings", 
-          element: <Settings /> 
-        },
+        { path: "/settings", element: <Settings focusKey="settings" /> },
         { path: "/all-games", element: <AllGames focusKey="AllGames" /> },
         {
           path: "/games-detail/:id",
           element: <GamesDetail focusKey="GameDetail" />,
         },
-        { path: "/search", 
-          element: <SearchGames /> 
-        }
+        { path: "/search", element: <SearchGames focusKey="SearchGames" /> },
       ],
     },
   ]);

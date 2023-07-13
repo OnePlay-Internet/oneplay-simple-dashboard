@@ -20,7 +20,7 @@ export const UserProfileContext = createContext<{
   userProfile: null,
   setUserProfile: () => {},
 });
-init({});
+init();
 // Optional
 setKeyMap({
   left: 37,
@@ -55,6 +55,7 @@ function App() {
       })();
     }
   }, []);
+
   return (
     // <div className="App">
     //   <div className="container">

@@ -8,7 +8,6 @@ import {
   FocusContext,
   useFocusable,
 } from "@noriginmedia/norigin-spatial-navigation";
-
 import { styled } from "styled-components";
 
 export default function Login({
@@ -20,8 +19,8 @@ export default function Login({
   const { focusSelf, focusKey } = useFocusable({
     focusable: true,
   });
-  const [userInputId, SetuserInputId] = useState("");
-  const [userInputPwd, SetuserInputPwd] = useState("");
+  const [userInputId, SetuserInputId] = useState("jasmin@oneplay.in");
+  const [userInputPwd, SetuserInputPwd] = useState("Jasmin@5690");
 
   useEffect(() => {
     focusSelf();
@@ -112,10 +111,6 @@ export default function Login({
 }
 
 const FocusableInputStyled = styled.input<FocusableItemProps>`
-  background-color: white;
-  border-color: #86b7fe;
-  border-style: solid;
-  border-width: ${({ focused }) => (focused ? "6px" : 0)};
   box-shadow: ${({ focused }) =>
     focused ? "0 0 0 0.25rem rgba(13, 110, 253, 0.25)" : "none"};
 `;
@@ -129,6 +124,12 @@ const FocusableInput = (props: any) => {
     onEnterPress: () => {
       ref.current.focus();
     },
+    /* onArrowPress: (direction, props, details) => {
+    if (focused && (direction === "right" || direction === "left")) {
+        return false;
+      }
+      return true;
+    }, */
   });
   const [inputValue, setInputValue] = useState(props.defaultValue);
   useEffect(() => {
