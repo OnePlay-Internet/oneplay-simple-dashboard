@@ -2,7 +2,7 @@ import brandLogo from "../../../assets/images/oneplayLogo.svg";
 import Games from "../../../assets/images/games/Rectangle 210.svg";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
-import { SessionContext, UserProfileContext } from "src/App";
+import { FocusTrackContext, SessionContext, UserProfileContext } from "src/App";
 import { getAllGames, logout } from "../../../common/services";
 import Swal from "sweetalert2";
 import {
@@ -21,6 +21,7 @@ export default function AllGames({
   focusKey: focusKeyParam,
 }: FocusabelComponentProps) {
   const sessionContext = useContext(SessionContext);
+  const focusTrackContext = useContext(FocusTrackContext);
   const [allGames, setAllGames] = useState<{ [key: string]: any }[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [haveMoreGames, setHaveMoreGames] = useState(true);
@@ -29,7 +30,9 @@ export default function AllGames({
     trackChildren: true,
     focusKey: focusKeyParam,
   });
-
+  useEffect(() => {
+    setFocusToFirstGame();
+  }, [focusTrackContext]);
   useEffect(() => {
     if (sessionContext.sessionToken) {
       loadMoreGames();

@@ -14,7 +14,8 @@ import styled from "styled-components";
 
 export default function SubscriptionComponent({
   focusKey: focusKeyParam,
-}: FocusabelComponentProps) {
+  parentFocus: parentFocusParam,
+}: FocusabelChildComponentProps) {
   const navigate = useNavigate();
   const sessionContext = useContext(SessionContext);
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
@@ -22,7 +23,16 @@ export default function SubscriptionComponent({
     trackChildren: true,
     focusKey: focusKeyParam,
   });
-
+  useEffect(() => {
+    if (
+      subscriptions.length &&
+      subscriptions.at(0).subscription_status === "active"
+    ) {
+      setFocus("current-renew");
+    } else {
+      setFocus("buy-now");
+    }
+  }, [setFocus, parentFocusParam, subscriptions]);
   useEffect(() => {
     (async () => {
       const subscriptionResp: any = await getCurrentSubscriptions(
@@ -206,11 +216,21 @@ const FocusableButtonStyled = styled.button<FocusableItemProps>`
     focused ? "0 0 0 0.25rem rgba(13, 110, 253, 0.25)" : "none"};
 `;
 const FocusableButton = (props: any) => {
-  const { ref, focused } = useFocusable({
+  const { ref, focused, setFocus } = useFocusable({
     focusable: true,
     focusKey: props.focusKeyParam,
     onEnterPress: () => {
       props.onClick();
+    },
+    onArrowPress: (direction, keyProps, details) => {
+      switch (direction) {
+        case "right":
+        case "left":
+          setFocus("go-to-profile");
+          return false;
+        default:
+          return true;
+      }
     },
   });
   return (
@@ -230,11 +250,20 @@ const FocusableTrStyled = styled.tr<FocusableItemProps>`
     focused ? "0 0 0 0.25rem rgba(13, 110, 253, 0.25)" : "none"};
 `;
 const FocusableTr = (props: any) => {
-  const { ref, focused } = useFocusable({
+  const { ref, focused, setFocus } = useFocusable({
     focusable: true,
     focusKey: props.focusKeyParam,
     trackChildren: true,
-    onEnterPress: () => {},
+    onArrowPress: (direction, keyProps, details) => {
+      switch (direction) {
+        case "right":
+        case "left":
+          setFocus("go-to-profile");
+          return false;
+        default:
+          return true;
+      }
+    },
   });
   return (
     <FocusableTrStyled ref={ref} focused={focused}>

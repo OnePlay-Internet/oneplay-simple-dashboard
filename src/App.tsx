@@ -13,6 +13,14 @@ export const SessionContext = createContext<{
   sessionToken: "",
   setSessionToken: () => {},
 });
+
+export const FocusTrackContext = createContext<{
+  focusCount: number;
+  setFocusCount: any;
+}>({
+  focusCount: 0,
+  setFocusCount: () => {},
+});
 export const UserProfileContext = createContext<{
   userProfile: any;
   setUserProfile: any;
@@ -32,8 +40,11 @@ setKeyMap({
 });
 function App() {
   const [sessionToken, setSessionToken] = useState("");
+
   const [userProfile, setUserProfile] = useState<any>(null);
   const sessionContextValue = { sessionToken, setSessionToken };
+  const [focusCount, setFocusCount] = useState(0);
+  const focusContextValue = { focusCount, setFocusCount };
   const userProfileContextValue = { userProfile, setUserProfile };
   useEffect(() => {
     const savedToken = localStorage.getItem(SESSION_TOKEN_LOCAL_STORAGE);
@@ -68,7 +79,9 @@ function App() {
     // </div>
     <SessionContext.Provider value={sessionContextValue}>
       <UserProfileContext.Provider value={userProfileContextValue}>
-        <Routes />
+        <FocusTrackContext.Provider value={focusContextValue}>
+          <Routes />
+        </FocusTrackContext.Provider>
       </UserProfileContext.Provider>
     </SessionContext.Provider>
   );

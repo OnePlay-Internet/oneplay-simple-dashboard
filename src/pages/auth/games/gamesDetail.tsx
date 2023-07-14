@@ -2,7 +2,7 @@ import brandLogo from "../../../assets/images/oneplayLogo.svg";
 import Games from "../../../assets/images/games/Rectangle 210.svg";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { useContext, useEffect, useState } from "react";
-import { SessionContext } from "src/App";
+import { FocusTrackContext, SessionContext } from "src/App";
 import {
   GameStatusDTO,
   getAnyActiveSessionStatus,
@@ -28,7 +28,7 @@ export default function GamesDetail({
   const sessionContext = useContext(SessionContext);
   let { id } = useParams();
   const navigate = useNavigate();
-
+  const focusTrackContext = useContext(FocusTrackContext);
   const [gameDetails, setGameDetails] = useState<any>(null);
   const [selectedStore, setSelectedStore] = useState<string | null>(null);
   const [activeSessionStatus, setActiveSessionStatus] = useState<GameStatusDTO>(
@@ -56,6 +56,9 @@ export default function GamesDetail({
   useEffect(() => {
     focusSelf();
   }, [focusSelf]);
+  useEffect(() => {
+    setFocus("play-now");
+  }, [focusTrackContext]);
   useEffect(() => {
     if (startGameSession) {
       setClientTokenStartTime(Date.now());
@@ -202,7 +205,7 @@ export default function GamesDetail({
     if (
       activeSessionStatus.is_running &&
       !activeSessionStatus.is_user_connected &&
-     // activeSessionStatus.resume_in_this_device &&
+      // activeSessionStatus.resume_in_this_device &&
       activeSessionStatus.game_id &&
       activeSessionStatus.game_id === id
     ) {

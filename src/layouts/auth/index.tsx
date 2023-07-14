@@ -6,7 +6,7 @@ import defaultUser from "../../assets/images/user/defaultUser.svg";
 import { logout } from "src/common/services";
 import Swal from "sweetalert2";
 import { SESSION_TOKEN_LOCAL_STORAGE } from "src/common/constants";
-import { SessionContext, UserProfileContext } from "src/App";
+import { FocusTrackContext, SessionContext, UserProfileContext } from "src/App";
 import styled from "styled-components";
 import {
   FocusContext,
@@ -19,6 +19,7 @@ export default function AuthLayout({
   const navigate = useNavigate();
   const sessionContext = useContext(SessionContext);
   const userContext = useContext(UserProfileContext);
+  const focusTrackContext = useContext<any>(FocusTrackContext);
   const { focusSelf, focusKey } = useFocusable({
     focusKey: focusKeyParam,
     preferredChildFocusKey: "home",
@@ -60,6 +61,7 @@ export default function AuthLayout({
                     onClick={() => {
                       navigate("/all-games");
                     }}
+                    focusTrackContext={focusTrackContext}
                   >
                     <img
                       className="card-img rounded-circle"
@@ -77,6 +79,7 @@ export default function AuthLayout({
                     onClick={() => {
                       navigate("/search");
                     }}
+                    focusTrackContext={focusTrackContext}
                   >
                     <i className="fa-sharp fa-solid fa-magnifying-glass"></i>
                   </FocusableLink>
@@ -89,6 +92,7 @@ export default function AuthLayout({
                     onClick={() => {
                       navigate("/all-games");
                     }}
+                    focusTrackContext={focusTrackContext}
                   >
                     <i className="fa-solid fa-gamepad"></i>
                   </FocusableLink>
@@ -101,6 +105,7 @@ export default function AuthLayout({
                     onClick={() => {
                       navigate("/settings");
                     }}
+                    focusTrackContext={focusTrackContext}
                   >
                     <i className="fa-solid fa-gear"></i>
                   </FocusableLink>
@@ -109,6 +114,7 @@ export default function AuthLayout({
                   <FocusableLink
                     focusKeyParam="sidebar-logout"
                     onClick={btnLogoutClick}
+                    focusTrackContext={focusTrackContext}
                   >
                     <i className="fa-solid fa-arrow-right-from-bracket"></i>
                   </FocusableLink>
@@ -137,7 +143,8 @@ const FocusableLinkStyled = styled.a<FocusableItemProps>`
 `;
 const FocusableLink = (props: any) => {
   const navigate = useNavigate();
-  const { ref, focused } = useFocusable({
+
+  const { ref, focused, focusKey } = useFocusable({
     focusable: true,
     focusKey: props.focusKeyParam,
     onEnterPress: () => {
@@ -149,6 +156,15 @@ const FocusableLink = (props: any) => {
         props.onClick();
         return;
       }
+    },
+    onArrowPress: (direction, keyProps, details) => {
+      if (direction === "right") {
+        props.focusTrackContext.setFocusCount((prev: number) => {
+          return prev + 1;
+        });
+        return false;
+      }
+      return true;
     },
   });
 

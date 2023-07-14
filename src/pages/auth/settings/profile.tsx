@@ -13,7 +13,8 @@ import styled from "styled-components";
 
 export default function Profile({
   focusKey: focusKeyParam,
-}: FocusabelComponentProps) {
+  parentFocus: parentFocusParam,
+}: FocusabelChildComponentProps) {
   const navigate = useNavigate();
   const sessionContext = useContext(SessionContext);
   const [userProfile, setUserProfile] = useState<any>(null);
@@ -26,7 +27,7 @@ export default function Profile({
   });
   useEffect(() => {
     setFocus("username");
-  }, [setFocus]);
+  }, [setFocus, parentFocusParam]);
   useEffect(() => {
     if (!sessionContext || !sessionContext.sessionToken) {
       return;
@@ -156,18 +157,19 @@ const FocusableInputStyled = styled.input<FocusableItemProps>`
 `;
 
 const FocusableInput = (props: any) => {
-  const { ref, focused } = useFocusable({
+  const { ref, focused, setFocus } = useFocusable({
     focusable: true,
     focusKey: props.focusKeyParam,
     onEnterPress: () => {
       ref.current.focus();
     },
-    /* onArrowPress: (direction, props, details) => {
-    if (focused && (direction === "right" || direction === "left")) {
+    onArrowPress: (direction, props, details) => {
+      if (focused && direction === "left") {
+        setFocus("go-to-profile");
         return false;
       }
       return true;
-    }, */
+    },
   });
   return (
     <FocusableInputStyled
@@ -188,18 +190,19 @@ const FocusableTextAreaStyled = styled.textarea<FocusableItemProps>`
 `;
 
 const FocusableTextArea = (props: any) => {
-  const { ref, focused } = useFocusable({
+  const { ref, focused, setFocus } = useFocusable({
     focusable: true,
     focusKey: props.focusKeyParam,
     onEnterPress: () => {
       ref.current.focus();
     },
-    /* onArrowPress: (direction, props, details) => {
-    if (focused && (direction === "right" || direction === "left")) {
+    onArrowPress: (direction, props, details) => {
+      if (focused && direction === "left") {
+        setFocus("go-to-profile");
         return false;
       }
       return true;
-    }, */
+    },
   });
   return (
     <FocusableTextAreaStyled
@@ -217,10 +220,19 @@ const FocusableButtonStyled = styled.button<FocusableItemProps>`
     focused ? "0 0 0 0.25rem rgba(13, 110, 253, 0.25)" : "none"};
 `;
 const FocusableButton = (props: any) => {
-  const { ref, focused } = useFocusable({
+  const { ref, focused, setFocus } = useFocusable({
     focusable: true,
     onEnterPress: () => {
       props.onClick();
+    },
+    onArrowPress: (direction, props, details) => {
+      switch (direction) {
+        case "up":
+          return true;
+        default:
+          setFocus("go-to-profile");
+          return false;
+      }
     },
   });
   return (

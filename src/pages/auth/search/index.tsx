@@ -6,7 +6,7 @@ import {
 import styled from "styled-components";
 import { customFeedGames, searchGame } from "src/common/services";
 import { GAME_FETCH_LIMIT } from "src/common/constants";
-import { SessionContext } from "src/App";
+import { FocusTrackContext, SessionContext } from "src/App";
 import debounce from "lodash.debounce";
 import { NavLink, useNavigate } from "react-router-dom";
 import { LazyLoadImage } from "react-lazy-load-image-component";
@@ -17,6 +17,7 @@ export default function SearchGames({
 }: FocusabelComponentProps) {
   const navigate = useNavigate();
   const sessionContext = useContext(SessionContext);
+  const focusTrackContext = useContext(FocusTrackContext);
   const [showLoading, setShowLoading] = useState(false);
   const [searchResult, setSearchResult] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -30,6 +31,9 @@ export default function SearchGames({
     loadMoreGames("", 0);
     setFocus("game_search");
   }, [setFocus]);
+  useEffect(() => {
+    setFocus("game_search");
+  }, [focusTrackContext]);
   /* useEffect(() => {
     if (currentPage === 1) {
       setFocusToFirstGame();

@@ -2,6 +2,11 @@ interface FocusabelComponentProps {
   focusKey: string;
 }
 
+interface FocusabelChildComponentProps {
+  focusKey: string;
+  parentFocus: number;
+}
+
 interface FocusableItemProps {
   focused: boolean;
 }
