@@ -1,10 +1,16 @@
-import React, { createContext, useEffect, useState } from "react";
+import React, {
+  createContext,
+  useEffect,
+  useLayoutEffect,
+  useState,
+} from "react";
 import "./App.css";
 import Routes from "./routes";
 import { getProfile } from "./common/services";
 import Swal from "sweetalert2";
 import { SESSION_TOKEN_LOCAL_STORAGE } from "./common/constants";
 import { init, setKeyMap } from "@noriginmedia/norigin-spatial-navigation";
+import { useLocation } from "react-router-dom";
 
 export const SessionContext = createContext<{
   sessionToken: string;
@@ -34,9 +40,8 @@ setKeyMap({
   left: 37,
   up: 38,
   right: 39,
-  down: [40, 65376],
+  down: 40, //[40, 65376],
   enter: [32, 13],
-  remoteBack: 10009,
 });
 function App() {
   const [sessionToken, setSessionToken] = useState("");
@@ -46,6 +51,7 @@ function App() {
   const [focusCount, setFocusCount] = useState(0);
   const focusContextValue = { focusCount, setFocusCount };
   const userProfileContextValue = { userProfile, setUserProfile };
+  const { pathname } = useLocation();
   useEffect(() => {
     const savedToken = localStorage.getItem(SESSION_TOKEN_LOCAL_STORAGE);
     if (savedToken) {
@@ -66,17 +72,10 @@ function App() {
       })();
     }
   }, []);
-
+  useLayoutEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+  }, [pathname]);
   return (
-    // <div className="App">
-    //   <div className="container">
-    //     <div className="row justify-content-center">
-    //       <div className='col-md-6'>
-    //         <h1>Hello</h1>
-    //       </div>
-    //     </div>
-    //   </div>
-    // </div>
     <SessionContext.Provider value={sessionContextValue}>
       <UserProfileContext.Provider value={userProfileContextValue}>
         <FocusTrackContext.Provider value={focusContextValue}>

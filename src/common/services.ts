@@ -138,9 +138,10 @@ export async function getAllGames(
   limit: number = GAME_FETCH_LIMIT
 ): Promise<AllGameResponseDTO> {
   try {
-    const allGameResp = await axios.get(
+    const allGameResp = await axios.post(
       API_BASE_URL +
-        `games?page=${page}&limit=${limit}&textBackground=320x240&textLogo=640x480&background=1920x1080&poster=265x352`,
+        `games/feed/custom?page=${page}&limit=${limit}&textBackground=320x240&textLogo=640x480&background=1920x1080&poster=265x352`,
+      { order_by: "release_date:desc" },
       {
         headers: {
           session_token: sessionToken,

@@ -1,6 +1,4 @@
-import brandLogo from "../../../assets/images/oneplayLogo.svg";
-import Games from "../../../assets/images/games/Rectangle 210.svg";
-import { NavLink, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useContext, useEffect, useState } from "react";
 import { FocusTrackContext, SessionContext } from "src/App";
 import {
@@ -19,7 +17,6 @@ import {
   FocusContext,
   useFocusable,
 } from "@noriginmedia/norigin-spatial-navigation";
-import { styled } from "styled-components";
 import { getCoords } from "src/common/utils";
 
 export default function GamesDetail({
@@ -30,7 +27,8 @@ export default function GamesDetail({
   const navigate = useNavigate();
   const focusTrackContext = useContext(FocusTrackContext);
   const [gameDetails, setGameDetails] = useState<any>(null);
-  const [selectedStore, setSelectedStore] = useState<string | null>(null);
+  const [selectedStore, setSelectedStore] = useState<string>("");
+  const [debugInfo, setDebugInfo] = useState("");
   const [activeSessionStatus, setActiveSessionStatus] = useState<GameStatusDTO>(
     {
       is_user_connected: false,
@@ -54,11 +52,9 @@ export default function GamesDetail({
     isFocusBoundary: false,
   });
   useEffect(() => {
-    focusSelf();
-  }, [focusSelf]);
-  useEffect(() => {
     setFocus("play-now");
   }, [focusTrackContext]);
+
   useEffect(() => {
     if (startGameSession) {
       setClientTokenStartTime(Date.now());
@@ -84,18 +80,25 @@ export default function GamesDetail({
           return;
         }
         setGameDetails(gameResp.game);
-        setSelectedStore(
-          gameResp.game?.preferred_store ??
-            gameResp.game?.stores_mappings?.length
-            ? gameResp.game?.stores_mappings?.at(0).name
-            : null
-        );
-        await getActiveSessionStatus();
+        let sStore = "";
+        if (
+          gameResp.game &&
+          gameResp.game.stores_mappings &&
+          gameResp.game.stores_mappings.length
+        ) {
+          sStore = gameResp.game.stores_mappings.at(0).name;
+          if (gameResp.game.preferred_store) {
+            sStore = gameResp.game.preferred_store;
+          }
+          console.log("sStore : ", sStore);
+          setSelectedStore(sStore);
+        }
       })();
     } else {
       navigate("/all-games");
     }
   }, [sessionContext, id]);
+
   useEffect(() => {
     (async () => {
       if (gameClientToken) {
@@ -132,7 +135,12 @@ export default function GamesDetail({
     );
   };
   const getActiveSessionStatus = async () => {
-    const [userId, sessionId] = atob(sessionContext.sessionToken)?.split(":");
+    const [userId, sessionId] = atob(sessionContext.sessionToken).split(":");
+    setDebugInfo(
+      `UserId : ${userId?.length ? userId : "NONE" ?? "NONE"}  | SessionId : ${
+        sessionId ?? "NONE"
+      } | Store : ${selectedStore}`
+    );
     if (userId && sessionId) {
       const activeSessionStatusResp = await getAnyActiveSessionStatus(
         userId,
@@ -150,6 +158,11 @@ export default function GamesDetail({
       setActiveSessionStatus(activeSessionStatusResp);
     }
   };
+  useEffect(() => {
+    (async () => {
+      await getActiveSessionStatus();
+    })();
+  }, [gameDetails]);
 
   const getStoreImage = (storeName: string): string => {
     if (/^epic/i.exec(storeName)) {
@@ -172,7 +185,7 @@ export default function GamesDetail({
   const getShortDescription = () => {
     return (
       gameDetails?.description
-        ?.slice(0, 100)
+        ?.slice(0, 250)
         .replace(/<[^>]*>|&[^;]+;/gm, "") ?? ""
     );
   };
@@ -205,7 +218,7 @@ export default function GamesDetail({
     if (
       activeSessionStatus.is_running &&
       !activeSessionStatus.is_user_connected &&
-      // activeSessionStatus.resume_in_this_device &&
+      activeSessionStatus.resume_in_this_device &&
       activeSessionStatus.game_id &&
       activeSessionStatus.game_id === id
     ) {
@@ -250,6 +263,18 @@ export default function GamesDetail({
     if (gameDetails && userId && sessionId) {
       setClientTokenStartTime(null);
       setshowLoading(true);
+      let sStore = selectedStore;
+      if (
+        !sStore &&
+        gameDetails.stores_mappings &&
+        gameDetails.stores_mappings.length
+      ) {
+        sStore = gameDetails.stores_mappings[0].name;
+      }
+      if (!sStore && gameDetails.preferred_store) {
+        sStore = gameDetails.preferred_store;
+      }
+      setDebugInfo("");
       const startGameResp = await startGame(
         userId,
         sessionId,
@@ -258,7 +283,7 @@ export default function GamesDetail({
         true,
         60,
         20,
-        selectedStore ? selectedStore : ""
+        sStore
       );
       if (!startGameResp.success || startGameResp.code !== 200) {
         Swal.fire({
@@ -275,7 +300,6 @@ export default function GamesDetail({
           setStartGameSession(startGameResp.data.session.id);
         }
       } else if (startGameResp.data?.api_action === "call_terminate") {
-        //this.terminateGame(data.data.session.id);
         await onTerminateGame(startGameResp.data.session?.id ?? null);
       } else {
         //   this.stopLoading();
@@ -368,11 +392,14 @@ export default function GamesDetail({
         return;
       }
       setshowLoading(false);
-      getActiveSessionStatus();
+      await getActiveSessionStatus();
     }
   };
   const onSelectedStoreChange = (checked: boolean, store: string) => {
     if (checked) {
+      // setGameDetails((prev: any) => {
+      //   return { ...prev, selectedStore: store };
+      // });
       setSelectedStore(store);
     }
   };
@@ -380,7 +407,7 @@ export default function GamesDetail({
     if (activeSessionStatus.success) {
       setFocus("play-now");
     }
-  }, [activeSessionStatus]);
+  }, [activeSessionStatus, setFocus]);
   return gameDetails ? (
     <FocusContext.Provider value={focusKey}>
       <div className="mainContainer">
@@ -417,7 +444,12 @@ export default function GamesDetail({
             <h3 className="text-white">About Game</h3>
             <p className="textOffWhite font500">
               {getShortDescription()}
-              <span className="text-white">...Read more</span>
+              {/* <span className="text-white">...Read more</span> */}
+            </p>
+            <p style={{ color: "transparent", overflowWrap: "break-word" }}>
+              Debug : {debugInfo ?? ""}
+              <br />
+              Active session response : {JSON.stringify(activeSessionStatus)}
             </p>
           </div>
           <div className="col-md-6">
@@ -432,14 +464,15 @@ export default function GamesDetail({
           </div>
         </div>
       </div>
-      {showLoading && (
+
+      {showLoading ? (
         <div style={{ display: "flex" }} className="my-modal">
           <div className="my-modal-content">
             <div className="my-loader"></div>
             <div className="my-modal-text">Loading...</div>
           </div>
         </div>
-      )}
+      ) : null}
     </FocusContext.Provider>
   ) : (
     <div style={{ display: "flex" }} className="my-modal">
@@ -451,10 +484,6 @@ export default function GamesDetail({
   );
 }
 
-const FocusableButtonStyled = styled.button<FocusableItemProps>`
-  box-shadow: ${({ focused }) =>
-    focused ? "0 0 0 0.25rem rgba(13, 110, 253, 0.25)" : "none"};
-`;
 const FocusableButton = (props: any) => {
   const { ref, focused, setFocus } = useFocusable({
     focusable: true,
@@ -474,21 +503,18 @@ const FocusableButton = (props: any) => {
     },
   });
   return (
-    <FocusableButtonStyled
+    <button
       ref={ref}
-      focused={focused}
-      className="btn btnGradient px-4 m-1"
+      className={
+        "btn btnGradient px-4 m-1" + (focused ? " focusedElement" : "")
+      }
       onClick={props.onClick}
     >
       {props.children}
-    </FocusableButtonStyled>
+    </button>
   );
 };
 
-const FocusableStoreStyled = styled.a<FocusableItemProps>`
-  box-shadow: ${({ focused }) =>
-    focused ? "0 0 0 0.25rem rgba(13, 110, 253, 0.25)" : "none"};
-`;
 const FocusableStore = (props: any) => {
   const { ref, focused } = useFocusable({
     focusable: true,
@@ -497,13 +523,13 @@ const FocusableStore = (props: any) => {
     },
   });
   return (
-    <FocusableStoreStyled
+    <a
       ref={ref}
-      focused={focused}
       key={props.store.name}
-      href="javascript:void(0)"
-      className={`font600 font20 text-white p-2 pr-3 store ${props.isSelected} 
-        `}
+      href="#"
+      className={`font600 font20 text-white p-2 pr-3 store ${
+        props.isSelected
+      } ${focused ? " focusedElement" : ""}`}
     >
       <img
         src={`../store/${props.getStoreImage(props.store.name)}`}
@@ -517,6 +543,6 @@ const FocusableStore = (props: any) => {
         checked={!!props.isSelected}
         onChange={() => props.onChange(!props.isSelected, props.store.name)}
       />
-    </FocusableStoreStyled>
+    </a>
   );
 };

@@ -3,7 +3,6 @@ import {
   FocusContext,
   useFocusable,
 } from "@noriginmedia/norigin-spatial-navigation";
-import styled from "styled-components";
 import { customFeedGames, searchGame } from "src/common/services";
 import { GAME_FETCH_LIMIT } from "src/common/constants";
 import { FocusTrackContext, SessionContext } from "src/App";
@@ -23,7 +22,8 @@ export default function SearchGames({
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
   const [haveMoreGames, setHaveMoreGames] = useState(true);
-  const { focusSelf, focusKey, setFocus } = useFocusable({
+
+  const { focusKey, setFocus } = useFocusable({
     focusable: true,
     focusKey: focusKeyParam,
   });
@@ -70,7 +70,9 @@ export default function SearchGames({
         game={game}
         key={game.oplay_id}
         focusKeyParam={`search_game_${game.oplay_id}`}
-        goToDetail={() => navigate(`/games-detail/${game.oplay_id}`)}
+        goToDetail={() => {
+          navigate(`/games-detail/${game.oplay_id}`);
+        }}
       />
     );
   };
@@ -240,8 +242,6 @@ export default function SearchGames({
   );
 }
 
-const FocusableInputStyled = styled.input<FocusableItemProps>``;
-
 const FocusableInput = (props: any) => {
   const { ref, focused } = useFocusable({
     focusable: true,
@@ -252,19 +252,15 @@ const FocusableInput = (props: any) => {
     onEnterPress: () => {
       ref.current.focus();
     },
-    /* onArrowPress: (direction, props, details) => {
-    if (focused && (direction === "right" || direction === "left")) {
-        return false;
-      }
-      return true;
-    }, */
+    onBlur: () => {
+      ref.current.blur();
+    },
   });
 
   return (
-    <FocusableInputStyled
+    <input
       type={props.type}
       ref={ref}
-      focused={focused}
       className={
         "form-control inputControl" + (focused ? " focusedSearch" : "")
       }
@@ -275,49 +271,34 @@ const FocusableInput = (props: any) => {
   );
 };
 
-const FocusableGameWrapperStyled = styled.div<FocusableItemProps>`
-  border: 1px solid transperent;
-  border-radius: 10px;
-  padding-top: 10px;
-  box-shadow: ${({ focused }) =>
-    focused ? "0 0 0 0.15rem rgba(13, 110, 253, 0.2)" : "none"};
-`;
-
-const FocusableElementStyled = styled.button<FocusableItemProps>`
-  background: none;
-  border: none;
-  border-radius: 0.5rem;
-  margin-bottom: 8px;
-`;
-
 const FocusableElement = (props: any) => {
   const { ref, focused } = useFocusable({
     focusable: true,
     onFocus: () => {
       scrollToTop();
+      ref.current.focus();
     },
     onEnterPress: () => {
       props.onClick();
     },
-    /* onArrowPress: (direction, props, details) => {
-    if (focused && (direction === "right" || direction === "left")) {
-        return false;
-      }
-      return true;
-    }, */
   });
 
   return (
-    <FocusableElementStyled
+    <button
       ref={ref}
-      focused={focused}
+      style={{
+        background: "none",
+        border: "none",
+        borderRadius: "0.5rem",
+        marginBottom: "8px",
+      }}
       className={"suggestionResult " + (focused ? " focusedElement" : "")}
       onClick={() => {
         props.onClick();
       }}
     >
       {props.children}
-    </FocusableElementStyled>
+    </button>
   );
 };
 
@@ -342,11 +323,10 @@ const FocusableGameWrapper = (props: any) => {
   });
 
   return (
-    <FocusableGameWrapperStyled
+    <div
       ref={ref}
-      focused={focused}
-      className="col-md-4 mt-4"
-      style={{ padding: "10px" }}
+      className={"col-md-4 mt-4" + (focused ? " focusedElement" : "")}
+      style={{ padding: "10px", borderRadius: "10px" }}
     >
       <NavLink
         to={`/games-detail/${props.game.oplay_id}`}
@@ -375,6 +355,6 @@ const FocusableGameWrapper = (props: any) => {
           {props.game.genre_mappings.join(", ")}
         </p>
       </NavLink>
-    </FocusableGameWrapperStyled>
+    </div>
   );
 };

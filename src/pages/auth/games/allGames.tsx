@@ -1,19 +1,13 @@
-import brandLogo from "../../../assets/images/oneplayLogo.svg";
-import Games from "../../../assets/images/games/Rectangle 210.svg";
 import { NavLink, useNavigate } from "react-router-dom";
-import { useContext, useEffect, useMemo, useRef, useState } from "react";
-import { FocusTrackContext, SessionContext, UserProfileContext } from "src/App";
-import { getAllGames, logout } from "../../../common/services";
+import { useContext, useEffect, useState } from "react";
+import { FocusTrackContext, SessionContext } from "src/App";
+import { getAllGames } from "../../../common/services";
 import Swal from "sweetalert2";
-import {
-  GAME_FETCH_LIMIT,
-  SESSION_TOKEN_LOCAL_STORAGE,
-} from "src/common/constants";
+import { GAME_FETCH_LIMIT } from "src/common/constants";
 import {
   FocusContext,
   useFocusable,
 } from "@noriginmedia/norigin-spatial-navigation";
-import { styled } from "styled-components";
 import InfiniteScroll from "react-infinite-scroller";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import { getCoords } from "src/common/utils";
@@ -26,6 +20,7 @@ export default function AllGames({
   const [currentPage, setCurrentPage] = useState(0);
   const [haveMoreGames, setHaveMoreGames] = useState(true);
   const navigate = useNavigate();
+
   const { focusSelf, focusKey, setFocus } = useFocusable({
     trackChildren: true,
     focusKey: focusKeyParam,
@@ -48,8 +43,8 @@ export default function AllGames({
   const setFocusToFirstGame = () => {
     if (allGames && allGames.length) {
       setTimeout(() => {
-        setFocus("game_" + allGames.at(0)?.oplay_id);
-      }, 10);
+        setFocus("game_" + allGames[0].oplay_id);
+      }, 50);
     }
   };
   const renderSingleGame = (game: any) => {
@@ -58,7 +53,9 @@ export default function AllGames({
         game={game}
         key={game.oplay_id}
         focusKeyParam={`game_${game.oplay_id}`}
-        goToDetail={() => navigate(`/games-detail/${game.oplay_id}`)}
+        goToDetail={() => {
+          navigate(`/games-detail/${game.oplay_id}`);
+        }}
       />
     );
   };
@@ -126,12 +123,6 @@ const scrollToElement = (element: any, offSet: number = 45) => {
     behavior: "smooth",
   });
 };
-const FocusableGameWrapperStyled = styled.div<FocusableItemProps>`
-  border: 1px solid transperent;
-  border-radius: 10px;
-  box-shadow: ${({ focused }) =>
-    focused ? "0 0 0 0.15rem rgba(13, 110, 253, 0.2)" : "none"};
-`;
 
 const FocusableGameWrapper = (props: any) => {
   const { ref, focused, setFocus } = useFocusable({
@@ -154,11 +145,13 @@ const FocusableGameWrapper = (props: any) => {
   });
 
   return (
-    <FocusableGameWrapperStyled
+    <div
       ref={ref}
-      focused={focused}
-      className="col-md-3 col-lg-2 col-sm-6 col-5 mt-3"
-      style={{ paddingTop: "10px" }}
+      className={
+        "col-md-3 col-lg-2 col-sm-6 col-5 mt-3" +
+        (focused ? " focusedElement" : "")
+      }
+      style={{ paddingTop: "10px", borderRadius: "10px" }}
     >
       <NavLink
         to={`/games-detail/${props.game.oplay_id}`}
@@ -183,7 +176,6 @@ const FocusableGameWrapper = (props: any) => {
         <h5 className="mt-3 mb-1 text-white">{props.game.title}</h5>
         <p className="textOffWhite">{props.game.genre_mappings.join(", ")}</p>
       </NavLink>
-    </FocusableGameWrapperStyled>
+    </div>
   );
 };
-

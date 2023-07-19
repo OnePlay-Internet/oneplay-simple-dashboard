@@ -9,7 +9,6 @@ import {
   FocusContext,
   useFocusable,
 } from "@noriginmedia/norigin-spatial-navigation";
-import styled from "styled-components";
 
 export default function Profile({
   focusKey: focusKeyParam,
@@ -140,7 +139,10 @@ export default function Profile({
               />
             </div>
             <div className="col-12 mt-5 text-end">
-              <FocusableButton onClick={updateUserProfile}>
+              <FocusableButton
+                onClick={updateUserProfile}
+                focusKeyParam="btn-save-profile"
+              >
                 Save changes
               </FocusableButton>
             </div>
@@ -151,17 +153,15 @@ export default function Profile({
   );
 }
 
-const FocusableInputStyled = styled.input<FocusableItemProps>`
-  box-shadow: ${({ focused }) =>
-    focused ? "0 0 0 0.25rem rgba(13, 110, 253, 0.25)" : "none"};
-`;
-
 const FocusableInput = (props: any) => {
   const { ref, focused, setFocus } = useFocusable({
     focusable: true,
     focusKey: props.focusKeyParam,
     onEnterPress: () => {
       ref.current.focus();
+    },
+    onBlur: () => {
+      ref.current.blur();
     },
     onArrowPress: (direction, props, details) => {
       if (focused && direction === "left") {
@@ -172,22 +172,19 @@ const FocusableInput = (props: any) => {
     },
   });
   return (
-    <FocusableInputStyled
+    <input
       type={props.type}
       ref={ref}
-      focused={focused}
-      className="form-control form-control-lg inputType mt-2"
+      className={
+        "form-control form-control-lg inputType mt-2" +
+        (focused ? " focusedElement" : "")
+      }
       onChange={props.onChange}
       value={props.value}
       placeholder={props.placeholder}
     />
   );
 };
-
-const FocusableTextAreaStyled = styled.textarea<FocusableItemProps>`
-  box-shadow: ${({ focused }) =>
-    focused ? "0 0 0 0.25rem rgba(13, 110, 253, 0.25)" : "none"};
-`;
 
 const FocusableTextArea = (props: any) => {
   const { ref, focused, setFocus } = useFocusable({
@@ -196,32 +193,40 @@ const FocusableTextArea = (props: any) => {
     onEnterPress: () => {
       ref.current.focus();
     },
+    onBlur: () => {
+      ref.current.blur();
+    },
     onArrowPress: (direction, props, details) => {
-      if (focused && direction === "left") {
+      if (direction === "left") {
         setFocus("go-to-profile");
         return false;
+      } else if (direction === "up") {
+        setFocus("fullname");
+        return false;
+      } else if (direction === "down") {
+        setFocus("btn-save-profile");
+        return false;
       }
-      return true;
+      return false;
     },
   });
   return (
-    <FocusableTextAreaStyled
+    <textarea
       ref={ref}
-      focused={focused}
-      className="form-control form-control-lg inputType mt-2"
+      className={
+        "form-control form-control-lg inputType mt-2" +
+        (focused ? " focusedElement" : "")
+      }
       onChange={props.onChange}
       value={props.value}
       placeholder={props.placeholder}
     />
   );
 };
-const FocusableButtonStyled = styled.button<FocusableItemProps>`
-  box-shadow: ${({ focused }) =>
-    focused ? "0 0 0 0.25rem rgba(13, 110, 253, 0.25)" : "none"};
-`;
 const FocusableButton = (props: any) => {
   const { ref, focused, setFocus } = useFocusable({
     focusable: true,
+    focusKey: props.focusKeyParam,
     onEnterPress: () => {
       props.onClick();
     },
@@ -236,13 +241,14 @@ const FocusableButton = (props: any) => {
     },
   });
   return (
-    <FocusableButtonStyled
+    <button
       ref={ref}
-      focused={focused}
-      className="btn btn-lg btnGarident border-0"
+      className={
+        "btn btn-lg btnGarident border-0" + (focused ? " focusedElement" : "")
+      }
       onClick={props.onClick}
     >
       {props.children}
-    </FocusableButtonStyled>
+    </button>
   );
 };

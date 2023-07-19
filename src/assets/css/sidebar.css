@@ -8,7 +8,7 @@
     padding: 2px;
 }
 
-.sidebar a:focus {
+.sidebar a:focus,.sidebar a.active {
     color: #ffffff;
     border: 2px solid #A83AFE;
 }

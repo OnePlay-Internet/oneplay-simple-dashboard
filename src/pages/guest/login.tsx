@@ -8,7 +8,6 @@ import {
   FocusContext,
   useFocusable,
 } from "@noriginmedia/norigin-spatial-navigation";
-import { styled } from "styled-components";
 
 export default function Login({
   focusKey: focusKeyParam,
@@ -16,15 +15,22 @@ export default function Login({
   const sessionContext = useContext(SessionContext);
   const userContext = useContext(UserProfileContext);
   const navigate = useNavigate();
-  const { focusSelf, focusKey } = useFocusable({
+  const { setFocus, focusKey } = useFocusable({
     focusable: true,
+    focusKey: focusKeyParam,
   });
-  const [userInputId, SetuserInputId] = useState("jasmin@oneplay.in");
-  const [userInputPwd, SetuserInputPwd] = useState("Jasmin@5690");
+
+  const [userId, setUserId] = useState("");
+  const [password, setPassword] = useState("");
 
   useEffect(() => {
-    focusSelf();
-  }, [focusSelf]);
+    const delayedFocus = setTimeout(() => {
+      setFocus("input-username");
+    }, 100);
+    return () => {
+      clearTimeout(delayedFocus);
+    };
+  }, []);
 
   useEffect(() => {
     if (sessionContext.sessionToken) {
@@ -32,7 +38,7 @@ export default function Login({
     }
   }, [sessionContext, navigate]);
   const onLoginButtonClick = async () => {
-    if (!userInputId || !userInputPwd) {
+    if (!userId || !password) {
       Swal.fire({
         title: "Error!",
         text: "Please enter username and password field",
@@ -41,7 +47,7 @@ export default function Login({
       });
       return;
     }
-    const loginResponse = await login(userInputId, userInputPwd, "tv");
+    const loginResponse = await login(userId, password, "tv");
     if (!loginResponse.success) {
       Swal.fire({
         title: "Error!",
@@ -85,19 +91,26 @@ export default function Login({
                 <FocusableInput
                   type="text"
                   className="form-control"
-                  defaultValue={userInputId}
-                  value={SetuserInputId}
+                  defaultValue={userId}
+                  value={userId}
+                  onChange={setUserId}
+                  focusKeyParam="input-username"
                 />
                 <label className="mt-3">Password</label>
 
                 <FocusableInput
                   type="password"
                   className="form-control"
-                  defaultValue={userInputPwd}
-                  value={SetuserInputPwd}
+                  defaultValue={password}
+                  focusKeyParam="input-password"
+                  value={password}
+                  onChange={setPassword}
                 />
                 <div className="d-grid mt-4">
-                  <FocusableButton onClick={onLoginButtonClick}>
+                  <FocusableButton
+                    onClick={onLoginButtonClick}
+                    focusKeyParam="btn-login"
+                  >
                     Login
                   </FocusableButton>
                 </div>
@@ -110,60 +123,84 @@ export default function Login({
   );
 }
 
-const FocusableInputStyled = styled.input<FocusableItemProps>`
-  box-shadow: ${({ focused }) =>
-    focused ? "0 0 0 0.25rem rgba(13, 110, 253, 0.25)" : "none"};
-`;
-const FocusableButtonStyled = styled.button<FocusableItemProps>`
-  box-shadow: ${({ focused }) =>
-    focused ? "0 0 0 0.25rem rgba(13, 110, 253, 0.25)" : "none"};
-`;
 const FocusableInput = (props: any) => {
-  const { ref, focused } = useFocusable({
+  const { ref, focused, setFocus } = useFocusable({
     focusable: true,
-    onEnterPress: () => {
+    focusKey: props.focusKeyParam,
+    onFocus: () => {
       ref.current.focus();
     },
-    /* onArrowPress: (direction, props, details) => {
-    if (focused && (direction === "right" || direction === "left")) {
-        return false;
+    onArrowPress: (direction, keyProps, details) => {
+      console.log(
+        "direction : ",
+        direction,
+        " focus key : ",
+        props.focusKeyParam
+      );
+      switch (direction) {
+        case "up":
+          if (props.focusKeyParam === "input-username") {
+            console.log("set focus to : btn login");
+            setFocus("btn-login");
+          } else if (props.focusKeyParam === "input-password") {
+            setFocus("input-username");
+          }
+          return false;
+        case "down":
+          if (props.focusKeyParam === "input-username") {
+            console.log("set focus to : password");
+            setFocus("input-password");
+          } else if (props.focusKeyParam === "input-password") {
+            setFocus("btn-login");
+          }
+          return false;
+        default:
+          return true;
       }
-      return true;
-    }, */
+    },
   });
-  const [inputValue, setInputValue] = useState(props.defaultValue);
-  useEffect(() => {
-    props.value(inputValue);
-  }, [inputValue]);
+
   return (
-    <FocusableInputStyled
+    <input
       type={props.type}
       ref={ref}
-      focused={focused}
-      className="form-control"
+      className={"form-control" + (focused ? " focusedBlueElement" : "")}
       onChange={(e: any) => {
-        setInputValue(e.target.value);
+        props.onChange(e.target.value);
       }}
-      value={inputValue}
+      value={props.value}
     />
   );
 };
 
 const FocusableButton = (props: any) => {
-  const { ref, focused } = useFocusable({
+  const { ref, focused, setFocus } = useFocusable({
     focusable: true,
+    focusKey: props.focusKeyParam,
+    onFocus: () => {
+      ref.current.focus();
+    },
     onEnterPress: () => {
       props.onClick();
     },
+    onArrowPress: (direction, keyProps, details) => {
+      if (direction === "up") {
+        setFocus("input-password");
+        return false;
+      } else if (direction === "down") {
+        setFocus("input-username");
+        return false;
+      }
+      return true;
+    },
   });
   return (
-    <FocusableButtonStyled
+    <button
       ref={ref}
-      focused={focused}
-      className="btn btnGradient"
+      className={"btn btnGradient" + (focused ? " focusedElement" : "")}
       onClick={props.onClick}
     >
       {props.children}
-    </FocusableButtonStyled>
+    </button>
   );
 };

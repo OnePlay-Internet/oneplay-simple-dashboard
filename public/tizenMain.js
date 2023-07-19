@@ -13,6 +13,7 @@ var init = function () {
 
   // add eventListener for keydown
   document.addEventListener("keydown", function (e) {
+    console.log("Key code : " + e.keyCode);
     switch (e.keyCode) {
       case 37: //LEFT arrow
         break;
@@ -25,10 +26,13 @@ var init = function () {
       case 13: //OK button
         break;
       case 10009: //RETURN button
-        tizen.application.getCurrentApplication().exit();
-        break;
-      default:
-        console.log("Key code : " + e.keyCode);
+        if (window.location.pathname === "/all-games") {
+          console.log("exit app");
+          tizen.application.getCurrentApplication().exit();
+        } else {
+          console.log("go back");
+          window.history.go(-1);
+        }
         break;
     }
   });

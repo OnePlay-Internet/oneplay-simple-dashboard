@@ -1,5 +1,5 @@
-import { useContext, useEffect } from "react";
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { useContext, useEffect, useState } from "react";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import "../../assets/css/sidebar.css";
 import brandLogo from "../../assets/images/oneplayLogo.svg";
 import defaultUser from "../../assets/images/user/defaultUser.svg";
@@ -7,7 +7,6 @@ import { logout } from "src/common/services";
 import Swal from "sweetalert2";
 import { SESSION_TOKEN_LOCAL_STORAGE } from "src/common/constants";
 import { FocusTrackContext, SessionContext, UserProfileContext } from "src/App";
-import styled from "styled-components";
 import {
   FocusContext,
   useFocusable,
@@ -55,22 +54,23 @@ export default function AuthLayout({
                 }}
               >
                 <p className="mb-4">
-                  <FocusableLink
-                    focusKeyParam="sidebar-home"
-                    to="/all-games"
-                    onClick={() => {
-                      navigate("/all-games");
-                    }}
-                    focusTrackContext={focusTrackContext}
-                  >
-                    <img
-                      className="card-img rounded-circle"
-                      width="48px"
-                      height="48px"
-                      src={defaultUser}
-                      alt=""
-                    />
-                  </FocusableLink>
+                  <img
+                    className="rounded-circle"
+                    width="48"
+                    height="48"
+                    /* src={
+                      userContext.userProfile &&
+                      userContext.userProfile.profile_image
+                        ? userContext.userProfile.profile_image
+                        : defaultUser
+                    } */
+                    src="https://imagic.edge-net.co/magic/rs:fit:200:200:1/dpr:1/aHR0cHM6Ly9jZG4uZWRnZS1uZXQuY28vdXNlcl9hc3NldHMvMTNlMzNmZDItZDllMy00MTYzLTk0NmMtNWJkOTBkMzk4ZDY4L2F2YXRhcnMvbWFpbmFrLnBuZw.webp"
+                    alt={
+                      userContext.userProfile
+                        ? userContext.userProfile.first_name
+                        : ""
+                    }
+                  />
                 </p>
                 <p>
                   <FocusableLink
@@ -137,19 +137,27 @@ export default function AuthLayout({
   );
 }
 
-const FocusableLinkStyled = styled.a<FocusableItemProps>`
-  box-shadow: ${({ focused }) =>
-    focused ? "0 0 0 0.25rem rgba(13, 110, 253, 0.25)" : "none"};
-`;
 const FocusableLink = (props: any) => {
   const navigate = useNavigate();
-
-  const { ref, focused, focusKey } = useFocusable({
+  const { pathname } = useLocation();
+  const [isActive, setIsActive] = useState(false);
+  useEffect(() => {
+    if (
+      pathname === props.to ||
+      (pathname.startsWith("/games-detail") && props.to === "/all-games")
+    ) {
+      setIsActive(true);
+    } else {
+      setIsActive(false);
+    }
+  }, [pathname]);
+  const { ref, focused } = useFocusable({
     focusable: true,
     focusKey: props.focusKeyParam,
     onEnterPress: () => {
       if (props.to) {
         navigate(props.to);
+
         return;
       }
       if (props.onClick) {
@@ -169,13 +177,17 @@ const FocusableLink = (props: any) => {
   });
 
   return (
-    <FocusableLinkStyled
-      className="text-decoration-none text-initial"
+    <a
+      className={
+        "text-decoration-none text-initial" +
+        (focused ? " focusedElement" : "") +
+        (isActive ? " active" : "")
+      }
       ref={ref}
-      focused={focused}
+      href="#"
       onClick={props.onClick}
     >
       {props.children}
-    </FocusableLinkStyled>
+    </a>
   );
 };

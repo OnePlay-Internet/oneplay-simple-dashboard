@@ -2,7 +2,6 @@ import { NavLink } from "react-router-dom";
 import Profile from "./profile";
 import Subscription from "./subscription";
 import React, { useContext, useEffect, useState } from "react";
-import styled from "styled-components";
 import {
   FocusContext,
   useFocusable,
@@ -23,6 +22,7 @@ export default function Settings({
   useEffect(() => {
     setFocus("go-to-profile");
   }, [setFocus, focusTrackContext]);
+
   const [settingsFocus, setSettingsFocus] = useState(0);
   return (
     <FocusContext.Provider value={focusKey}>
@@ -47,7 +47,7 @@ export default function Settings({
               </NavLink>
             </FocusableParagraph>
             {/* <p><NavLink to="" className="text-decoration-none text-initial"> Login & Security</NavLink></p> */}
-            <FocusableParagraph
+            {/* <FocusableParagraph
               focusKeyParam="go-to-subscription"
               onClick={subscriptionClick}
               setParentFocus={setSettingsFocus}
@@ -62,28 +62,23 @@ export default function Settings({
               >
                 Subscription
               </NavLink>
-            </FocusableParagraph>
+            </FocusableParagraph> */}
             {/* <p><NavLink to="" className="text-decoration-none text-initial"> Device History</NavLink></p> */}
           </div>
         </div>
         <div className="col-md-10 borderLeft">
-          {showResults ? (
+          <Profile focusKey="Profile" parentFocus={settingsFocus} />
+          {/* showResults ? (
             <Subscription focusKey="Subscription" parentFocus={settingsFocus} />
           ) : (
             <Profile focusKey="Profile" parentFocus={settingsFocus} />
-          )}
+          ) */}
         </div>
       </div>
     </FocusContext.Provider>
   );
 }
 
-const FocusableParaStyled = styled.p<FocusableItemProps>`
-  border-radius: 0.5rem;
-  padding: 5px;
-  box-shadow: ${({ focused }) =>
-    focused ? "0 0 0 0.25rem rgba(13, 110, 253, 0.25)" : "none"};
-`;
 const FocusableParagraph = (props: any) => {
   const { ref, focused, setFocus } = useFocusable({
     focusable: true,
@@ -111,8 +106,13 @@ const FocusableParagraph = (props: any) => {
     },
   });
   return (
-    <FocusableParaStyled ref={ref} focused={focused} onClick={props.onClick}>
+    <p
+      ref={ref}
+      style={{ borderRadius: "0.5rem", padding: "5px" }}
+      className={focused ? "focusedElement" : ""}
+      onClick={props.onClick}
+    >
       {props.children}
-    </FocusableParaStyled>
+    </p>
   );
 };

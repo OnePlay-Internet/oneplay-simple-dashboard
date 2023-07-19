@@ -10,7 +10,6 @@ import {
   FocusContext,
   useFocusable,
 } from "@noriginmedia/norigin-spatial-navigation";
-import styled from "styled-components";
 
 export default function SubscriptionComponent({
   focusKey: focusKeyParam,
@@ -32,7 +31,8 @@ export default function SubscriptionComponent({
     } else {
       setFocus("buy-now");
     }
-  }, [setFocus, parentFocusParam, subscriptions]);
+    focusSelf();
+  }, [focusSelf, parentFocusParam, subscriptions]);
   useEffect(() => {
     (async () => {
       const subscriptionResp: any = await getCurrentSubscriptions(
@@ -81,7 +81,7 @@ export default function SubscriptionComponent({
                   )
                 </p>
                 <h1 className="price">
-                  ₹ {parseFloat(currenSub.brought_price).toFixed(2)}
+                  Rs. {parseFloat(currenSub.brought_price).toFixed(2)}
                 </h1>
                 <img src={Clock} className="img-fluid me-2" alt="" />
                 <span className="smallText">
@@ -151,7 +151,7 @@ export default function SubscriptionComponent({
             {subscription.subscriptionPackage.plan_description}
           </p>
         </td>
-        <td> ₹ {parseFloat(subscription.brought_price).toFixed(2)}</td>
+        <td> Rs. {parseFloat(subscription.brought_price).toFixed(2)}</td>
         <td className="gradientText" style={{ textTransform: "capitalize" }}>
           {subscription.subscription_status}
         </td>
@@ -211,10 +211,6 @@ export default function SubscriptionComponent({
   );
 }
 
-const FocusableButtonStyled = styled.button<FocusableItemProps>`
-  box-shadow: ${({ focused }) =>
-    focused ? "0 0 0 0.25rem rgba(13, 110, 253, 0.25)" : "none"};
-`;
 const FocusableButton = (props: any) => {
   const { ref, focused, setFocus } = useFocusable({
     focusable: true,
@@ -234,21 +230,18 @@ const FocusableButton = (props: any) => {
     },
   });
   return (
-    <FocusableButtonStyled
+    <button
       ref={ref}
-      focused={focused}
-      className="btn gradientBtn px-4 border-0"
+      className={
+        "btn gradientBtn px-4 border-0" + (focused ? " focusedElement" : "")
+      }
       onClick={props.onClick}
     >
       {props.children}
-    </FocusableButtonStyled>
+    </button>
   );
 };
 
-const FocusableTrStyled = styled.tr<FocusableItemProps>`
-  box-shadow: ${({ focused }) =>
-    focused ? "0 0 0 0.25rem rgba(13, 110, 253, 0.25)" : "none"};
-`;
 const FocusableTr = (props: any) => {
   const { ref, focused, setFocus } = useFocusable({
     focusable: true,
@@ -266,8 +259,8 @@ const FocusableTr = (props: any) => {
     },
   });
   return (
-    <FocusableTrStyled ref={ref} focused={focused}>
+    <tr ref={ref} className={focused ? " focusedElement" : ""}>
       {props.children}
-    </FocusableTrStyled>
+    </tr>
   );
 };
