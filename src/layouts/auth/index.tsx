@@ -58,13 +58,12 @@ export default function AuthLayout({
                     className="rounded-circle"
                     width="48"
                     height="48"
-                    /* src={
+                    src={
                       userContext.userProfile &&
                       userContext.userProfile.profile_image
                         ? userContext.userProfile.profile_image
                         : defaultUser
-                    } */
-                    src="https://imagic.edge-net.co/magic/rs:fit:200:200:1/dpr:1/aHR0cHM6Ly9jZG4uZWRnZS1uZXQuY28vdXNlcl9hc3NldHMvMTNlMzNmZDItZDllMy00MTYzLTk0NmMtNWJkOTBkMzk4ZDY4L2F2YXRhcnMvbWFpbmFrLnBuZw.webp"
+                    }
                     alt={
                       userContext.userProfile
                         ? userContext.userProfile.first_name

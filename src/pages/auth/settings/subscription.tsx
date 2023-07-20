@@ -186,7 +186,9 @@ export default function SubscriptionComponent({
               </FocusableButton>
             </div>
           )}
-          {renderCurrentPlan()}
+          {
+            //renderCurrentPlan()
+          }
           <p className="GamesTitle mt-4">Subscription History</p>
           <div className="table-responsive">
             <table className="table table-dark align-middle customTable table-lg">

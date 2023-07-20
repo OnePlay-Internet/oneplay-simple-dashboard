@@ -47,32 +47,33 @@ export default function Settings({
               </NavLink>
             </FocusableParagraph>
             {/* <p><NavLink to="" className="text-decoration-none text-initial"> Login & Security</NavLink></p> */}
-            {/* <FocusableParagraph
-              focusKeyParam="go-to-subscription"
-              onClick={subscriptionClick}
-              setParentFocus={setSettingsFocus}
-            >
-              <NavLink
-                to=""
-                className={
-                  "text-decoration-none text-initial setting-menu" +
-                  (showResults ? " current" : "")
-                }
+            {
+              <FocusableParagraph
+                focusKeyParam="go-to-subscription"
                 onClick={subscriptionClick}
+                setParentFocus={setSettingsFocus}
               >
-                Subscription
-              </NavLink>
-            </FocusableParagraph> */}
+                <NavLink
+                  to=""
+                  className={
+                    "text-decoration-none text-initial setting-menu" +
+                    (showResults ? " current" : "")
+                  }
+                  onClick={subscriptionClick}
+                >
+                  Subscription
+                </NavLink>
+              </FocusableParagraph>
+            }
             {/* <p><NavLink to="" className="text-decoration-none text-initial"> Device History</NavLink></p> */}
           </div>
         </div>
         <div className="col-md-10 borderLeft">
-          <Profile focusKey="Profile" parentFocus={settingsFocus} />
-          {/* showResults ? (
+          {showResults ? (
             <Subscription focusKey="Subscription" parentFocus={settingsFocus} />
           ) : (
             <Profile focusKey="Profile" parentFocus={settingsFocus} />
-          ) */}
+          )}
         </div>
       </div>
     </FocusContext.Provider>

@@ -94,11 +94,11 @@ export default function Profile({
               <label htmlFor="editProfile" className="d-flex mb-0">
                 <div className="card transparentBg cursorPointer profile-image">
                   <img
-                    className="card-img rounded-circle"
-                    width="48px"
-                    height="48px"
+                    className="rounded-circle"
+                    width="48"
+                    height="48"
                     src={userProfile?.profile_image ?? defaultUser}
-                    alt=""
+                    alt={userProfile?.first_name ?? ""}
                   />
                 </div>
               </label>
