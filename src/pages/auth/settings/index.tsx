@@ -47,24 +47,22 @@ export default function Settings({
               </NavLink>
             </FocusableParagraph>
             {/* <p><NavLink to="" className="text-decoration-none text-initial"> Login & Security</NavLink></p> */}
-            {
-              <FocusableParagraph
-                focusKeyParam="go-to-subscription"
+            <FocusableParagraph
+              focusKeyParam="go-to-subscription"
+              onClick={subscriptionClick}
+              setParentFocus={setSettingsFocus}
+            >
+              <NavLink
+                to=""
+                className={
+                  "text-decoration-none text-initial setting-menu" +
+                  (showResults ? " current" : "")
+                }
                 onClick={subscriptionClick}
-                setParentFocus={setSettingsFocus}
               >
-                <NavLink
-                  to=""
-                  className={
-                    "text-decoration-none text-initial setting-menu" +
-                    (showResults ? " current" : "")
-                  }
-                  onClick={subscriptionClick}
-                >
-                  Subscription
-                </NavLink>
-              </FocusableParagraph>
-            }
+                Subscription
+              </NavLink>
+            </FocusableParagraph>
             {/* <p><NavLink to="" className="text-decoration-none text-initial"> Device History</NavLink></p> */}
           </div>
         </div>

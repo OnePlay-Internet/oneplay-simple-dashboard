@@ -81,7 +81,7 @@ export default function SubscriptionComponent({
                   )
                 </p>
                 <h1 className="price">
-                  Rs. {parseFloat(currenSub.brought_price).toFixed(2)}
+                  ₹ {parseFloat(currenSub.brought_price).toFixed(2)}
                 </h1>
                 <img src={Clock} className="img-fluid me-2" alt="" />
                 <span className="smallText">
@@ -151,7 +151,7 @@ export default function SubscriptionComponent({
             {subscription.subscriptionPackage.plan_description}
           </p>
         </td>
-        <td> Rs. {parseFloat(subscription.brought_price).toFixed(2)}</td>
+        <td> ₹ {parseFloat(subscription.brought_price).toFixed(2)}</td>
         <td className="gradientText" style={{ textTransform: "capitalize" }}>
           {subscription.subscription_status}
         </td>
@@ -186,11 +186,9 @@ export default function SubscriptionComponent({
               </FocusableButton>
             </div>
           )}
-          {
-            //renderCurrentPlan()
-          }
+          {renderCurrentPlan()}
           <p className="GamesTitle mt-4">Subscription History</p>
-          <div className="table-responsive">
+          {/*     <div className="table-responsive">
             <table className="table table-dark align-middle customTable table-lg">
               <thead>
                 <tr>
@@ -206,7 +204,7 @@ export default function SubscriptionComponent({
                 {subscriptions.map((sub) => renderSingleSubscriptionRow(sub))}
               </tbody>
             </table>
-          </div>
+          </div> */}
         </div>
       </div>
     </FocusContext.Provider>
