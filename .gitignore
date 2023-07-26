@@ -26,4 +26,3 @@ yarn-error.log*
 #tizen
 .project
 .tproject
-public/*
