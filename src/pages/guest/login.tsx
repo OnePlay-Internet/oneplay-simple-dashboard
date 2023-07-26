@@ -1,7 +1,7 @@
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { getProfile, login } from "../../common/services";
 import { SessionContext, UserProfileContext } from "src/App";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { SESSION_TOKEN_LOCAL_STORAGE } from "src/common/constants";
 import {
@@ -15,6 +15,9 @@ export default function Login({
   const sessionContext = useContext(SessionContext);
   const userContext = useContext(UserProfileContext);
   const navigate = useNavigate();
+  const { search } = useLocation();
+
+  const searchQuery = useMemo(() => new URLSearchParams(search), [search]);
   const { setFocus, focusKey } = useFocusable({
     focusable: true,
     focusKey: focusKeyParam,
@@ -25,7 +28,7 @@ export default function Login({
 
   useEffect(() => {
     const delayedFocus = setTimeout(() => {
-      setFocus("input-username");
+      setFocus("btn-login");
     }, 100);
     return () => {
       clearTimeout(delayedFocus);
@@ -34,7 +37,14 @@ export default function Login({
 
   useEffect(() => {
     if (sessionContext.sessionToken) {
-      navigate("/home");
+      let redirectTo = searchQuery.get("redirect") ?? "";
+      redirectTo = redirectTo?.replace("/index.html", "");
+      console.log("redirect : ", redirectTo);
+      if (!redirectTo) {
+        navigate("/all-games");
+        return;
+      }
+      navigate(redirectTo);
     }
   }, [sessionContext, navigate]);
   const onLoginButtonClick = async () => {
@@ -128,15 +138,11 @@ const FocusableInput = (props: any) => {
     focusable: true,
     focusKey: props.focusKeyParam,
     onFocus: () => {
-      ref.current.focus();
+      if (ref.current) {
+        ref.current.focus();
+      }
     },
     onArrowPress: (direction, keyProps, details) => {
-      console.log(
-        "direction : ",
-        direction,
-        " focus key : ",
-        props.focusKeyParam
-      );
       switch (direction) {
         case "up":
           if (props.focusKeyParam === "input-username") {
@@ -178,7 +184,9 @@ const FocusableButton = (props: any) => {
     focusable: true,
     focusKey: props.focusKeyParam,
     onFocus: () => {
-      ref.current.focus();
+      if (ref.current) {
+        ref.current.focus();
+      }
     },
     onEnterPress: () => {
       props.onClick();

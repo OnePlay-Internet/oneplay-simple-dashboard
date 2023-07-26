@@ -188,7 +188,7 @@ export default function SubscriptionComponent({
           )}
           {renderCurrentPlan()}
           <p className="GamesTitle mt-4">Subscription History</p>
-            {/* <div className="table-responsive">
+          <div className="table-responsive">
             <table className="table table-dark align-middle customTable table-lg">
               <thead>
                 <tr>
@@ -204,7 +204,7 @@ export default function SubscriptionComponent({
                 {subscriptions.map((sub) => renderSingleSubscriptionRow(sub))}
               </tbody>
             </table>
-          </div> */}
+          </div>
         </div>
       </div>
     </FocusContext.Provider>

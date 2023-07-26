@@ -1,24 +1,42 @@
-import { useNavigate, useRoutes } from "react-router-dom";
+import { useLocation, useNavigate, useRoutes } from "react-router-dom";
 import AuthLayout from "../layouts/auth";
 import GuestLayout from "../layouts/guest";
 import Login from "../pages/guest/login";
 import AllGames from "../pages/auth/games/allGames";
 import GamesDetail from "../pages/auth/games/gamesDetail";
-import { useContext, useEffect } from "react";
-import { SessionContext } from "src/App";
+import { useContext, useEffect, useState } from "react";
+import { SessionContext, UserProfileContext } from "src/App";
 
 import SearchGames from "../pages/auth/search";
 import Settings from "src/pages/auth/settings";
 import Home from "src/pages/auth/home";
+import ErrorPopUp from "src/pages/error";
 
 export default function Router() {
   const sessionContext = useContext(SessionContext);
   const navigate = useNavigate();
+  const { pathname, search } = useLocation();
   useEffect(() => {
+    console.log("routes path: ", pathname);
+    const searchQuery = new URLSearchParams(search);
+    const redirectTo = searchQuery.get("redirect");
     if (!sessionContext.sessionToken) {
-      navigate("/");
+      if (pathname.replace("/index.html", "") === "") {
+        if (redirectTo) {
+          navigate(`/?redirect=${redirectTo}`);
+        } else {
+          navigate("/");
+        }
+      } else {
+        navigate(`/?redirect=${pathname}`);
+      }
+    } else if (redirectTo) {
+      navigate(redirectTo);
+    } else {
+      navigate("/all-games");
     }
-  }, [sessionContext.sessionToken, navigate]);
+  }, [sessionContext.sessionToken]);
+
   return useRoutes([
     {
       element: <GuestLayout />,
@@ -27,8 +45,9 @@ export default function Router() {
     {
       element: <AuthLayout focusKey="Sidebar" />,
       children: [
+        { path: "/error", element: <ErrorPopUp buttonText="Show Error" /> },
         { path: "/home", element: <Home /> },
-        { path: "/settings", element: <Settings focusKey="settings" /> },
+        { path: "/settings", element: <Settings focusKey="Settings" /> },
         { path: "/all-games", element: <AllGames focusKey="AllGames" /> },
         {
           path: "/games-detail/:id",

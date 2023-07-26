@@ -288,7 +288,7 @@ body {
   padding-top: 90px;
 }
 .mainContainer {
-  padding: 70px 18px 60px 60px;
+  padding: 70px 18px 60px 6rem;
 }
 .focusedElement{
    box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 1)
@@ -391,4 +391,7 @@ box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 1)!important;
   object-fit: cover;
   width: 336px !important;
   height: 189px !important;
+}
+::-webkit-scrollbar {
+  display: none;
 }

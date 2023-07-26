@@ -21,7 +21,7 @@ export default function AuthLayout({
   const focusTrackContext = useContext<any>(FocusTrackContext);
   const { focusSelf, focusKey } = useFocusable({
     focusKey: focusKeyParam,
-    preferredChildFocusKey: "home",
+    preferredChildFocusKey: "sidebar-allGames",
   });
   const btnLogoutClick = async () => {
     const logoutResp = await logout(sessionContext.sessionToken);
@@ -40,7 +40,7 @@ export default function AuthLayout({
   };
   return (
     <>
-      <div className="container-fluid p-0" style={{ overflowX: 'hidden', height: '100vh' }}>
+      <div className="container-fluid p-0">
         <div className="row">
           <FocusContext.Provider value={focusKey}>
             <div className="mt-4 sidebar text-center">
@@ -48,14 +48,16 @@ export default function AuthLayout({
                 className="p-3"
                 style={{
                   position: "fixed",
+                  width: "140px",
                   top: "0",
                   left: "0",
                   zIndex: "1031",
-                  height: '100vh',
-                  background: 'linear-gradient(270deg, rgba(0, 0, 0, 0.00) 0%, #000 100%)'
+                  height: "100vh",
+                  background:
+                    "linear-gradient(270deg, rgba(0, 0, 0, 0.00) 0%, #000 100%)",
                 }}
               >
-                <p className="mb-4">
+                <p className="mb-4" style={{ textAlign: "left" }}>
                   <img
                     className="rounded-circle"
                     width="48"
@@ -77,9 +79,9 @@ export default function AuthLayout({
                   <FocusableLink
                     focusKeyParam="sidebar-search"
                     to="/search"
-                    onClick={() => {
+                    /*  onClick={() => {
                       navigate("/search");
-                    }}
+                    }} */
                     focusTrackContext={focusTrackContext}
                   >
                     <i className="fa-sharp fa-solid fa-magnifying-glass"></i>
@@ -97,13 +99,14 @@ export default function AuthLayout({
                     <i className="fa-solid fa-house"></i>
                   </FocusableLink>
                 </p>
+
                 <p>
                   <FocusableLink
                     focusKeyParam="sidebar-allGames"
                     to="/all-games"
-                    onClick={() => {
+                    /*  onClick={() => {
                       navigate("/all-games");
-                    }}
+                    }} */
                     focusTrackContext={focusTrackContext}
                   >
                     <i className="fa-solid fa-gamepad"></i>
@@ -114,9 +117,9 @@ export default function AuthLayout({
                   <FocusableLink
                     focusKeyParam="sidebar-settings"
                     to="/settings"
-                    onClick={() => {
+                    /*  onClick={() => {
                       navigate("/settings");
-                    }}
+                    }} */
                     focusTrackContext={focusTrackContext}
                   >
                     <i className="fa-solid fa-gear"></i>
@@ -127,9 +130,15 @@ export default function AuthLayout({
                     focusKeyParam="sidebar-logout"
                     onClick={btnLogoutClick}
                     focusTrackContext={focusTrackContext}
+                    to="/"
                   >
                     <i className="fa-solid fa-arrow-right-from-bracket"></i>
                   </FocusableLink>
+                </p>
+                <p>
+                  <NavLink to="/error">
+                    <i className="fa-solid fa-arrow-right-from-bracket"></i>
+                  </NavLink>
                 </p>
               </div>
             </div>
@@ -154,6 +163,10 @@ const FocusableLink = (props: any) => {
   const { pathname } = useLocation();
   const [isActive, setIsActive] = useState(false);
   useEffect(() => {
+    if (props.onClick) {
+      setIsActive(false);
+      return;
+    }
     if (
       pathname === props.to ||
       (pathname.startsWith("/games-detail") && props.to === "/all-games")
@@ -167,13 +180,12 @@ const FocusableLink = (props: any) => {
     focusable: true,
     focusKey: props.focusKeyParam,
     onEnterPress: () => {
-      if (props.to) {
-        navigate(props.to);
-
-        return;
-      }
       if (props.onClick) {
         props.onClick();
+        return;
+      }
+      if (props.to) {
+        navigate(props.to);
         return;
       }
     },
@@ -189,17 +201,17 @@ const FocusableLink = (props: any) => {
   });
 
   return (
-    <a
+    <NavLink
       className={
         "text-decoration-none text-initial" +
         (focused ? " focusedElement" : "") +
         (isActive ? " active" : "")
       }
       ref={ref}
-      href="#"
+      to={props.to}
       onClick={props.onClick}
     >
       {props.children}
-    </a>
+    </NavLink>
   );
 };

@@ -17,7 +17,7 @@ import {
   FocusContext,
   useFocusable,
 } from "@noriginmedia/norigin-spatial-navigation";
-import { getCoords } from "src/common/utils";
+import { getCoords, scrollToElement } from "src/common/utils";
 
 export default function GamesDetail({
   focusKey: focusKeyParam,
@@ -251,9 +251,14 @@ export default function GamesDetail({
         </FocusableButton>
       );
     } else {
-      return <button className="btn btnGradient px-4 m-1">Loading...</button>;
+      return (
+        <FocusableButton focusKeyParam="play-now" onClick={doNothing}>
+          Loading...
+        </FocusableButton>
+      );
     }
   };
+  const doNothing = () => {};
   const onPlayNowClicked = async () => {
     if (!id) {
       return;
@@ -411,7 +416,7 @@ export default function GamesDetail({
   return gameDetails ? (
     <FocusContext.Provider value={focusKey}>
       <div className="mainContainer">
-        <div className="row" style={{ paddingTop: "20px" }}>
+        <div className="row">
           <div className="col-md-12">
             <div className="card border-0">
               <img
@@ -488,6 +493,9 @@ const FocusableButton = (props: any) => {
   const { ref, focused, setFocus } = useFocusable({
     focusable: true,
     focusKey: props.focusKeyParam,
+    /* onFocus: () => {
+      scrollToElement(ref.current, 100);
+    }, */
     onEnterPress: () => {
       props.onClick();
     },
@@ -518,6 +526,9 @@ const FocusableButton = (props: any) => {
 const FocusableStore = (props: any) => {
   const { ref, focused } = useFocusable({
     focusable: true,
+    /* onFocus: () => {
+      scrollToElement(ref.current, 100);
+    }, */
     onEnterPress: () => {
       props.onChange(!props.isSelected, props.store.name);
     },
@@ -525,6 +536,7 @@ const FocusableStore = (props: any) => {
   return (
     <a
       ref={ref}
+      style={{ marginRight: "12px" }}
       key={props.store.name}
       href="#"
       className={`font600 font20 text-white p-2 pr-3 store ${
