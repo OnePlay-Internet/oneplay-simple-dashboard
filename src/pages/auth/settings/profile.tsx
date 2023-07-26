@@ -85,7 +85,7 @@ export default function Profile({
   return (
     <FocusContext.Provider value={focusKey}>
       <div className="row">
-        <div className="col-lg-6 col-md-9 ps-4">
+        <div className="col-lg-8 col-md-9 ps-4">
           <p className="GamesTitle">Profile Settings</p>
 
           <div className="row mt-2">
@@ -136,6 +136,7 @@ export default function Profile({
                 onChange={(e: any) => {
                   setBio(e.target.value);
                 }}
+                rows="4"
               />
             </div>
             <div className="col-12 mt-5 text-end">
@@ -220,6 +221,7 @@ const FocusableTextArea = (props: any) => {
       onChange={props.onChange}
       value={props.value}
       placeholder={props.placeholder}
+      rows={props.rows}
     />
   );
 };

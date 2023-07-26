@@ -9,6 +9,7 @@ import { SessionContext } from "src/App";
 
 import SearchGames from "../pages/auth/search";
 import Settings from "src/pages/auth/settings";
+import Home from "src/pages/auth/home";
 
 export default function Router() {
   const sessionContext = useContext(SessionContext);
@@ -26,6 +27,7 @@ export default function Router() {
     {
       element: <AuthLayout focusKey="Sidebar" />,
       children: [
+        { path: "/home", element: <Home /> },
         { path: "/settings", element: <Settings focusKey="settings" /> },
         { path: "/all-games", element: <AllGames focusKey="AllGames" /> },
         {

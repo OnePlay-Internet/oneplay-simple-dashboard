@@ -40,17 +40,19 @@ export default function AuthLayout({
   };
   return (
     <>
-      <div className="container-fluid">
+      <div className="container-fluid p-0" style={{ overflowX: 'hidden', height: '100vh' }}>
         <div className="row">
           <FocusContext.Provider value={focusKey}>
-            <div className="col-auto mt-4 sidebar text-center">
+            <div className="mt-4 sidebar text-center">
               <div
-                className="m-4"
+                className="p-3"
                 style={{
                   position: "fixed",
                   top: "0",
                   left: "0",
                   zIndex: "1031",
+                  height: '100vh',
+                  background: 'linear-gradient(270deg, rgba(0, 0, 0, 0.00) 0%, #000 100%)'
                 }}
               >
                 <p className="mb-4">
@@ -83,7 +85,18 @@ export default function AuthLayout({
                     <i className="fa-sharp fa-solid fa-magnifying-glass"></i>
                   </FocusableLink>
                 </p>
-
+                <p>
+                  <FocusableLink
+                    focusKeyParam="sidebar-home"
+                    to="/home"
+                    onClick={() => {
+                      navigate("/home");
+                    }}
+                    focusTrackContext={focusTrackContext}
+                  >
+                    <i className="fa-solid fa-house"></i>
+                  </FocusableLink>
+                </p>
                 <p>
                   <FocusableLink
                     focusKeyParam="sidebar-allGames"

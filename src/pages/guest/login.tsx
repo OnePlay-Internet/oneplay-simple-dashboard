@@ -34,7 +34,7 @@ export default function Login({
 
   useEffect(() => {
     if (sessionContext.sessionToken) {
-      navigate("/all-games");
+      navigate("/home");
     }
   }, [sessionContext, navigate]);
   const onLoginButtonClick = async () => {
