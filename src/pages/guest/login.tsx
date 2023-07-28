@@ -8,12 +8,14 @@ import {
   FocusContext,
   useFocusable,
 } from "@noriginmedia/norigin-spatial-navigation";
+import ErrorPopUp from "../error";
 
 export default function Login({
   focusKey: focusKeyParam,
 }: FocusabelComponentProps) {
   const sessionContext = useContext(SessionContext);
   const userContext = useContext(UserProfileContext);
+  const [popUp, setPopUp] = useState({ show: false, message: "", title: "" });
   const navigate = useNavigate();
   const { search } = useLocation();
 
@@ -23,8 +25,8 @@ export default function Login({
     focusKey: focusKeyParam,
   });
 
-  const [userId, setUserId] = useState("");
-  const [password, setPassword] = useState("");
+  const [userId, setUserId] = useState("jasmin@oneplay.in");
+  const [password, setPassword] = useState("Jasmin@5690");
 
   useEffect(() => {
     const delayedFocus = setTimeout(() => {
@@ -41,7 +43,7 @@ export default function Login({
       redirectTo = redirectTo?.replace("/index.html", "");
       console.log("redirect : ", redirectTo);
       if (!redirectTo) {
-        navigate("/all-games");
+        navigate("/home");
         return;
       }
       navigate(redirectTo);
@@ -49,32 +51,47 @@ export default function Login({
   }, [sessionContext, navigate]);
   const onLoginButtonClick = async () => {
     if (!userId || !password) {
-      Swal.fire({
+      /*  Swal.fire({
         title: "Error!",
         text: "Please enter username and password field",
         icon: "error",
         confirmButtonText: "OK",
+      }); */
+      setPopUp({
+        show: true,
+        message: "Please enter username and password field",
+        title: "Error!",
       });
       return;
     }
     const loginResponse = await login(userId, password, "tv");
     if (!loginResponse.success) {
-      Swal.fire({
+      /*  Swal.fire({
         title: "Error!",
         text: loginResponse.message,
         icon: "error",
         confirmButtonText: "OK",
+      }); */
+      setPopUp({
+        show: true,
+        message: loginResponse.message ?? "",
+        title: "Error!",
       });
       return;
     }
     if (loginResponse.sessionToken) {
       const profileResp = await getProfile(loginResponse.sessionToken);
       if (!profileResp.success) {
-        Swal.fire({
+        //   Swal.fire({
+        //   title: "Error!",
+        //   text: profileResp.message,
+        //   icon: "error",
+        //   confirmButtonText: "OK",
+        // });
+        setPopUp({
+          show: true,
+          message: profileResp.message ?? "",
           title: "Error!",
-          text: profileResp.message,
-          icon: "error",
-          confirmButtonText: "OK",
         });
       } else {
         userContext.setUserProfile(profileResp.profile);
@@ -86,7 +103,10 @@ export default function Login({
       sessionContext.setSessionToken(loginResponse.sessionToken);
     }
   };
-
+  const onPopupOkClick = () => {
+    setPopUp({ show: false, message: "", title: "" });
+    setFocus("btn-login");
+  };
   return (
     <FocusContext.Provider value={focusKey}>
       <div className="container-fluid bg">
@@ -129,6 +149,14 @@ export default function Login({
           </div>
         </div>
       </div>
+      {popUp.show && (
+        <ErrorPopUp
+          title={popUp.title}
+          message={popUp.message}
+          onOkClick={onPopupOkClick}
+          focusKeyParam="modal-popup"
+        />
+      )}
     </FocusContext.Provider>
   );
 }

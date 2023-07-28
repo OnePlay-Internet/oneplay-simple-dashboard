@@ -1,5 +1,6 @@
 interface FocusabelComponentProps {
   focusKey: string;
+  [key: string]: string | number | boolean | function;
 }
 
 interface FocusabelChildComponentProps {
@@ -16,3 +17,4 @@ interface TestFocusableItemProps {
 declare module "react-infinite-scroller";
 declare module "react-lazy-load-image-component";
 declare module "lodash.debounce";
+declare module "react-slick";

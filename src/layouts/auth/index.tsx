@@ -77,6 +77,19 @@ export default function AuthLayout({
                 </p>
                 <p>
                   <FocusableLink
+                    focusKeyParam="sidebar-home"
+                    to="/home"
+                    /*  onClick={() => {
+                      navigate("/home");
+                    }} */
+                    focusTrackContext={focusTrackContext}
+                  >
+                    <i className="fa-solid fa-house"></i>
+                  </FocusableLink>
+                </p>
+
+                <p>
+                  <FocusableLink
                     focusKeyParam="sidebar-search"
                     to="/search"
                     /*  onClick={() => {
@@ -85,18 +98,6 @@ export default function AuthLayout({
                     focusTrackContext={focusTrackContext}
                   >
                     <i className="fa-sharp fa-solid fa-magnifying-glass"></i>
-                  </FocusableLink>
-                </p>
-                <p>
-                  <FocusableLink
-                    focusKeyParam="sidebar-home"
-                    to="/home"
-                    onClick={() => {
-                      navigate("/home");
-                    }}
-                    focusTrackContext={focusTrackContext}
-                  >
-                    <i className="fa-solid fa-house"></i>
                   </FocusableLink>
                 </p>
 
@@ -135,11 +136,6 @@ export default function AuthLayout({
                     <i className="fa-solid fa-arrow-right-from-bracket"></i>
                   </FocusableLink>
                 </p>
-                <p>
-                  <NavLink to="/error">
-                    <i className="fa-solid fa-arrow-right-from-bracket"></i>
-                  </NavLink>
-                </p>
               </div>
             </div>
           </FocusContext.Provider>
@@ -169,7 +165,7 @@ const FocusableLink = (props: any) => {
     }
     if (
       pathname === props.to ||
-      (pathname.startsWith("/games-detail") && props.to === "/all-games")
+      (props.to === "/all-games" && pathname.startsWith("/games-detail"))
     ) {
       setIsActive(true);
     } else {

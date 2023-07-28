@@ -1,66 +1,212 @@
-import { NavLink } from "react-router-dom";
+import { useFocusable } from "@noriginmedia/norigin-spatial-navigation";
+import { useContext, useEffect, useState } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
+import { SessionContext } from "src/App";
+import { SESSION_TOKEN_LOCAL_STORAGE } from "src/common/constants";
+import { getUsersSessions, sessionLogout } from "src/common/services";
+import Swal from "sweetalert2";
 
-export default function DeviceHistory() {
-    return(
-        <>
-            <div className="row ps-4">
-                <div className="col-lg-8 col-md-9">
-                    <div className="row">
-                        <div className="col">
-                            <p className="GamesTitle mt-4">Device Hostory</p>
-                        </div>
-                        <div className="col-auto">
-                            <button className="btn btnGarident">Logout from all devices</button>
-                        </div>
-                    </div>
-                    <div className="table-responsive">
-                        <table className="table table-dark align-middle customTable table-lg">
-                            <thead>
-                                <tr>
-                                    <th className="py-3 px-0">Device</th>
-                                    <th className="py-3 px-0">Location</th>
-                                    <th className="py-3 px-0">Activity</th>
-                                    <th className="py-3 px-0">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td className="py-3 px-0">
-                                        <p className="mb-2">Chrome</p>
-                                        <p className="gamesDescription mb-0">WebView</p>
-                                    </td>
-                                    <td className="py-3 px-0">
-                                        <p className="mb-2">Mumbai</p>
-                                        <p className="gamesDescription mb-0">India</p>
-                                    </td>
-                                    <td className="py-3 px-0"><p className="mb-0">3 days ago</p></td>
-                                    <td className="py-3 px-0">
-                                        <NavLink to="" className="gradientText">
-                                            Log out
-                                        </NavLink>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td className="py-3 px-0">
-                                        <p className="mb-2">Chrome</p>
-                                        <p className="gamesDescription mb-0">WebView</p>
-                                    </td>
-                                    <td className="py-3 px-0">
-                                        <p className="mb-2">Mumbai</p>
-                                        <p className="gamesDescription mb-0">India</p>
-                                    </td>
-                                    <td className="py-3 px-0"><p className="infoGradientText mb-0">Active Now</p></td>
-                                    <td className="py-3 px-0">
-                                        <NavLink to="" className="gradientText">
-                                            Log out
-                                        </NavLink>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </>
+import { timeAgo } from "src/common/utils";
+
+export default function DeviceHistory({
+  focusKey: focusKeyParam,
+  parentFocus: parentFocusParam,
+}: FocusabelChildComponentProps) {
+  const navigate = useNavigate();
+  const sessionContext = useContext(SessionContext);
+  const [sessions, setSessions] = useState<any[]>([]);
+  const { focusSelf, focusKey, setFocus } = useFocusable({
+    trackChildren: true,
+    focusKey: focusKeyParam,
+  });
+  useEffect(() => {
+    setFocus("btn-logout-form-all");
+  }, [setFocus, parentFocusParam, sessions]);
+  const getSessions = async () => {
+    if (sessionContext.sessionToken) {
+      const sessionsResp: any = await getUsersSessions(
+        sessionContext.sessionToken
+      );
+      if (!sessionsResp.success) {
+        /*  Swal.fire({
+          title: "Error!",
+          text: sessionsResp.message,
+          icon: "error",
+          confirmButtonText: "OK",
+        }); */
+        localStorage.removeItem(SESSION_TOKEN_LOCAL_STORAGE);
+        sessionContext.setSessionToken(null);
+        navigate("/");
+        return;
+      }
+      setSessions(sessionsResp.sessions);
+    }
+  };
+  useEffect(() => {
+    getSessions();
+  }, [sessionContext]);
+  const renderSingleSessionRow = (session: any) => {
+    const [userid, token] = atob(sessionContext.sessionToken).split(":");
+
+    const isActive = session.key === `user:${userid}:session:${token}`;
+    return (
+      <tr key={session.key}>
+        <td className="py-3 px-0">
+          <p className="mb-2">{session.device_info.app}</p>
+          <p className="gamesDescription mb-0">{session.device_info.device}</p>
+        </td>
+        <td className="py-3 px-0">
+          <p className="mb-2">{session.location_info.city}</p>
+          <p className="gamesDescription mb-0">
+            {session.location_info.country}
+          </p>
+        </td>
+        <td className="py-3 px-0">
+          <p className={"mb-0" + (isActive ? " gradientText" : "")}>
+            {isActive ? "Active Now" : timeAgo(session.timestamp)}
+          </p>
+        </td>
+        <td className="py-3 px-0">
+          <FocusableSapn
+            focusKeyParam={`btn-logout-${session.key}`}
+            onClick={() => {
+              onSingleLogout(session.key);
+            }}
+            classes="gradientText"
+          >
+            Log out
+          </FocusableSapn>
+        </td>
+      </tr>
     );
+  };
+  const onLogoutFromAllDevice = async () => {
+    const [userid, token] = atob(sessionContext.sessionToken).split(":");
+    for await (const session of sessions) {
+      const isActive = session.key === `user:${userid}:session:${token}`;
+      if (!isActive) {
+        await sessionLogout(session.key, sessionContext.sessionToken);
+      }
+    }
+    await sessionLogout(
+      `user:${userid}:session:${token}`,
+      sessionContext.sessionToken
+    );
+    localStorage.removeItem(SESSION_TOKEN_LOCAL_STORAGE);
+    sessionContext.setSessionToken(null);
+    navigate("/");
+  };
+  const onSingleLogout = async (sessionKey: string) => {
+    const logoutResp = await sessionLogout(
+      sessionKey,
+      sessionContext.sessionToken
+    );
+    if (!logoutResp.success) {
+      Swal.fire({
+        title: "Error!",
+        text: logoutResp.message,
+        icon: "error",
+        confirmButtonText: "OK",
+      });
+      return;
+    }
+    getSessions();
+  };
+  return (
+    <>
+      <div className="row ps-4">
+        <div className="col-lg-10 col-md-10">
+          <div className="row">
+            <div className="col">
+              <p className="GamesTitle mt-4">Device Hostory</p>
+            </div>
+            <div className="col-auto">
+              <FocusableButton
+                focusKeyParam="btn-logout-form-all"
+                onClick={onLogoutFromAllDevice}
+                classes="btn gradientBtn"
+              >
+                Logout from all devices
+              </FocusableButton>
+            </div>
+          </div>
+          <div className="table-responsive">
+            <table className="table table-dark align-middle customTable table-lg">
+              <thead>
+                <tr>
+                  <th className="py-3 px-0">Device</th>
+                  <th className="py-3 px-0">Location</th>
+                  <th className="py-3 px-0">Activity</th>
+                  <th className="py-3 px-0">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sessions &&
+                  sessions.map((session) => renderSingleSessionRow(session))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </>
+  );
 }
+
+const FocusableSapn = (props: any) => {
+  const { ref, focused, setFocus } = useFocusable({
+    focusable: true,
+    focusKey: props.focusKeyParam,
+    onEnterPress: () => {
+      props.onClick();
+    },
+    onArrowPress: (direction, keyProps, details) => {
+      switch (direction) {
+        case "right":
+        case "left":
+          setFocus("go-to-profile");
+          return false;
+        default:
+          return true;
+      }
+    },
+  });
+  return (
+    <span
+      ref={ref}
+      className={props.classes + (focused ? " focusedElement" : "")}
+      onClick={props.onClick}
+      style={{ padding: "8px", borderRadius: "10px" }}
+    >
+      {props.children}
+    </span>
+  );
+};
+
+const FocusableButton = (props: any) => {
+  const { ref, focused, setFocus } = useFocusable({
+    focusable: true,
+    focusKey: props.focusKeyParam,
+    onEnterPress: () => {
+      props.onClick();
+    },
+    onArrowPress: (direction, keyProps, details) => {
+      switch (direction) {
+        case "right":
+        case "left":
+          setFocus("go-to-profile");
+          return false;
+        default:
+          return true;
+      }
+    },
+  });
+  return (
+    <button
+      ref={ref}
+      className={props.classes + (focused ? " focusedElement" : "")}
+      onClick={props.onClick}
+    >
+      {props.children}
+    </button>
+  );
+};

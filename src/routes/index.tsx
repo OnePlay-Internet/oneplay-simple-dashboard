@@ -33,7 +33,7 @@ export default function Router() {
     } else if (redirectTo) {
       navigate(redirectTo);
     } else {
-      navigate("/all-games");
+      navigate("/home");
     }
   }, [sessionContext.sessionToken]);
 
@@ -45,8 +45,7 @@ export default function Router() {
     {
       element: <AuthLayout focusKey="Sidebar" />,
       children: [
-        { path: "/error", element: <ErrorPopUp buttonText="Show Error" /> },
-        { path: "/home", element: <Home /> },
+        { path: "/home", element: <Home focusKey="Home" /> },
         { path: "/settings", element: <Settings focusKey="Settings" /> },
         { path: "/all-games", element: <AllGames focusKey="AllGames" /> },
         {

@@ -22,6 +22,11 @@ export type AllGameResponseDTO = {
   message?: string;
   games?: [];
 };
+export type PersonalizedResponseDTO = {
+  success: boolean;
+  message?: string;
+  feeds?: [];
+};
 export type GameDetailResponseDTO = {
   success: boolean;
   message?: string;
@@ -132,6 +137,31 @@ export async function updateProfile(
     return handleError(error, "get profile.");
   }
 }
+export async function getPersonalizedFeed(
+  sessionToken: string
+): Promise<PersonalizedResponseDTO> {
+  try {
+    const pFeedResp = await axios.get(
+      API_BASE_URL +
+        `games/feed/personalized?textBackground=290x185&textLogo=400x320&poster=528x704`,
+      {
+        headers: {
+          session_token: sessionToken,
+        },
+      }
+    );
+    if (pFeedResp.status !== 200) {
+      return handleNon200Response(pFeedResp.data.message);
+    }
+    return {
+      success: true,
+      feeds: pFeedResp.data,
+    };
+  } catch (error: any) {
+    return handleError(error, "get personalized feed");
+  }
+}
+
 export async function getAllGames(
   sessionToken: string,
   page: number = 0,
@@ -245,6 +275,57 @@ export async function getCurrentSubscriptions(sessionToken: string) {
     return { success: true, subscriptions: subscriptionListResponse.data };
   } catch (error: any) {
     return handleError(error, "current subscriptions");
+  }
+}
+export async function getUsersWishlist(sessionToken: string) {
+  try {
+    const wishlistResp = await axios.get(`${API_BASE_URL}accounts/wishlist`, {
+      headers: {
+        session_token: sessionToken,
+      },
+    });
+    if (wishlistResp.status !== 200) {
+      return handleNon200Response(wishlistResp.data.message);
+    }
+    return { success: true, wishlist: wishlistResp.data };
+  } catch (error: any) {
+    return handleError(error, "wishlist");
+  }
+}
+export async function getUsersSessions(sessionToken: string) {
+  try {
+    const sesstionsResp = await axios.get(`${API_BASE_URL}accounts/sessions`, {
+      headers: {
+        session_token: sessionToken,
+      },
+    });
+    if (sesstionsResp.status !== 200) {
+      return handleNon200Response(sesstionsResp.data.message);
+    }
+    return { success: true, sessions: sesstionsResp.data };
+  } catch (error: any) {
+    return handleError(error, "wishlist");
+  }
+}
+export async function sessionLogout(
+  sessionKey: string,
+  sessionToken: string
+): Promise<LogoutResponseDTO> {
+  try {
+    const logoutResp = await axios.delete(
+      `${API_BASE_URL}accounts/sessions/${sessionKey}`,
+      {
+        headers: {
+          session_token: sessionToken,
+        },
+      }
+    );
+    if (logoutResp.status !== 200) {
+      return handleNon200Response(logoutResp.data.msg);
+    }
+    return { success: true };
+  } catch (error: any) {
+    return handleError(error, "logout");
   }
 }
 export async function logout(sessionToken: string): Promise<LogoutResponseDTO> {

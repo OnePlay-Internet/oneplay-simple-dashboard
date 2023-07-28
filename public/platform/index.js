@@ -806,8 +806,6 @@ function showAppsMode() {
 // start the given appID.  if another app is running, offer to quit it.
 // if the given app is already running, just resume it.
 function startGame(host, appID) {
-  startHeartBeatAPI();
-  return;
   if (!host || !host.paired) {
     console.error(
       "%c[index.js, startGame]",

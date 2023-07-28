@@ -325,7 +325,7 @@ const FocusableGameWrapper = (props: any) => {
   return (
     <div
       ref={ref}
-      className={"col-md-4 mt-4" + (focused ? " focusedElement" : "")}
+      className={"col-md-3 mt-3" + (focused ? " focusedElement" : "")}
       style={{ padding: "10px", borderRadius: "10px" }}
     >
       <NavLink

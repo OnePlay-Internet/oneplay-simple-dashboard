@@ -31,7 +31,6 @@ export default function SubscriptionComponent({
     } else {
       setFocus("buy-now");
     }
-    focusSelf();
   }, [focusSelf, parentFocusParam, subscriptions]);
   useEffect(() => {
     (async () => {
@@ -167,7 +166,7 @@ export default function SubscriptionComponent({
   return (
     <FocusContext.Provider value={focusKey}>
       <div className="row">
-        <div className="col-lg-8 col-md-9 ps-4">
+        <div className="col-lg-10 col-md-10 ps-4">
           {subscriptions.length &&
           subscriptions.at(0).subscription_status === "active" ? (
             <p className="GamesTitle">Current Subscription</p>

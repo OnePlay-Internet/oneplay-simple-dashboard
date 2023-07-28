@@ -12,10 +12,11 @@ import { FocusTrackContext } from "src/App";
 export default function Settings({
   focusKey: focusKeyParam,
 }: FocusabelComponentProps) {
-  const [showResults, setShowResults] = React.useState(false);
-  const profileClick = () => setShowResults(false);
-  const subscriptionClick = () => setShowResults(true);
-  const { focusSelf, focusKey, setFocus } = useFocusable({
+  const [currentSelection, setCurrentSelection] = React.useState("profile");
+  const profileClick = () => setCurrentSelection("profile");
+  const subscriptionClick = () => setCurrentSelection("subscriptions");
+  const deviceHistoryClick = () => setCurrentSelection("deviceHistory");
+  const { focusKey, setFocus } = useFocusable({
     trackChildren: true,
     focusKey: focusKeyParam,
   });
@@ -25,6 +26,22 @@ export default function Settings({
   }, [setFocus, focusTrackContext]);
 
   const [settingsFocus, setSettingsFocus] = useState(0);
+  const renderSelection = () => {
+    switch (currentSelection) {
+      case "profile":
+        return <Profile focusKey="Profile" parentFocus={settingsFocus} />;
+
+      case "subscriptions":
+        return (
+          <Subscription focusKey="Subscriptions" parentFocus={settingsFocus} />
+        );
+
+      case "deviceHistory":
+        return (
+          <DeviceHistory focusKey="DeviceHistory" parentFocus={settingsFocus} />
+        );
+    }
+  };
   return (
     <FocusContext.Provider value={focusKey}>
       <div className="row mainContainer">
@@ -40,14 +57,13 @@ export default function Settings({
                 to=""
                 className={
                   "text-decoration-none text-initial setting-menu" +
-                  (showResults ? "" : " current")
+                  (currentSelection === "profile" ? " current" : "")
                 }
                 onClick={profileClick}
               >
                 Profile
               </NavLink>
             </FocusableParagraph>
-            {/* <p><NavLink to="" className="text-decoration-none text-initial"> Login & Security</NavLink></p> */}
             <FocusableParagraph
               focusKeyParam="go-to-subscription"
               onClick={subscriptionClick}
@@ -57,24 +73,32 @@ export default function Settings({
                 to=""
                 className={
                   "text-decoration-none text-initial setting-menu" +
-                  (showResults ? " current" : "")
+                  (currentSelection === "subscriptions" ? " current" : "")
                 }
                 onClick={subscriptionClick}
               >
                 Subscription
               </NavLink>
             </FocusableParagraph>
-            <p><NavLink to="" className="text-decoration-none text-initial"> Device History</NavLink></p>
+            <FocusableParagraph
+              focusKeyParam="go-to-device-history"
+              onClick={deviceHistoryClick}
+              setParentFocus={setSettingsFocus}
+            >
+              <NavLink
+                to=""
+                className={
+                  "text-decoration-none text-initial setting-menu" +
+                  (currentSelection === "deviceHistory" ? " current" : "")
+                }
+                onClick={deviceHistoryClick}
+              >
+                Device History
+              </NavLink>
+            </FocusableParagraph>
           </div>
         </div>
-        <div className="col-md-10 borderLeft">
-          {showResults ? (
-            <Subscription focusKey="Subscription" parentFocus={settingsFocus} />
-          ) : (
-            <Profile focusKey="Profile" parentFocus={settingsFocus} />
-          )}
-          {/* <DeviceHistory /> */}
-        </div>
+        <div className="col-md-10 borderLeft">{renderSelection()}</div>
       </div>
     </FocusContext.Provider>
   );
