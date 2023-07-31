@@ -13,12 +13,12 @@ import {
 
 export default function SubscriptionComponent({
   focusKey: focusKeyParam,
-  parentFocus: parentFocusParam,
-}: FocusabelChildComponentProps) {
+}: FocusabelComponentProps) {
   const navigate = useNavigate();
   const sessionContext = useContext(SessionContext);
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
   const { focusSelf, focusKey, setFocus } = useFocusable({
+    focusable: true,
     trackChildren: true,
     focusKey: focusKeyParam,
   });
@@ -31,7 +31,7 @@ export default function SubscriptionComponent({
     } else {
       setFocus("buy-now");
     }
-  }, [focusSelf, parentFocusParam, subscriptions]);
+  }, [subscriptions]);
   useEffect(() => {
     (async () => {
       const subscriptionResp: any = await getCurrentSubscriptions(
@@ -49,6 +49,7 @@ export default function SubscriptionComponent({
         navigate("/");
         return;
       }
+
       setSubscriptions(subscriptionResp.subscriptions);
       if (
         subscriptionResp.subscriptions.length &&

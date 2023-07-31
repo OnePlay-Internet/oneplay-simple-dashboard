@@ -6,11 +6,12 @@ import defaultUser from "../../assets/images/user/defaultUser.svg";
 import { logout } from "src/common/services";
 import Swal from "sweetalert2";
 import { SESSION_TOKEN_LOCAL_STORAGE } from "src/common/constants";
-import { FocusTrackContext, SessionContext, UserProfileContext } from "src/App";
+import { SessionContext, UserProfileContext } from "src/App";
 import {
   FocusContext,
   useFocusable,
 } from "@noriginmedia/norigin-spatial-navigation";
+import { getScrolledCoords } from "src/common/utils";
 
 export default function AuthLayout({
   focusKey: focusKeyParam,
@@ -18,10 +19,30 @@ export default function AuthLayout({
   const navigate = useNavigate();
   const sessionContext = useContext(SessionContext);
   const userContext = useContext(UserProfileContext);
-  const focusTrackContext = useContext<any>(FocusTrackContext);
-  const { focusSelf, focusKey } = useFocusable({
+  const [hasFocus, setHasFocus] = useState(false);
+  const { focusSelf, focusKey, setFocus } = useFocusable({
+    focusable: true,
     focusKey: focusKeyParam,
-    preferredChildFocusKey: "sidebar-allGames",
+    preferredChildFocusKey: "sidebar-home",
+    onBlur: () => {
+      setHasFocus(false);
+    },
+    onFocus: (componentLayout, extraProps, focusDetails) => {
+      setHasFocus(true);
+      if (focusDetails && focusDetails.pos) {
+        if (focusDetails.pos.top <= 100) {
+          setFocus("sidebar-home");
+        } else if (focusDetails.pos.top <= 144) {
+          setFocus("sidebar-search");
+        } else if (focusDetails.pos.top <= 192) {
+          setFocus("sidebar-allGames");
+        } else if (focusDetails.pos.top <= 240) {
+          setFocus("sidebar-settings");
+        } else {
+          setFocus("sidebar-logout");
+        }
+      }
+    },
   });
   const btnLogoutClick = async () => {
     const logoutResp = await logout(sessionContext.sessionToken);
@@ -43,7 +64,10 @@ export default function AuthLayout({
       <div className="container-fluid p-0">
         <div className="row">
           <FocusContext.Provider value={focusKey}>
-            <div className="mt-4 sidebar text-center">
+            <div
+              className="mt-4 sidebar text-center"
+              /* style={{ width: hasFocus ? "120px" : "80px" }} */
+            >
               <div
                 className="p-3"
                 style={{
@@ -82,7 +106,6 @@ export default function AuthLayout({
                     /*  onClick={() => {
                       navigate("/home");
                     }} */
-                    focusTrackContext={focusTrackContext}
                   >
                     <i className="fa-solid fa-house"></i>
                   </FocusableLink>
@@ -95,7 +118,6 @@ export default function AuthLayout({
                     /*  onClick={() => {
                       navigate("/search");
                     }} */
-                    focusTrackContext={focusTrackContext}
                   >
                     <i className="fa-sharp fa-solid fa-magnifying-glass"></i>
                   </FocusableLink>
@@ -108,7 +130,6 @@ export default function AuthLayout({
                     /*  onClick={() => {
                       navigate("/all-games");
                     }} */
-                    focusTrackContext={focusTrackContext}
                   >
                     <i className="fa-solid fa-gamepad"></i>
                   </FocusableLink>
@@ -121,7 +142,6 @@ export default function AuthLayout({
                     /*  onClick={() => {
                       navigate("/settings");
                     }} */
-                    focusTrackContext={focusTrackContext}
                   >
                     <i className="fa-solid fa-gear"></i>
                   </FocusableLink>
@@ -130,7 +150,6 @@ export default function AuthLayout({
                   <FocusableLink
                     focusKeyParam="sidebar-logout"
                     onClick={btnLogoutClick}
-                    focusTrackContext={focusTrackContext}
                     to="/"
                   >
                     <i className="fa-solid fa-arrow-right-from-bracket"></i>
@@ -172,7 +191,7 @@ const FocusableLink = (props: any) => {
       setIsActive(false);
     }
   }, [pathname]);
-  const { ref, focused } = useFocusable({
+  const { ref, focused, setFocus } = useFocusable({
     focusable: true,
     focusKey: props.focusKeyParam,
     onEnterPress: () => {
@@ -186,11 +205,32 @@ const FocusableLink = (props: any) => {
       }
     },
     onArrowPress: (direction, keyProps, details) => {
-      if (direction === "right") {
-        props.focusTrackContext.setFocusCount((prev: number) => {
-          return prev + 1;
-        });
-        return false;
+      if (
+        direction === "right" ||
+        (props.focusKeyParam === "sidebar-logout" && direction === "down")
+      ) {
+        console.log("sidebar pathname : ", pathname);
+        switch (pathname) {
+          case "/home":
+            setFocus("Home", { pos: getScrolledCoords(ref.current) });
+            return false;
+          case "/all-games":
+            setFocus("AllGames", { pos: getScrolledCoords(ref.current) });
+            return false;
+
+          case "/search":
+            setFocus("SearchGames", { pos: getScrolledCoords(ref.current) });
+            return false;
+          case "/settings":
+            setFocus("Settings", { pos: getScrolledCoords(ref.current) });
+            return false;
+          default:
+            if (pathname.startsWith("/games-detail")) {
+              setFocus("GameDetail", { pos: getScrolledCoords(ref.current) });
+              return false;
+            }
+            return true;
+        }
       }
       return true;
     },

@@ -147,12 +147,3 @@ document.addEventListener("DOMContentLoaded", function () {
   common.domContentLoaded();
 });
 
-document.addEventListener("deviceready", onDeviceReady, false);
-
-function onDeviceReady() {
-  console.log("Cordova version: " + device.cordova);
-  console.log("Model name: " + device.model);
-  console.log("Platform: " + device.platform);
-  console.log("OS version: " + device.version);
-  console.log("Device UUID: " + device.uuid);
-}

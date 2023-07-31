@@ -6,22 +6,36 @@ import { SESSION_TOKEN_LOCAL_STORAGE } from "src/common/constants";
 import { getUsersSessions, sessionLogout } from "src/common/services";
 import Swal from "sweetalert2";
 
-import { timeAgo } from "src/common/utils";
+import { scrollToElement, timeAgo } from "src/common/utils";
 
 export default function DeviceHistory({
   focusKey: focusKeyParam,
-  parentFocus: parentFocusParam,
-}: FocusabelChildComponentProps) {
+}: FocusabelComponentProps) {
   const navigate = useNavigate();
   const sessionContext = useContext(SessionContext);
   const [sessions, setSessions] = useState<any[]>([]);
-  const { focusSelf, focusKey, setFocus } = useFocusable({
-    trackChildren: true,
+  const { focusSelf, focusKey, setFocus, focused } = useFocusable({
+    focusable: true,
     focusKey: focusKeyParam,
-  });
+    preferredChildFocusKey: "btn-logout-form-all",
+  }); /* 
   useEffect(() => {
-    setFocus("btn-logout-form-all");
-  }, [setFocus, parentFocusParam, sessions]);
+    focusSelf();
+  }, [focusSelf]);*/
+  useEffect(() => {
+    if (focused) {
+      if (sessions && sessions.length) {
+        setFocus("btn-logout-0");
+      } else {
+        setFocus("btn-logout-form-all");
+      }
+    }
+  }, [focused]);
+  useEffect(() => {
+    if (sessions && sessions.length) {
+      setFocus("btn-logout-0");
+    }
+  }, [sessions]);
   const getSessions = async () => {
     if (sessionContext.sessionToken) {
       const sessionsResp: any = await getUsersSessions(
@@ -45,7 +59,7 @@ export default function DeviceHistory({
   useEffect(() => {
     getSessions();
   }, [sessionContext]);
-  const renderSingleSessionRow = (session: any) => {
+  const renderSingleSessionRow = (session: any, index: number) => {
     const [userid, token] = atob(sessionContext.sessionToken).split(":");
 
     const isActive = session.key === `user:${userid}:session:${token}`;
@@ -68,7 +82,7 @@ export default function DeviceHistory({
         </td>
         <td className="py-3 px-0">
           <FocusableSapn
-            focusKeyParam={`btn-logout-${session.key}`}
+            focusKeyParam={`btn-logout-${index}`}
             onClick={() => {
               onSingleLogout(session.key);
             }}
@@ -142,7 +156,9 @@ export default function DeviceHistory({
               </thead>
               <tbody>
                 {sessions &&
-                  sessions.map((session) => renderSingleSessionRow(session))}
+                  sessions.map((session, index) =>
+                    renderSingleSessionRow(session, index)
+                  )}
               </tbody>
             </table>
           </div>
@@ -156,10 +172,13 @@ const FocusableSapn = (props: any) => {
   const { ref, focused, setFocus } = useFocusable({
     focusable: true,
     focusKey: props.focusKeyParam,
+    onFocus: () => {
+      scrollToElement(ref.current, 300);
+    },
     onEnterPress: () => {
       props.onClick();
     },
-    onArrowPress: (direction, keyProps, details) => {
+    /*  onArrowPress: (direction, keyProps, details) => {
       switch (direction) {
         case "right":
         case "left":
@@ -168,7 +187,7 @@ const FocusableSapn = (props: any) => {
         default:
           return true;
       }
-    },
+    }, */
   });
   return (
     <span
@@ -189,15 +208,19 @@ const FocusableButton = (props: any) => {
     onEnterPress: () => {
       props.onClick();
     },
+    onFocus: () => {
+      scrollToElement(ref.current, 200);
+    },
     onArrowPress: (direction, keyProps, details) => {
+      console.log("all logout direction : ", direction);
       switch (direction) {
         case "right":
         case "left":
+        case "up":
           setFocus("go-to-profile");
           return false;
-        default:
-          return true;
       }
+      return true;
     },
   });
   return (

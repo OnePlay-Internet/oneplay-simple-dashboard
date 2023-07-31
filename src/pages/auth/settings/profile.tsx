@@ -9,29 +9,33 @@ import {
   FocusContext,
   useFocusable,
 } from "@noriginmedia/norigin-spatial-navigation";
+import LoaderPopup from "src/pages/loader";
 
 export default function Profile({
   focusKey: focusKeyParam,
-  parentFocus: parentFocusParam,
-}: FocusabelChildComponentProps) {
+}: FocusabelComponentProps) {
   const navigate = useNavigate();
   const sessionContext = useContext(SessionContext);
+  const [showLoading, setShowLoading] = useState(false);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [username, setUsername] = useState("");
   const [fullName, setFullName] = useState("");
   const [bio, setBio] = useState("");
   const { focusSelf, focusKey, setFocus } = useFocusable({
+    focusable: true,
     trackChildren: true,
     focusKey: focusKeyParam,
   });
   useEffect(() => {
     setFocus("username");
-  }, [setFocus, parentFocusParam]);
+  }, [focusSelf]);
   useEffect(() => {
     if (!sessionContext || !sessionContext.sessionToken) {
       return;
     }
+
     (async () => {
+      setShowLoading(true);
       const profileResp: any = await getProfile(sessionContext.sessionToken);
       if (!profileResp.success) {
         Swal.fire({
@@ -51,6 +55,7 @@ export default function Profile({
         profileResp?.profile.first_name + " " + profileResp?.profile.last_name
       );
       setBio(profileResp?.profile.bio);
+      setShowLoading(false);
     })();
   }, [sessionContext]);
 
@@ -64,6 +69,7 @@ export default function Profile({
       });
       return;
     }
+    setShowLoading(true);
     const updateData = {
       username: username,
       first_name: fullName.split(/ (.*)/s).at(0) ?? "",
@@ -74,13 +80,23 @@ export default function Profile({
       sessionContext.sessionToken,
       updateData
     );
-    setUserProfile(updateResp?.profile);
-    setUsername(updateResp?.profile.username);
-    setFullName(
-      updateResp?.profile.first_name + " " + updateResp?.profile.last_name
-    );
-    setBio(updateResp?.profile.bio);
-    console.log(updateResp);
+    setShowLoading(false);
+    if (updateResp.success) {
+      setUserProfile(updateResp?.profile);
+      setUsername(updateResp?.profile.username);
+      setFullName(
+        updateResp?.profile.first_name + " " + updateResp?.profile.last_name
+      );
+      setBio(updateResp?.profile.bio);
+    } else {
+      Swal.fire({
+        title: "Error!",
+        text: updateResp.message,
+        icon: "error",
+        confirmButtonText: "OK",
+      });
+      return;
+    }
   };
   return (
     <FocusContext.Provider value={focusKey}>
@@ -150,6 +166,7 @@ export default function Profile({
           </div>
         </div>
       </div>
+      {showLoading ? <LoaderPopup focusKeyParam="Loader" /> : null}
     </FocusContext.Provider>
   );
 }
@@ -232,7 +249,7 @@ const FocusableButton = (props: any) => {
     onEnterPress: () => {
       props.onClick();
     },
-    onArrowPress: (direction, props, details) => {
+    /* onArrowPress: (direction, props, details) => {
       switch (direction) {
         case "up":
           return true;
@@ -240,7 +257,7 @@ const FocusableButton = (props: any) => {
           setFocus("go-to-profile");
           return false;
       }
-    },
+    }, */
   });
   return (
     <button

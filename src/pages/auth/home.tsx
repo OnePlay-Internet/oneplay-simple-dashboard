@@ -4,21 +4,26 @@ import {
   getPersonalizedFeed,
   getUsersWishlist,
 } from "src/common/services";
-import { FocusTrackContext, SessionContext } from "src/App";
+import { SessionContext } from "src/App";
 import ErrorPopUp from "../error";
 import {
   FocusContext,
   useFocusable,
 } from "@noriginmedia/norigin-spatial-navigation";
 import { useNavigate } from "react-router-dom";
-import { getCoords, railScrollTo, scrollToElement } from "src/common/utils";
+import {
+  getCoords,
+  getScrolledCoords,
+  railScrollTo,
+  scrollToElement,
+  scrollToTop,
+} from "src/common/utils";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 export default function Home({
   focusKey: focusKeyParam,
 }: FocusabelComponentProps) {
-  const focusTrackContext = useContext(FocusTrackContext);
   const [popUp, setPopUp] = useState({ show: false, message: "", title: "" });
   const [personalizedFeeds, setPersonalizedFeeds] = useState<any[]>([]);
   const [customGames, setCustomGames] = useState<any[]>([]);
@@ -32,33 +37,27 @@ export default function Home({
   const { setFocus, focusKey, focusSelf } = useFocusable({
     focusable: true,
     focusKey: focusKeyParam,
+    preferredChildFocusKey: "tab-for-you",
+    onFocus: (componentLayout, extraProps, focusDetails) => {
+      console.log("home focus received");
+      if (focusDetails && focusDetails.pos) {
+        console.log(focusDetails.pos);
+      }
+    },
   });
   const onPopupOkClick = () => {
     setPopUp({ show: false, message: "", title: "" });
-    setFocus("home_header_slider");
+    //setFocus("home_header_slider");
+    setFocus("tab-for-you");
   };
-  useEffect(() => {}, [focusTrackContext]);
-
   useEffect(() => {
     if (firstHeaderFocusKey) {
-      setFocus("home_header_slider");
+      //setFocus("home_header_slider");
+      setFocus("tab-for-you");
     } else {
       focusSelf();
     }
-  }, [focusTrackContext, firstHeaderFocusKey]);
-  /* const renderHeaderSlider = (game: any, index: number) => {
-    return (
-      <FocusableHeaderGameWrapper
-        key={`header_game_${game.oplay_id}`}
-        game={game}
-        focusKeyParam={`header_game_${game.oplay_id}`}
-        goToDetail={navigate}
-        slideTo={sliderGoTo}
-        index={index}
-      />
-    );
-  }; */
-
+  }, [firstHeaderFocusKey]);
   const renderHeaderSlider = () => {
     const headerIndex = personalizedFeeds.findIndex(
       (feed: any) => feed.type === "header"
@@ -181,6 +180,7 @@ export default function Home({
             return;
           }
           setPersonalizedFeeds(personlizedFeesResp.feeds ?? []);
+
           const headerIndex =
             personlizedFeesResp.feeds?.findIndex(
               (feed: any) => feed.type === "header"
@@ -251,11 +251,13 @@ export default function Home({
   };
   return (
     <FocusContext.Provider value={focusKey}>
+      {
+      renderHeaderSlider()
+      }
       <div
-        className="container-fluid mainContainer"
-        style={{ paddingLeft: "6.0rem" }}
+        className="container-fluid homeMainContainer"
+        style={{ paddingLeft: "6rem" }}
       >
-        {renderHeaderSlider()}
         <div className="row justify-content-center pt-4">
           <div className="col-auto">
             <div className="row justify-content-center scrolltab">
@@ -354,18 +356,19 @@ const FocusableTabButton = (props: any) => {
     focusable: true,
     focusKey: props.focusKeyParam,
     onFocus: () => {
-      scrollToElement(ref.current, 100);
+      //scrollToElement(ref.current, 100);
+      scrollToTop();
     },
     onEnterPress: () => {
       props.onClick(props.tab);
     },
-    /* onArrowPress: (direction, keyProps, detils) => {
-      if (direction === "left" && getCoords(ref.current).left < 100) {
-        setFocus("sidebar-search");
+    onArrowPress: (direction, keyProps, detils) => {
+      if (props.focusKeyParam === "tab-for-you" && direction === "left") {
+        setFocus("Sidebar", { pos: getScrolledCoords(ref.current) });
         return false;
       }
       return true;
-    }, */
+    },
   });
   return (
     <div
@@ -393,25 +396,36 @@ const FocusableRailGameWrapper = (props: any) => {
     focusable: true,
     focusKey: props.focusKeyParam,
     onFocus: () => {
-      scrollToElement(ref.current, 120);
+      // scrollToElement(ref.current, 120);
+      ref.current.parentElement.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+      /* setTimeout(() => {
+        window.scrollTo(window.scrollX, window.scrollY + 10);
+      }, 200); */
+
       railScrollTo(ref.current);
     },
     onEnterPress: () => {
       props.goToDetail(`/games-detail/${props.game.oplay_id}`);
     },
-    /* onArrowPress: (direction, keyProps, detils) => {
-      if (direction === "left" && getCoords(ref.current).left < 100) {
-        setFocus("sidebar-search");
+    onArrowPress: (direction, keyProps, detils) => {
+      if (direction === "left" && getCoords(ref.current).left < 85) {
+        setFocus("Sidebar", { pos: getScrolledCoords(ref.current) });
         return false;
       }
       return true;
-    }, */
+    },
   });
   return (
     <div
       ref={ref}
       className={"fixedWidth tabOptions" + (focused ? " focusedElement" : "")}
-      style={{ padding: "10px", borderRadius: "10px" }}
+      style={{
+        padding: "10px",
+        borderRadius: "10px",
+      }}
     >
       <img
         src={props.game.text_background_image ?? "/img/default_bg.webp"}
@@ -430,15 +444,17 @@ const FocusableHeaderSlider = (props: any) => {
     infinite: true,
     centerMode: true,
     autoplay: true,
-    slidesToShow: 3,
+    slidesToShow: 1,
     autoplaySpeed: 5000,
+    variableWidth: true,
     className: "home-header-slider",
   };
   const { ref, focused, setFocus } = useFocusable({
     focusable: true,
     focusKey: props.focusKeyParam,
     onFocus: () => {
-      scrollToElement(ref.current, 100);
+      //scrollToElement(ref.current, 100);
+      scrollToTop();
     },
     onEnterPress: () => {
       const headerSlider = document.querySelector("#home-header-slider");
@@ -467,7 +483,8 @@ const FocusableHeaderSlider = (props: any) => {
           sliderRef.current.slickNext();
           break;
         case "up":
-          setFocus("sidebar-search");
+          //setFocus("Sidebar");
+          setFocus("Sidebar", { pos: getCoords(ref.current) });
           break;
         case "down":
           setFocus("tab-for-you");
@@ -507,7 +524,7 @@ const FocusableHeaderSlider = (props: any) => {
               </div>
             </div>
           </div>
-          <div className="card-img-overlay">
+          <div className="card-img-overlay header-game-playnow-overlay">
             <div className="row height45vh align-items-end">
               <div className="col-auto width20"></div>
               <div className="col-auto width70 ps-4">
@@ -523,9 +540,10 @@ const FocusableHeaderSlider = (props: any) => {
   };
   return (
     <div
-      className={"col-lg-12 mt-3" + (focused ? " slick-focused" : "")}
+      className={"col-lg-12" + (focused ? " slick-focused" : "")}
       ref={ref}
       id="home-header-slider"
+      style={{ marginTop: "4rem" }}
     >
       <div className="card border-0 transparentBg">
         <div className="row">
@@ -537,67 +555,3 @@ const FocusableHeaderSlider = (props: any) => {
     </div>
   );
 };
-
-/* const FocusableHeaderGameWrapper = (props: any) => {
-  const { ref, focused, setFocus } = useFocusable({
-    focusable: true,
-    focusKey: props.focusKeyParam,
-    onFocus: () => {
-      scrollToElement(ref.current, 100);
-      props.slideTo(props.index, false);
-    },
-    onEnterPress: () => {
-      props.goToDetail(`/games-detail/${props.game.oplay_id}`);
-    },
-    onArrowPress: (direction, keyProps, detils) => {
-      if (direction === "left") {
-        props.slideTo(props.index - 2, false);
-      } else if (direction === "right") {
-        props.slideTo(props.index + 4, false);
-      }
-      return true;
-    },
-  });
-  return (
-    <div
-      ref={ref}
-      className={"col-auto" + (focused ? " focusedElement" : "")}
-      style={{ borderRadius: "6px" }}
-    >
-      <div className="card border-0 transparentBg">
-        <img
-          src={props.game.background_image}
-          className="card-img height50vh rounded"
-          alt="..."
-        />
-        <div
-          className="card-img-overlay"
-          style={{
-            background:
-              "linear-gradient(180deg, rgba(0, 0, 0, 0.00) 58.85%, rgba(0, 0, 0, 0.52) 79.17%, rgba(0, 0, 0, 0.80) 100%)",
-          }}
-        >
-          <div className="row height45vh align-items-center">
-            <div className="col">
-              <img
-                src={props.game.text_logo}
-                className="img-fluid text-logo"
-                alt="..."
-              />
-            </div>
-          </div>
-        </div>
-        <div className="card-img-overlay">
-          <div className="row height45vh align-items-end">
-            <div className="col-auto width20"></div>
-            <div className="col-auto width70 ps-4">
-              <button className="btn text-white gradientBtn border-0 br90 px-4 btn-md fw400">
-                Play Now
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}; */

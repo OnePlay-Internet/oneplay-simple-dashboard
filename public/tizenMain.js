@@ -28,7 +28,7 @@ var init = function () {
       case 10009: //RETURN button
         if (
           window.location.pathname === "/" ||
-          window.location.pathname === "/all-games"
+          window.location.pathname === "/home"
         ) {
           console.log("exit app");
           tizen.application.getCurrentApplication().exit();

@@ -1,6 +1,6 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { useContext, useEffect, useState } from "react";
-import { FocusTrackContext, SessionContext } from "src/App";
+import { SessionContext } from "src/App";
 import { getAllGames } from "../../../common/services";
 import Swal from "sweetalert2";
 import { GAME_FETCH_LIMIT } from "src/common/constants";
@@ -15,19 +15,16 @@ export default function AllGames({
   focusKey: focusKeyParam,
 }: FocusabelComponentProps) {
   const sessionContext = useContext(SessionContext);
-  const focusTrackContext = useContext(FocusTrackContext);
   const [allGames, setAllGames] = useState<{ [key: string]: any }[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [haveMoreGames, setHaveMoreGames] = useState(true);
   const navigate = useNavigate();
 
   const { focusSelf, focusKey, setFocus } = useFocusable({
+    focusable: true,
     trackChildren: true,
     focusKey: focusKeyParam,
   });
-  useEffect(() => {
-    setFocusToFirstGame();
-  }, [focusTrackContext]);
   useEffect(() => {
     if (sessionContext.sessionToken) {
       loadMoreGames();
@@ -101,11 +98,6 @@ export default function AllGames({
         pageStart={0}
         hasMore={haveMoreGames}
         loadMore={loadNextGames}
-        loader={
-          <div className="loader" key={0}>
-            Loading ...
-          </div>
-        }
       >
         <div className="row mainContainer">
           {allGames?.map((game) => renderSingleGame(game))}
@@ -133,15 +125,20 @@ const FocusableGameWrapper = (props: any) => {
       props.goToDetail();
     },
     onFocus: () => {
-      scrollToElement(ref.current, 100);
-    },
+      // scrollToElement(ref.current, 100);
+      ref.current.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+        inline: "nearest",
+      });
+    } /* 
     onArrowPress: (direction, keyProps, detils) => {
       if (direction === "left" && getCoords(ref.current).left < 100) {
         setFocus("sidebar-search");
         return false;
       }
       return true;
-    },
+    }, */,
   });
 
   return (

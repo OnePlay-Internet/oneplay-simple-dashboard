@@ -7,7 +7,7 @@ import {
   FocusContext,
   useFocusable,
 } from "@noriginmedia/norigin-spatial-navigation";
-import { FocusTrackContext } from "src/App";
+import { getScrolledCoords } from "src/common/utils";
 
 export default function Settings({
   focusKey: focusKeyParam,
@@ -16,34 +16,32 @@ export default function Settings({
   const profileClick = () => setCurrentSelection("profile");
   const subscriptionClick = () => setCurrentSelection("subscriptions");
   const deviceHistoryClick = () => setCurrentSelection("deviceHistory");
-  const { focusKey, setFocus } = useFocusable({
-    trackChildren: true,
+  const { focusKey, setFocus, focusSelf } = useFocusable({
+    focusable: true,
     focusKey: focusKeyParam,
   });
-  const focusTrackContext = useContext(FocusTrackContext);
+  /*  
   useEffect(() => {
     setFocus("go-to-profile");
-  }, [setFocus, focusTrackContext]);
-
-  const [settingsFocus, setSettingsFocus] = useState(0);
+  }, [setFocus]); */
+  useEffect(() => {
+    setFocus("go-to-profile");
+  }, [focusSelf]);
+  //const [settingsFocus, setSettingsFocus] = useState(0);
   const renderSelection = () => {
     switch (currentSelection) {
       case "profile":
-        return <Profile focusKey="Profile" parentFocus={settingsFocus} />;
+        return <Profile focusKey="Profile" />;
 
       case "subscriptions":
-        return (
-          <Subscription focusKey="Subscriptions" parentFocus={settingsFocus} />
-        );
+        return <Subscription focusKey="Subscriptions" />;
 
       case "deviceHistory":
-        return (
-          <DeviceHistory focusKey="DeviceHistory" parentFocus={settingsFocus} />
-        );
+        return <DeviceHistory focusKey="DeviceHistory" />;
     }
   };
   return (
-    <FocusContext.Provider value={focusKey}>
+    <FocusContext.Provider value={focusKeyParam}>
       <div className="row mainContainer">
         <div className="col-md-2">
           <h1 className="mainHeading">Settings</h1>
@@ -51,7 +49,8 @@ export default function Settings({
             <FocusableParagraph
               focusKeyParam="go-to-profile"
               onClick={profileClick}
-              setParentFocus={setSettingsFocus}
+              currentSelection={currentSelection}
+              // setParentFocus={setSettingsFocus}
             >
               <NavLink
                 to=""
@@ -67,7 +66,8 @@ export default function Settings({
             <FocusableParagraph
               focusKeyParam="go-to-subscription"
               onClick={subscriptionClick}
-              setParentFocus={setSettingsFocus}
+              currentSelection={currentSelection}
+              // setParentFocus={setSettingsFocus}
             >
               <NavLink
                 to=""
@@ -83,7 +83,8 @@ export default function Settings({
             <FocusableParagraph
               focusKeyParam="go-to-device-history"
               onClick={deviceHistoryClick}
-              setParentFocus={setSettingsFocus}
+              currentSelection={currentSelection}
+              //setParentFocus={setSettingsFocus}
             >
               <NavLink
                 to=""
@@ -112,19 +113,26 @@ const FocusableParagraph = (props: any) => {
       props.onClick();
     },
     onArrowPress: (direction, keyProps, details) => {
-      switch (direction) {
-        case "right":
-          props.setParentFocus((prev: number) => {
-            return prev + 1;
-          });
-          break;
-        case "left":
-          setFocus("sidebar-search");
-          break;
-        default:
-          return true;
-      }
       if (direction === "right") {
+        console.log(
+          "settings arrow : %s, %s",
+          direction,
+          props.currentSelection
+        );
+        switch (props.currentSelection) {
+          case "profile":
+            setFocus("Profile");
+            return false;
+          case "subscriptions":
+            setFocus("Subscriptions");
+            return false;
+          case "deviceHistory":
+            console.log("inside device history");
+            setFocus("DeviceHistory");
+            return false;
+        }
+      } else if (direction === "left") {
+        setFocus("Sidebar", getScrolledCoords(ref.current));
         return false;
       }
       return true;

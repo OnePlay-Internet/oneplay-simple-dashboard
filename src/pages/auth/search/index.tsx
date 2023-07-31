@@ -5,18 +5,23 @@ import {
 } from "@noriginmedia/norigin-spatial-navigation";
 import { customFeedGames, searchGame } from "src/common/services";
 import { GAME_FETCH_LIMIT } from "src/common/constants";
-import { FocusTrackContext, SessionContext } from "src/App";
+import { SessionContext } from "src/App";
 import debounce from "lodash.debounce";
 import { NavLink, useNavigate } from "react-router-dom";
 import { LazyLoadImage } from "react-lazy-load-image-component";
-import { getCoords, scrollToElement, scrollToTop } from "src/common/utils";
+import {
+  getCoords,
+  getScrolledCoords,
+  scrollToElement,
+  scrollToTop,
+} from "src/common/utils";
 import InfiniteScroll from "react-infinite-scroller";
+import LoaderPopup from "src/pages/loader";
 export default function SearchGames({
   focusKey: focusKeyParam,
 }: FocusabelComponentProps) {
   const navigate = useNavigate();
   const sessionContext = useContext(SessionContext);
-  const focusTrackContext = useContext(FocusTrackContext);
   const [showLoading, setShowLoading] = useState(false);
   const [searchResult, setSearchResult] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -31,9 +36,6 @@ export default function SearchGames({
     loadMoreGames("", 0);
     setFocus("game_search");
   }, [setFocus]);
-  useEffect(() => {
-    setFocus("game_search");
-  }, [focusTrackContext]);
   /* useEffect(() => {
     if (currentPage === 1) {
       setFocusToFirstGame();
@@ -171,6 +173,7 @@ export default function SearchGames({
                   setSearchQuery("Call of duty");
                   debouncedSearchRequest("Call of duty");
                 }}
+                focusKeyParam="search_suggetion_1"
               >
                 Call of Duty
               </FocusableElement>
@@ -180,6 +183,7 @@ export default function SearchGames({
                   setSearchQuery("Action");
                   debouncedSearchRequest("Action");
                 }}
+                focusKeyParam="search_suggetion_2"
               >
                 Action
               </FocusableElement>
@@ -189,6 +193,7 @@ export default function SearchGames({
                   setSearchQuery("Ubisoft");
                   debouncedSearchRequest("Ubisoft");
                 }}
+                focusKeyParam="search_suggetion_3"
               >
                 Ubisoft
               </FocusableElement>
@@ -198,6 +203,7 @@ export default function SearchGames({
                   setSearchQuery("steam");
                   debouncedSearchRequest("steam");
                 }}
+                focusKeyParam="search_suggetion_4"
               >
                 Steam
               </FocusableElement>
@@ -213,11 +219,6 @@ export default function SearchGames({
             pageStart={0}
             hasMore={haveMoreGames}
             loadMore={loadNextGames}
-            loader={
-              <div className="loader" key={0}>
-                Loading ...
-              </div>
-            }
           >
             <div className="row">
               {searchResult?.map((game) => renderSingleGame(game))}
@@ -230,20 +231,13 @@ export default function SearchGames({
           ) : null}
         </div>
       </div>
-      {/* showLoading ? (
-        <div style={{ display: "flex" }} className="my-modal">
-          <div className="my-modal-content">
-            <div className="my-loader"></div>
-            <div className="my-modal-text">Loading...</div>
-          </div>
-        </div>
-      ) : null */}
+      {showLoading ? <LoaderPopup focusKeyParam="Loader" /> : null}
     </FocusContext.Provider>
   );
 }
 
 const FocusableInput = (props: any) => {
-  const { ref, focused } = useFocusable({
+  const { ref, focused, setFocus } = useFocusable({
     focusable: true,
     focusKey: props.focusKeyParam,
     onFocus: () => {
@@ -255,6 +249,17 @@ const FocusableInput = (props: any) => {
     onBlur: () => {
       ref.current.blur();
     },
+    onArrowPress: (direction, keyProps, detils) => {
+      if (direction === "down") {
+        setFocus("search_suggetion_1");
+        return false;
+      }
+      if (direction === "left") {
+        setFocus("Sidebar", getScrolledCoords(ref.current));
+        return false;
+      }
+      return true;
+    },
   });
 
   return (
@@ -262,7 +267,8 @@ const FocusableInput = (props: any) => {
       type={props.type}
       ref={ref}
       className={
-        "form-control inputControl" + (focused ? " focusedSearch" : "")
+        "form-control gameSearchInputControl" +
+        (focused ? " focusedSearch" : "")
       }
       onChange={props.onChange}
       value={props.value}
@@ -272,14 +278,22 @@ const FocusableInput = (props: any) => {
 };
 
 const FocusableElement = (props: any) => {
-  const { ref, focused } = useFocusable({
+  const { ref, focused, setFocus } = useFocusable({
     focusable: true,
+    focusKey: props.focusKeyParam,
     onFocus: () => {
       scrollToTop();
       ref.current.focus();
     },
     onEnterPress: () => {
       props.onClick();
+    },
+    onArrowPress: (direction, keyProps, detils) => {
+      if (direction === "left") {
+        setFocus("Sidebar", getScrolledCoords(ref.current));
+        return false;
+      }
+      return true;
     },
   });
 
@@ -311,7 +325,12 @@ const FocusableGameWrapper = (props: any) => {
       props.goToDetail();
     },
     onFocus: () => {
-      scrollToElement(ref.current, 100);
+      //scrollToElement(ref.current, 100);
+      ref.current.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+        inline: "nearest",
+      });
     },
     onArrowPress: (direction, keyProps, detils) => {
       if (direction === "left" && getCoords(ref.current).left < 100) {

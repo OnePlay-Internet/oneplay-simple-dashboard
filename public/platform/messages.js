@@ -11,6 +11,8 @@ const SyncFunctions = {
   stopRequest: (...args) => Module.stopStream(...args),
   // no parameters
   streamStats: (...args) => Module.VidStreamStats(...args),
+  //no parameters
+  toogleMouse: (...args) => Module.EnableEmulatedMouseEvent(...args),
 };
 
 const AsyncFunctions = {
@@ -98,6 +100,14 @@ function handleMessage(msg) {
   } else if (msg === "Connection Established") {
     setGameStartedSuccessfully();
     startHeartBeatAPI();
+    sendMessage("toogleMouse", []).then(
+      function () {
+        console.log("toogle mouse success");
+      },
+      function (error) {
+        console.log("toogle mouse failed : " + error);
+      }
+    );
     $("#loadingSpinner").css("display", "none");
     $("body").css("backgroundColor", "transparent");
     $("#nacl_module").css("display", "");

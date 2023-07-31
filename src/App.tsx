@@ -11,6 +11,7 @@ import Swal from "sweetalert2";
 import { SESSION_TOKEN_LOCAL_STORAGE } from "./common/constants";
 import { init, setKeyMap } from "@noriginmedia/norigin-spatial-navigation";
 import { useLocation, useNavigate } from "react-router-dom";
+import LoaderPopup from "./pages/loader";
 
 export const SessionContext = createContext<{
   sessionToken: string;
@@ -20,13 +21,6 @@ export const SessionContext = createContext<{
   setSessionToken: () => {},
 });
 
-export const FocusTrackContext = createContext<{
-  focusCount: number;
-  setFocusCount: any;
-}>({
-  focusCount: 0,
-  setFocusCount: () => {},
-});
 export const UserProfileContext = createContext<{
   userProfile: any;
   setUserProfile: any;
@@ -48,8 +42,6 @@ function App() {
 
   const [userProfile, setUserProfile] = useState<any>(null);
   const sessionContextValue = { sessionToken, setSessionToken };
-  const [focusCount, setFocusCount] = useState(0);
-  const focusContextValue = { focusCount, setFocusCount };
   const userProfileContextValue = { userProfile, setUserProfile };
   const [showLoading, setShowLoading] = useState(true);
   const { pathname, search } = useLocation();
@@ -78,7 +70,25 @@ function App() {
       setShowLoading(false);
     }
   }, []);
-
+  useEffect(() => {
+    const searchQuery = new URLSearchParams(search);
+    const redirectTo = searchQuery.get("redirect");
+    if (!sessionToken) {
+      if (pathname.replace("/index.html", "") === "") {
+        if (redirectTo) {
+          navigate(`/?redirect=${redirectTo}`);
+        } else {
+          navigate("/");
+        }
+      } else {
+        navigate(`/?redirect=${pathname}`);
+      }
+    } else if (redirectTo) {
+      navigate(redirectTo);
+    } else {
+      navigate("/home");
+    }
+  }, [sessionToken]);
   useLayoutEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
   }, [pathname]);
@@ -87,26 +97,15 @@ function App() {
   }, [showLoading]);
   const renderMainContent = () => {
     if (showLoading) {
-      console.log("render loading");
-      return (
-        <div style={{ display: "flex" }} className="my-modal">
-          <div className="my-modal-content">
-            <div className="my-loader"></div>
-            <div className="my-modal-text">Loading...</div>
-          </div>
-        </div>
-      );
+      return <LoaderPopup focusKeyParam="Loader" />;
     } else {
-      console.log("render routes");
       return <Routes />;
     }
   };
   return (
     <SessionContext.Provider value={sessionContextValue}>
       <UserProfileContext.Provider value={userProfileContextValue}>
-        <FocusTrackContext.Provider value={focusContextValue}>
-          {renderMainContent()}
-        </FocusTrackContext.Provider>
+        {renderMainContent()}
       </UserProfileContext.Provider>
     </SessionContext.Provider>
   );

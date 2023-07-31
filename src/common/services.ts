@@ -410,8 +410,13 @@ export async function startGame(
       `${API_CLIENT_URL}/services/v2/start_game`,
       formData
     );
-
-    if (startGameResp.status !== 200) {
+    if (startGameResp.status === 801) {
+      return {
+        success: true,
+        ...startGameResp.data,
+        message: startGameResp.data?.msg,
+      };
+    } else if (startGameResp.status !== 200) {
       return handleNon200Response(startGameResp.data.msg);
     }
     return {

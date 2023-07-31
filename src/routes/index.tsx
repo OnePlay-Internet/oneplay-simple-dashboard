@@ -16,8 +16,7 @@ export default function Router() {
   const sessionContext = useContext(SessionContext);
   const navigate = useNavigate();
   const { pathname, search } = useLocation();
-  useEffect(() => {
-    console.log("routes path: ", pathname);
+  /*  useEffect(() => {
     const searchQuery = new URLSearchParams(search);
     const redirectTo = searchQuery.get("redirect");
     if (!sessionContext.sessionToken) {
@@ -35,7 +34,7 @@ export default function Router() {
     } else {
       navigate("/home");
     }
-  }, [sessionContext.sessionToken]);
+  }, [sessionContext.sessionToken]); */
 
   return useRoutes([
     {

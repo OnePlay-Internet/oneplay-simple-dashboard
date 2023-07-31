@@ -2,7 +2,6 @@ import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { getProfile, login } from "../../common/services";
 import { SessionContext, UserProfileContext } from "src/App";
 import { useLocation, useNavigate } from "react-router-dom";
-import Swal from "sweetalert2";
 import { SESSION_TOKEN_LOCAL_STORAGE } from "src/common/constants";
 import {
   FocusContext,
@@ -15,7 +14,12 @@ export default function Login({
 }: FocusabelComponentProps) {
   const sessionContext = useContext(SessionContext);
   const userContext = useContext(UserProfileContext);
-  const [popUp, setPopUp] = useState({ show: false, message: "", title: "" });
+  const [popUp, setPopUp] = useState({
+    show: false,
+    message: "",
+    title: "",
+    returnFocusTo: "",
+  });
   const navigate = useNavigate();
   const { search } = useLocation();
 
@@ -25,8 +29,8 @@ export default function Login({
     focusKey: focusKeyParam,
   });
 
-  const [userId, setUserId] = useState("jasmin@oneplay.in");
-  const [password, setPassword] = useState("Jasmin@5690");
+  const [userId, setUserId] = useState("");
+  const [password, setPassword] = useState("");
 
   useEffect(() => {
     const delayedFocus = setTimeout(() => {
@@ -51,31 +55,21 @@ export default function Login({
   }, [sessionContext, navigate]);
   const onLoginButtonClick = async () => {
     if (!userId || !password) {
-      /*  Swal.fire({
-        title: "Error!",
-        text: "Please enter username and password field",
-        icon: "error",
-        confirmButtonText: "OK",
-      }); */
       setPopUp({
         show: true,
         message: "Please enter username and password field",
         title: "Error!",
+        returnFocusTo: "btn-login",
       });
       return;
     }
     const loginResponse = await login(userId, password, "tv");
     if (!loginResponse.success) {
-      /*  Swal.fire({
-        title: "Error!",
-        text: loginResponse.message,
-        icon: "error",
-        confirmButtonText: "OK",
-      }); */
       setPopUp({
         show: true,
         message: loginResponse.message ?? "",
         title: "Error!",
+        returnFocusTo: "btn-login",
       });
       return;
     }
@@ -92,6 +86,7 @@ export default function Login({
           show: true,
           message: profileResp.message ?? "",
           title: "Error!",
+          returnFocusTo: "btn-login",
         });
       } else {
         userContext.setUserProfile(profileResp.profile);
@@ -104,8 +99,9 @@ export default function Login({
     }
   };
   const onPopupOkClick = () => {
-    setPopUp({ show: false, message: "", title: "" });
-    setFocus("btn-login");
+    const returnFocusTo = popUp.returnFocusTo;
+    setPopUp({ show: false, message: "", title: "", returnFocusTo: "" });
+    setFocus(returnFocusTo);
   };
   return (
     <FocusContext.Provider value={focusKey}>

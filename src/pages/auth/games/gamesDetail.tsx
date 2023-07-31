@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useContext, useEffect, useState } from "react";
-import { FocusTrackContext, SessionContext } from "src/App";
+import { SessionContext } from "src/App";
 import {
   GameStatusDTO,
   getAnyActiveSessionStatus,
@@ -12,12 +12,18 @@ import {
   setPin,
 } from "../../../common/services";
 import moment from "moment";
-import Swal from "sweetalert2";
+//import Swal from "sweetalert2";
 import {
   FocusContext,
   useFocusable,
 } from "@noriginmedia/norigin-spatial-navigation";
-import { getCoords, scrollToElement } from "src/common/utils";
+import {
+  getCoords,
+  getScrolledCoords,
+  scrollToElement,
+} from "src/common/utils";
+import ErrorPopUp from "src/pages/error";
+import LoaderPopup from "src/pages/loader";
 
 export default function GamesDetail({
   focusKey: focusKeyParam,
@@ -25,7 +31,6 @@ export default function GamesDetail({
   const sessionContext = useContext(SessionContext);
   let { id } = useParams();
   const navigate = useNavigate();
-  const focusTrackContext = useContext(FocusTrackContext);
   const [gameDetails, setGameDetails] = useState<any>(null);
   const [selectedStore, setSelectedStore] = useState<string>("");
   const [debugInfo, setDebugInfo] = useState("");
@@ -50,10 +55,23 @@ export default function GamesDetail({
     trackChildren: true,
     focusKey: focusKeyParam,
     isFocusBoundary: false,
+    onFocus: (componentLayout, extraProps, focusDetails) => {
+      console.log("home focus received");
+      if (focusDetails && focusDetails.pos) {
+        console.log(focusDetails.pos);
+      }
+    },
+  });
+  const [popUp, setPopUp] = useState({
+    show: false,
+    message: "",
+    title: "",
+    returnFocusTo: "",
+    icon: "",
   });
   useEffect(() => {
     setFocus("play-now");
-  }, [focusTrackContext]);
+  }, [activeSessionStatus]);
 
   useEffect(() => {
     if (startGameSession) {
@@ -70,13 +88,20 @@ export default function GamesDetail({
       (async () => {
         const gameResp = await getGameDetails(id, sessionContext.sessionToken);
         if (!gameResp.success) {
-          Swal.fire({
+          /* Swal.fire({
             title: "Error!",
             text: gameResp.message,
             icon: "error",
             confirmButtonText: "OK",
+          }); */
+          setPopUp({
+            show: true,
+            message: gameResp.message ?? "",
+            title: "error",
+            returnFocusTo: "play-now",
+            icon: "",
           });
-          navigate("/all-games");
+          //navigate("/all-games");
           return;
         }
         setGameDetails(gameResp.game);
@@ -106,11 +131,18 @@ export default function GamesDetail({
           gameClientToken
         );
         if (!streamSessionResp.success) {
-          Swal.fire({
+          /* Swal.fire({
             title: "Error!",
             text: streamSessionResp.message,
             icon: "error",
             confirmButtonText: "OK",
+          }); */
+          setPopUp({
+            show: true,
+            message: streamSessionResp.message ?? "",
+            title: "Error!",
+            returnFocusTo: "play-now",
+            icon: "",
           });
           return;
         }
@@ -147,11 +179,18 @@ export default function GamesDetail({
         sessionId
       );
       if (!activeSessionStatusResp.success) {
-        Swal.fire({
+        /* Swal.fire({
           title: "Error!",
           text: activeSessionStatusResp.message,
           icon: "error",
           confirmButtonText: "OK",
+        }); */
+        setPopUp({
+          show: true,
+          message: activeSessionStatusResp.message ?? "",
+          title: "Error!",
+          returnFocusTo: "play-now",
+          icon: "",
         });
         return;
       }
@@ -259,6 +298,18 @@ export default function GamesDetail({
     }
   };
   const doNothing = () => {};
+
+  const onPopupOkClick = () => {
+    const returnFocusTo = popUp.returnFocusTo;
+    setPopUp({
+      show: false,
+      message: "",
+      title: "",
+      returnFocusTo: "",
+      icon: "",
+    });
+    setFocus(returnFocusTo);
+  };
   const onPlayNowClicked = async () => {
     if (!id) {
       return;
@@ -290,17 +341,35 @@ export default function GamesDetail({
         20,
         sStore
       );
-      if (!startGameResp.success || startGameResp.code !== 200) {
-        Swal.fire({
+      if (!startGameResp.success) {
+        /*  Swal.fire({
           title: "Error!",
           text: startGameResp.message,
           icon: "error",
           confirmButtonText: "OK",
-        });
+        }); */
+
         setshowLoading(false);
+        setPopUp({
+          show: true,
+          message: startGameResp.message ?? "",
+          title: "Error!",
+          returnFocusTo: "play-now",
+          icon: "",
+        });
         return;
       }
-      if (startGameResp.data?.api_action === "call_session") {
+      if (startGameResp.code === 801 && startGameResp.message) {
+        const [queueCount, message1, message2] =
+          startGameResp.message?.split(";");
+        setPopUp({
+          show: true,
+          message: message1 + "<br />" + message2,
+          title: queueCount,
+          returnFocusTo: "play-now",
+          icon: "queue",
+        });
+      } else if (startGameResp.data?.api_action === "call_session") {
         if (startGameResp.data.session?.id) {
           setStartGameSession(startGameResp.data.session.id);
         }
@@ -309,7 +378,7 @@ export default function GamesDetail({
       } else {
         //   this.stopLoading();
         setshowLoading(false);
-        Swal.fire({
+        /*   Swal.fire({
           title: "No server available!",
           text: "Please try again in sometime, thank you for your patience!",
           imageUrl: "../img/error/Group.svg",
@@ -320,6 +389,13 @@ export default function GamesDetail({
           if (result.isConfirmed) {
             onPlayNowClicked();
           }
+        }); */
+        setPopUp({
+          show: true,
+          message: "Please try again in sometime, thank you for your patience!",
+          title: "No server available!",
+          returnFocusTo: "play-now",
+          icon: "group",
         });
       }
     }
@@ -330,13 +406,20 @@ export default function GamesDetail({
     }
     if (clientTokenStartTime) {
       if (Date.now() - clientTokenStartTime >= 120 * 1000) {
-        Swal.fire({
+        /*  Swal.fire({
           title: "Error!",
           text: "Get client token time out.",
           icon: "error",
           confirmButtonText: "OK",
-        });
+        }); */
         setshowLoading(false);
+        setPopUp({
+          show: true,
+          message: "Time out.",
+          title: "Error!",
+          returnFocusTo: "play-now",
+          icon: "",
+        });
         return;
       }
     }
@@ -350,13 +433,20 @@ export default function GamesDetail({
         sessionId
       );
       if (!getClientTokenResp.success || getClientTokenResp.code !== 200) {
-        Swal.fire({
+        /* Swal.fire({
           title: "Error!",
           text: getClientTokenResp.message,
           icon: "error",
           confirmButtonText: "OK",
-        });
+        }); */
         setshowLoading(false);
+        setPopUp({
+          show: true,
+          message: getClientTokenResp.message ?? "",
+          title: "Error!",
+          returnFocusTo: "play-now",
+          icon: "",
+        });
         return;
       } else if (getClientTokenResp.data?.client_token) {
         console.log(
@@ -388,11 +478,18 @@ export default function GamesDetail({
         sessionId
       );
       if (!terminateGameResp.success) {
-        Swal.fire({
+        /*  Swal.fire({
           title: "Error!",
           text: terminateGameResp.message,
           icon: "error",
           confirmButtonText: "OK",
+        }); */
+        setPopUp({
+          show: true,
+          message: terminateGameResp.message ?? "",
+          title: "Error!",
+          returnFocusTo: "play-now",
+          icon: "",
         });
         return;
       }
@@ -470,22 +567,18 @@ export default function GamesDetail({
         </div>
       </div>
 
-      {showLoading ? (
-        <div style={{ display: "flex" }} className="my-modal">
-          <div className="my-modal-content">
-            <div className="my-loader"></div>
-            <div className="my-modal-text">Loading...</div>
-          </div>
-        </div>
-      ) : null}
+      {showLoading ? <LoaderPopup focusKeyParam="Loader" /> : null}
+      {popUp.show && (
+        <ErrorPopUp
+          title={popUp.title}
+          message={popUp.message}
+          onOkClick={onPopupOkClick}
+          focusKeyParam="modal-popup"
+        />
+      )}
     </FocusContext.Provider>
   ) : (
-    <div style={{ display: "flex" }} className="my-modal">
-      <div className="my-modal-content">
-        <div className="my-loader"></div>
-        <div className="my-modal-text">Loading...</div>
-      </div>
-    </div>
+    <LoaderPopup focusKeyParam="Loader" />
   );
 }
 
@@ -504,7 +597,7 @@ const FocusableButton = (props: any) => {
         (direction === "left" || direction === "top") &&
         getCoords(ref.current).left < 130
       ) {
-        setFocus("sidebar-search");
+        setFocus("Sidebar", getScrolledCoords(ref.current));
         return false;
       }
       return true;

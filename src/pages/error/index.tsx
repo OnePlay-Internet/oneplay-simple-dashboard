@@ -2,19 +2,34 @@ import {
   FocusContext,
   useFocusable,
 } from "@noriginmedia/norigin-spatial-navigation";
-import warningIcon from "../../assets/images/error 1.svg";
+import errorIcon from "../../assets/images/icon-error.svg";
+import sucessIcon from "../../assets/images/icon-verified.svg";
+import waitQueueIcon from "../../assets/images/icon-waitQueae.svg";
+import groupIcon from "../../assets/images/icon-group.svg";
 import { useEffect } from "react";
 export default function ErrorPopUp(props: any) {
-  console.log("error popup props: ", props);
   const { setFocus, focusKey, focusSelf } = useFocusable({
     focusable: true,
     focusKey: props.focusKeyParam,
     preferredChildFocusKey: "btn-ok-popup",
+    isFocusBoundary: true,
   });
 
   useEffect(() => {
     focusSelf();
   }, [focusSelf]);
+  const getIcon = () => {
+    switch (props.icon) {
+      case "wait-queue":
+        return waitQueueIcon;
+      case "success":
+        return sucessIcon;
+      case "group":
+        return groupIcon;
+      default:
+        return errorIcon;
+    }
+  };
   return (
     <FocusContext.Provider value={focusKey}>
       <div
@@ -27,7 +42,7 @@ export default function ErrorPopUp(props: any) {
         <div className="modal-dialog modal-dialog-centered">
           <div className="modal-content" style={{ backgroundColor: "#212123" }}>
             <div className="modal-body text-center p-5">
-              <img src={warningIcon} className="img-fluid" alt="" />
+              <img src={getIcon()} className="img-fluid" alt="" />
               <p
                 className="font500 text-white mt-4"
                 style={{ fontSize: "20px" }}
@@ -37,9 +52,8 @@ export default function ErrorPopUp(props: any) {
               <p
                 className="font500"
                 style={{ fontSize: "16px", color: "#959595" }}
-              >
-                {props.message}
-              </p>
+                dangerouslySetInnerHTML={{ __html: props.message }}
+              ></p>
               <div className="d-grid mt-4" data-bs-dismiss="modal">
                 <FocusableButton
                   focusKeyParam="btn-ok-popup"
@@ -63,9 +77,9 @@ const FocusableButton = (props: any) => {
     onEnterPress: () => {
       props.onClick();
     },
-    onArrowPress: (direction, keyProps, details) => {
+    /*  onArrowPress: (direction, keyProps, details) => {
       return false;
-    },
+    }, */
   });
   return (
     <button
