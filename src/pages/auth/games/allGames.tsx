@@ -121,7 +121,80 @@ export default function AllGames({
         loadMore={loadNextGames}
       >
         <div className="row mainContainer">
-          {allGames?.map((game) => renderSingleGame(game))}
+          <div className="col-md-3">
+            <h3 className="heading">Games</h3>
+            <div className="row mb-2">
+              <div className="col-auto pr-0 mt-2">
+                <a
+                  href="javascript:void(0)"
+                  className="card bgColorMuted mb-3 mutedColor activeBG border-0 text-decoration-none"
+                >
+                  <div className="bgColorMuted customPaddign mutedColor activeBGColor">All Games</div>
+                </a>
+              </div>
+              <div className="col-auto pr-0 mt-2">
+                <a
+                  href="javascript:void(0)"
+                  className="card bgColorMuted mb-3 mutedColor border-0 text-decoration-none"
+                >
+                  <div className="customPaddign bgColorMuted mutedColor">Best of 2021</div>
+                </a>
+              </div>
+              <div className="col-auto pr-0 mt-2">
+                <a
+                  href="javascript:void(0)"
+                  className="card bgColorMuted mb-3 mutedColor border-0 text-decoration-none"
+                >
+                  <div className="customPaddign bgColorMuted mutedColor">Best of 2021</div>
+                </a>
+              </div>
+            </div>
+            <h3 className="heading">Stores</h3>
+            <div className="row mb-2">
+              <div className="col-auto pr-0 mt-2">
+                <a
+                  href="javascript:void(0)"
+                  className="card bgColorMuted mb-3 mutedColor border-0 text-decoration-none"
+                >
+                  <div className="customPaddign bgColorMuted mutedColor">Steam</div>
+                </a>
+              </div>
+              <div className="col-auto pr-0 mt-2">
+                <a
+                  href="javascript:void(0)"
+                  className="card bgColorMuted mb-3 mutedColor border-0 text-decoration-none"
+                >
+                  <div className="customPaddign bgColorMuted mutedColor">Epic Games</div>
+                </a>
+              </div>
+            </div>
+            <h3 className="heading">Top Genres</h3>
+            <div className="row mb-2">
+              <div className="col-auto pr-0 mt-2">
+                <a
+                  href="javascript:void(0)"
+                  className="card bgColorMuted mb-3 mutedColor border-0 text-decoration-none"
+                >
+                  <div className="customPaddign bgColorMuted mutedColor">Action </div>
+                </a>
+              </div>
+              <div className="col-auto pr-0 mt-2">
+                <a
+                  href="javascript:void(0)"
+                  className="card bgColorMuted mb-3 mutedColor border-0 text-decoration-none"
+                >
+                  <div className="customPaddign bgColorMuted mutedColor">Adventure</div>
+                </a>
+              </div>
+            </div>
+          </div>
+          <div className="col-md-9">
+            <h3 className="heading">All Games</h3>
+            <div className="row">
+              {allGames?.map((game) => renderSingleGame(game))}
+            </div>
+          </div>
+          
         </div>
       </InfiniteScroll>
       {popUp.show && (
@@ -174,7 +247,7 @@ const FocusableGameWrapper = (props: any) => {
     <div
       ref={ref}
       className={
-        "col-md-3 col-lg-2 col-sm-6 col-5 mt-3" +
+        "col-md-4 col-lg-3 col-sm-6 col-6 mt-3" +
         (focused ? " focusedElement" : "")
       }
       style={{ paddingTop: "10px", borderRadius: "10px" }}
@@ -187,9 +260,9 @@ const FocusableGameWrapper = (props: any) => {
           alt={props.game.title}
           loading="lazy"
           src={props.game.poster_image ?? "/img/placeholder_265x352.svg"} // use normal <img> attributes as props
-          width={265}
-          height={352}
-          className="img-fluid rounded w-100"
+          height="185"
+          className="rounded w-100"
+          style={{objectFit: 'cover',objectPosition: 'top',}}
           placeholder={
             <img
               alt={props.game.title}

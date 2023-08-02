@@ -429,7 +429,7 @@ const FocusableTabButton = (props: any) => {
           (props.tab === props.currentTab ? " activeBG" : "")
         }
       >
-        <div className="customBtnPadding bgColor">{props.children}</div>
+        <div className={"customBtnPadding bgColor mutedColor" + (props.tab === props.currentTab ? "text-white" : "")}>{props.children}</div>
       </a>
     </div>
   );
