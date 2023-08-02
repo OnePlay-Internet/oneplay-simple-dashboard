@@ -42,7 +42,7 @@ function attachListeners() {
   }
 
   Controller.startWatching();
-  window.addEventListener("gamepadbuttonpressed", (e) => {
+  /*  window.addEventListener("gamepadbuttonpressed", (e) => {
     const pressed = e.detail.pressed;
     const key = e.detail.key;
 
@@ -59,7 +59,7 @@ function attachListeners() {
     if (gamepadMapping[key]) {
       gamepadMapping[key]();
     }
-  });
+  }); */
 }
 
 function fullscreenChromeWindow() {
@@ -1834,20 +1834,4 @@ function onWindowLoad() {
 
 window.onload = onWindowLoad;
 
-// Required on TizenTV, to get gamepad events.
-window.addEventListener("gamepadconnected", function (event) {
-  console.log(
-    "%c[index.js, gamepadconnected] gamepad connected: " +
-      JSON.stringify(event.gamepad),
-    event.gamepad
-  );
-});
 
-// Required on TizenTV, to get gamepad events.
-window.addEventListener("gamepaddisconnected", function (event) {
-  console.log(
-    "%c[index.js, gamepaddisconnected] gamepad disconnected: " +
-      JSON.stringify(event.gamepad),
-    event.gamepad
-  );
-});

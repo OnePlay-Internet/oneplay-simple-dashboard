@@ -7,12 +7,10 @@ import React, {
 import "./App.css";
 import Routes from "./routes";
 import { getProfile } from "./common/services";
-import Swal from "sweetalert2";
 import { SESSION_TOKEN_LOCAL_STORAGE } from "./common/constants";
 import { init, setKeyMap } from "@noriginmedia/norigin-spatial-navigation";
 import { useLocation, useNavigate } from "react-router-dom";
 import LoaderPopup from "./pages/loader";
-
 export const SessionContext = createContext<{
   sessionToken: string;
   setSessionToken: any;
@@ -46,24 +44,22 @@ function App() {
   const [showLoading, setShowLoading] = useState(true);
   const { pathname, search } = useLocation();
   const navigate = useNavigate();
+
   useEffect(() => {
     const savedToken = localStorage.getItem(SESSION_TOKEN_LOCAL_STORAGE);
     if (savedToken) {
+      setShowLoading(true);
       (async () => {
         const profileResp = await getProfile(savedToken);
         if (!profileResp.success) {
           setShowLoading(false);
           localStorage.removeItem(SESSION_TOKEN_LOCAL_STORAGE);
-          Swal.fire({
-            title: "Error!",
-            text: profileResp.message,
-            icon: "error",
-            confirmButtonText: "OK",
-          });
         } else {
           setUserProfile(profileResp.profile);
           setSessionToken(savedToken);
-          setShowLoading(false);
+          setTimeout(() => {
+            setShowLoading(false);
+          }, 100);
         }
       })();
     } else {
@@ -92,20 +88,11 @@ function App() {
   useLayoutEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
   }, [pathname]);
-  useEffect(() => {
-    console.log("App.tsx show loading : ", showLoading);
-  }, [showLoading]);
-  const renderMainContent = () => {
-    if (showLoading) {
-      return <LoaderPopup focusKeyParam="Loader" />;
-    } else {
-      return <Routes />;
-    }
-  };
+
   return (
     <SessionContext.Provider value={sessionContextValue}>
       <UserProfileContext.Provider value={userProfileContextValue}>
-        {renderMainContent()}
+        {showLoading ? <LoaderPopup focusKeyParam="Loader" /> : <Routes />}
       </UserProfileContext.Provider>
     </SessionContext.Provider>
   );

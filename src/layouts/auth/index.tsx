@@ -4,7 +4,7 @@ import "../../assets/css/sidebar.css";
 import brandLogo from "../../assets/images/oneplayLogo.svg";
 import defaultUser from "../../assets/images/user/defaultUser.svg";
 import { logout } from "src/common/services";
-import Swal from "sweetalert2";
+
 import { SESSION_TOKEN_LOCAL_STORAGE } from "src/common/constants";
 import { SessionContext, UserProfileContext } from "src/App";
 import {
@@ -12,6 +12,7 @@ import {
   useFocusable,
 } from "@noriginmedia/norigin-spatial-navigation";
 import { getScrolledCoords } from "src/common/utils";
+import ErrorPopUp from "src/pages/error";
 
 export default function AuthLayout({
   focusKey: focusKeyParam,
@@ -20,6 +21,12 @@ export default function AuthLayout({
   const sessionContext = useContext(SessionContext);
   const userContext = useContext(UserProfileContext);
   const [hasFocus, setHasFocus] = useState(false);
+  const [popUp, setPopUp] = useState({
+    show: false,
+    message: "",
+    title: "",
+    returnFocusTo: "",
+  });
   const { focusSelf, focusKey, setFocus } = useFocusable({
     focusable: true,
     focusKey: focusKeyParam,
@@ -47,17 +54,28 @@ export default function AuthLayout({
   const btnLogoutClick = async () => {
     const logoutResp = await logout(sessionContext.sessionToken);
     if (!logoutResp.success) {
-      Swal.fire({
+      /* Swal.fire({
         title: "Error!",
         text: logoutResp.message,
         icon: "error",
         confirmButtonText: "OK",
+      }); */
+      setPopUp({
+        show: true,
+        message: logoutResp.message ?? "",
+        title: "Error!",
+        returnFocusTo: "sidebar-logout",
       });
       return;
     }
     localStorage.removeItem(SESSION_TOKEN_LOCAL_STORAGE);
     userContext.setUserProfile(null);
     sessionContext.setSessionToken(null);
+  };
+  const onPopupOkClick = () => {
+    const returnFocusTo = popUp.returnFocusTo;
+    setPopUp({ show: false, message: "", title: "", returnFocusTo: "" });
+    setFocus(returnFocusTo);
   };
   return (
     <>
@@ -157,6 +175,14 @@ export default function AuthLayout({
                 </p>
               </div>
             </div>
+            {popUp.show && (
+              <ErrorPopUp
+                title={popUp.title}
+                message={popUp.message}
+                onOkClick={onPopupOkClick}
+                focusKeyParam="modal-popup"
+              />
+            )}
           </FocusContext.Provider>
           <div className="col">
             <div

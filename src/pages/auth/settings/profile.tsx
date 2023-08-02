@@ -2,7 +2,6 @@ import { useContext, useEffect, useState } from "react";
 import defaultUser from "../../../assets/images/user/defaultUser.svg";
 import { SessionContext, UserProfileContext } from "src/App";
 import { getProfile, updateProfile } from "src/common/services";
-import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import { SESSION_TOKEN_LOCAL_STORAGE } from "src/common/constants";
 import {
@@ -10,6 +9,7 @@ import {
   useFocusable,
 } from "@noriginmedia/norigin-spatial-navigation";
 import LoaderPopup from "src/pages/loader";
+import ErrorPopUp from "src/pages/error";
 
 export default function Profile({
   focusKey: focusKeyParam,
@@ -21,6 +21,12 @@ export default function Profile({
   const [username, setUsername] = useState("");
   const [fullName, setFullName] = useState("");
   const [bio, setBio] = useState("");
+  const [popUp, setPopUp] = useState({
+    show: false,
+    message: "",
+    title: "",
+    returnFocusTo: "",
+  });
   const { focusSelf, focusKey, setFocus } = useFocusable({
     focusable: true,
     trackChildren: true,
@@ -38,12 +44,13 @@ export default function Profile({
       setShowLoading(true);
       const profileResp: any = await getProfile(sessionContext.sessionToken);
       if (!profileResp.success) {
-        Swal.fire({
+        /* Swal.fire({
           title: "Error!",
           text: profileResp.message,
           icon: "error",
           confirmButtonText: "OK",
-        });
+        }); */
+
         localStorage.removeItem(SESSION_TOKEN_LOCAL_STORAGE);
         sessionContext.setSessionToken(null);
         navigate("/");
@@ -58,14 +65,24 @@ export default function Profile({
       setShowLoading(false);
     })();
   }, [sessionContext]);
-
+  const onPopupOkClick = () => {
+    const returnFocusTo = popUp.returnFocusTo;
+    setPopUp({ show: false, message: "", title: "", returnFocusTo: "" });
+    setFocus(returnFocusTo);
+  };
   const updateUserProfile = async () => {
     if (!username.length || !fullName.length) {
-      Swal.fire({
+      /* Swal.fire({
         title: "Error!",
         text: "Invalid profile data.",
         icon: "error",
         confirmButtonText: "OK",
+      }); */
+      setPopUp({
+        show: true,
+        message: "Invalid profile data.",
+        title: "Error!",
+        returnFocusTo: "btn-save-profile",
       });
       return;
     }
@@ -89,17 +106,23 @@ export default function Profile({
       );
       setBio(updateResp?.profile.bio);
     } else {
-      Swal.fire({
+      /* Swal.fire({
         title: "Error!",
         text: updateResp.message,
         icon: "error",
         confirmButtonText: "OK",
+      }); */
+      setPopUp({
+        show: true,
+        message: updateResp.message ?? "",
+        title: "Error!",
+        returnFocusTo: "username",
       });
       return;
     }
   };
   return (
-    <FocusContext.Provider value={focusKey}>
+    <FocusContext.Provider value={focusKeyParam}>
       <div className="row">
         <div className="col-lg-8 col-md-9 ps-4">
           <p className="GamesTitle">Profile Settings</p>
@@ -166,6 +189,14 @@ export default function Profile({
           </div>
         </div>
       </div>
+      {popUp.show && (
+        <ErrorPopUp
+          title={popUp.title}
+          message={popUp.message}
+          onOkClick={onPopupOkClick}
+          focusKeyParam="modal-popup"
+        />
+      )}
       {showLoading ? <LoaderPopup focusKeyParam="Loader" /> : null}
     </FocusContext.Provider>
   );

@@ -31,9 +31,49 @@ export default function Home({
   const [wishlistGames, setWishlistGames] = useState<any[]>([]);
   const sessionContext = useContext(SessionContext);
   const navigate = useNavigate();
-
   const [currentTab, setCurrentTab] = useState("For You");
-
+  const [tabs, setTabs] = useState([
+    { text: "For You", focusKeyParam: "tab-for-you", body: { is_free: true } },
+    {
+      text: "Free To Play",
+      focusKeyParam: "tab-free-to-play",
+      body: { is_free: "true", order_by: "release_date:desc" },
+    },
+    {
+      text: "Action",
+      focusKeyParam: "tab-action",
+      body: { genres: "Action", order_by: "release_date:desc" },
+    },
+    {
+      text: "Adventure",
+      focusKeyParam: "tab-adventure",
+      body: { genres: "Adventure", order_by: "release_date:desc" },
+    },
+    {
+      text: "Casual",
+      focusKeyParam: "tab-casual",
+      body: {
+        genres: "Casual",
+        order_by: "release_date:desc",
+      },
+    },
+    {
+      text: "RPG",
+      focusKeyParam: "tab-rpg",
+      body: {
+        genres: "RPG",
+        order_by: "release_date:desc",
+      },
+    },
+    {
+      text: "Racing",
+      focusKeyParam: "tab-racing",
+      body: {
+        genres: "Racing",
+        order_by: "release_date:desc",
+      },
+    },
+  ]);
   const { setFocus, focusKey, focusSelf } = useFocusable({
     focusable: true,
     focusKey: focusKeyParam,
@@ -252,7 +292,7 @@ export default function Home({
   return (
     <FocusContext.Provider value={focusKey}>
       {
-      renderHeaderSlider()
+        //renderHeaderSlider()
       }
       <div
         className="container-fluid homeMainContainer"
@@ -261,17 +301,20 @@ export default function Home({
         <div className="row justify-content-center pt-4">
           <div className="col-auto">
             <div className="row justify-content-center scrolltab">
-              <div className="col-auto tabOptions">
-                <FocusableTabButton
-                  focusKeyParam="tab-for-you"
-                  tab="For You"
-                  onClick={onTabButtonCliced}
-                  currentTab={currentTab}
-                >
-                  For You
-                </FocusableTabButton>
-              </div>
-              <div className="col-auto tabOptions">
+              {tabs.map((tab) => (
+                <div className="col-auto tabOptions" key={tab.focusKeyParam}>
+                  <FocusableTabButton
+                    focusKeyParam={tab.focusKeyParam}
+                    tab={tab.text}
+                    onClick={onTabButtonCliced}
+                    currentTab={currentTab}
+                  >
+                    {tab.text}
+                  </FocusableTabButton>
+                </div>
+              ))}
+
+              {/*   <div className="col-auto tabOptions">
                 <FocusableTabButton
                   focusKeyParam="tab-free-to-play"
                   tab="Free To Play"
@@ -330,7 +373,7 @@ export default function Home({
                 >
                   Racing
                 </FocusableTabButton>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
@@ -396,22 +439,17 @@ const FocusableRailGameWrapper = (props: any) => {
     focusable: true,
     focusKey: props.focusKeyParam,
     onFocus: () => {
-      // scrollToElement(ref.current, 120);
-      ref.current.parentElement.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      });
-      /* setTimeout(() => {
-        window.scrollTo(window.scrollX, window.scrollY + 10);
-      }, 200); */
-
+      scrollToElement(ref.current, 120);
       railScrollTo(ref.current);
     },
     onEnterPress: () => {
       props.goToDetail(`/games-detail/${props.game.oplay_id}`);
     },
     onArrowPress: (direction, keyProps, detils) => {
-      if (direction === "left" && getCoords(ref.current).left < 85) {
+      if (
+        direction === "left" &&
+        getCoords(ref.current).left + ref.current.offsetLeft < 170
+      ) {
         setFocus("Sidebar", { pos: getScrolledCoords(ref.current) });
         return false;
       }
@@ -425,6 +463,7 @@ const FocusableRailGameWrapper = (props: any) => {
       style={{
         padding: "10px",
         borderRadius: "10px",
+        verticalAlign: "top",
       }}
     >
       <img
@@ -432,6 +471,8 @@ const FocusableRailGameWrapper = (props: any) => {
         className="img-fluid rounded coverImg"
         alt={props.game.title ?? "game_" + props.game.oplay_id}
       />
+      <h5 className="mt-3 mb-1 text-white">{props.game.title}</h5>
+      <p className="textOffWhite">{props.game.genre_mappings.join(", ")}</p>
     </div>
   );
 };

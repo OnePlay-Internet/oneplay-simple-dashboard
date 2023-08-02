@@ -1,12 +1,16 @@
-import { useFocusable } from "@noriginmedia/norigin-spatial-navigation";
+import {
+  FocusContext,
+  useFocusable,
+} from "@noriginmedia/norigin-spatial-navigation";
 import { useContext, useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { SessionContext } from "src/App";
 import { SESSION_TOKEN_LOCAL_STORAGE } from "src/common/constants";
 import { getUsersSessions, sessionLogout } from "src/common/services";
-import Swal from "sweetalert2";
 
-import { scrollToElement, timeAgo } from "src/common/utils";
+
+import { scrollToElement, scrollToTop, timeAgo } from "src/common/utils";
+import ErrorPopUp from "src/pages/error";
 
 export default function DeviceHistory({
   focusKey: focusKeyParam,
@@ -14,6 +18,12 @@ export default function DeviceHistory({
   const navigate = useNavigate();
   const sessionContext = useContext(SessionContext);
   const [sessions, setSessions] = useState<any[]>([]);
+  const [popUp, setPopUp] = useState({
+    show: false,
+    message: "",
+    title: "",
+    returnFocusTo: "",
+  });
   const { focusSelf, focusKey, setFocus, focused } = useFocusable({
     focusable: true,
     focusKey: focusKeyParam,
@@ -116,18 +126,29 @@ export default function DeviceHistory({
       sessionContext.sessionToken
     );
     if (!logoutResp.success) {
-      Swal.fire({
+      /* Swal.fire({
         title: "Error!",
         text: logoutResp.message,
         icon: "error",
         confirmButtonText: "OK",
+      }); */
+      setPopUp({
+        show: true,
+        message: logoutResp.message ?? "",
+        title: "Error!",
+        returnFocusTo: "btn-logout-form-all",
       });
       return;
     }
     getSessions();
   };
+  const onPopupOkClick = () => {
+    const returnFocusTo = popUp.returnFocusTo;
+    setPopUp({ show: false, message: "", title: "", returnFocusTo: "" });
+    setFocus(returnFocusTo);
+  };
   return (
-    <>
+    <FocusContext.Provider value={focusKeyParam}>
       <div className="row ps-4">
         <div className="col-lg-10 col-md-10">
           <div className="row">
@@ -164,7 +185,15 @@ export default function DeviceHistory({
           </div>
         </div>
       </div>
-    </>
+      {popUp.show && (
+        <ErrorPopUp
+          title={popUp.title}
+          message={popUp.message}
+          onOkClick={onPopupOkClick}
+          focusKeyParam="modal-popup"
+        />
+      )}
+    </FocusContext.Provider>
   );
 }
 
@@ -173,12 +202,16 @@ const FocusableSapn = (props: any) => {
     focusable: true,
     focusKey: props.focusKeyParam,
     onFocus: () => {
-      scrollToElement(ref.current, 300);
+      //scrollToElement(ref.current, 300);
+      ref.current.parentElement.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+      });
     },
     onEnterPress: () => {
       props.onClick();
     },
-    /*  onArrowPress: (direction, keyProps, details) => {
+    onArrowPress: (direction, keyProps, details) => {
       switch (direction) {
         case "right":
         case "left":
@@ -187,7 +220,7 @@ const FocusableSapn = (props: any) => {
         default:
           return true;
       }
-    }, */
+    },
   });
   return (
     <span
@@ -209,7 +242,8 @@ const FocusableButton = (props: any) => {
       props.onClick();
     },
     onFocus: () => {
-      scrollToElement(ref.current, 200);
+      //scrollToElement(ref.current, 200);
+      scrollToTop();
     },
     onArrowPress: (direction, keyProps, details) => {
       console.log("all logout direction : ", direction);

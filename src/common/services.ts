@@ -99,9 +99,9 @@ export async function getProfile(
         session_token: sessionToken,
       },
     });
-    if (profileResp.status !== 200) {
-      return handleNon200Response(profileResp.data.message);
-    }
+     if (profileResp.status !== 200) {
+       return handleNon200Response(profileResp.data.message);
+     }
     return { success: true, profile: profileResp.data };
   } catch (error: any) {
     return handleError(error, "get profile.");

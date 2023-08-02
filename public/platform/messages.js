@@ -100,14 +100,6 @@ function handleMessage(msg) {
   } else if (msg === "Connection Established") {
     setGameStartedSuccessfully();
     startHeartBeatAPI();
-    sendMessage("toogleMouse", []).then(
-      function () {
-        console.log("toogle mouse success");
-      },
-      function (error) {
-        console.log("toogle mouse failed : " + error);
-      }
-    );
     $("#loadingSpinner").css("display", "none");
     $("body").css("backgroundColor", "transparent");
     $("#nacl_module").css("display", "");

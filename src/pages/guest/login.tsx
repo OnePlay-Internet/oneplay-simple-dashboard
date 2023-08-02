@@ -29,8 +29,8 @@ export default function Login({
     focusKey: focusKeyParam,
   });
 
-  const [userId, setUserId] = useState("");
-  const [password, setPassword] = useState("");
+  const [userId, setUserId] = useState("maulik@oneplay.in");
+  const [password, setPassword] = useState("Test@1234");
 
   useEffect(() => {
     const delayedFocus = setTimeout(() => {

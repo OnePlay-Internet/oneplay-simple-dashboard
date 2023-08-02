@@ -13,7 +13,7 @@ var init = function () {
 
   // add eventListener for keydown
   document.addEventListener("keydown", function (e) {
-    console.log("Key code : " + e.keyCode);
+    console.log("Key code : ", e.keyCode);
     switch (e.keyCode) {
       case 37: //LEFT arrow
         break;
@@ -42,3 +42,4 @@ var init = function () {
 };
 // window.onload can work without <body onload="">
 window.onload = init;
+Controller.startWatching();

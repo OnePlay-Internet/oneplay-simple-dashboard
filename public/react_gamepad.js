@@ -13,7 +13,6 @@ const Controller = (function () {
   class Gamepad {
     constructor(gamepad) {
       this.buttons = gamepad.buttons.map((button) => new Button(button));
-      this.pressedStartTime = new Map();
       this.axisValue = new Map();
     }
 
@@ -26,10 +25,13 @@ const Controller = (function () {
       for (let i = 0; i < newButtons.length; ++i) {
         if (this.buttons[i].pressed !== newButtons[i].pressed) {
           //   console.log(i + " pressed : " + newButtons[i].pressed);
+
           if (newButtons[i].pressed) {
-            this.pressedStartTime.set(i, Date.now());
-          } else {
-            this.pressedStartTime.set(i, -1);
+            if (i === 0) {
+              window.dispatchEvent(
+                new KeyboardEvent("keydown", { keyCode: "13" })
+              );
+            }
           }
           window.dispatchEvent(
             new CustomEvent("gamepadbuttonpressed", {
@@ -39,33 +41,64 @@ const Controller = (function () {
               },
             })
           );
-        } else if (newButtons[i].pressed) {
-          const pressedStartTime = this.pressedStartTime.get(i);
-          if (
-            i === 9 &&
-            pressedStartTime >= 0 &&
-            Date.now() - pressedStartTime >= 2000
-          ) {
-            this.pressedStartTime.set(i, -1);
-            //alert("Sending toogleMouse");
-            // console.log(i, " pressed for 3 seconds ");
-            sendMessage("toogleMouse", []).then(
-              function (ret) {
-                console.log("Toogle mouse result : ", ret);
-                //  alert("Toogle mouse result : " + ret);
-                //snackbarLog("Toogle mouse result : ", ret);
-              },
-              function (error) {
-                console.log("Toogle mouse failed : " + error);
-                //alert("Toogle mouse failed : " + error);
-                //snackbarLog("Toogle mouse failed : " + error);
-              }
-            );
-          }
         }
       }
 
       this.buttons = newButtons.map((button) => new Button(button));
+    }
+    analyzeAxes(axes) {
+      axes.forEach((axis, i) => {
+        if (this.axisValue.get(i) !== axis.toFixed(4)) {
+          if (i === 9) {
+            if (axis.toFixed(4) == 0.1429) {
+              console.log("down : 40");
+              window.dispatchEvent(
+                new KeyboardEvent("keydown", { keyCode: "40" })
+              );
+            } else if (axis.toFixed(4) == 0.7143) {
+              console.log("left : 37");
+              window.dispatchEvent(
+                new KeyboardEvent("keydown", { keyCode: "37" })
+              );
+            } else if (axis.toFixed(4) == -0.4286) {
+              console.log("right : 39");
+              window.dispatchEvent(
+                new KeyboardEvent("keydown", { keyCode: "39" })
+              );
+            } else if (axis.toFixed(4) == -1.0) {
+              console.log("up : 38");
+              window.dispatchEvent(
+                new KeyboardEvent("keydown", { keyCode: "38" })
+              );
+            }
+          } else if (i === 1) {
+            if (axis.toFixed(4) == 1.0) {
+              console.log("down : 40");
+              window.dispatchEvent(
+                new KeyboardEvent("keydown", { keyCode: "40" })
+              );
+            } else if (axis.toFixed(4) == -1.0) {
+              console.log("up : 38");
+              window.dispatchEvent(
+                new KeyboardEvent("keydown", { keyCode: "38" })
+              );
+            }
+          } else if (i === 0) {
+            if (axis.toFixed(4) == 1.0) {
+              console.log("right : 39 ");
+              window.dispatchEvent(
+                new KeyboardEvent("keydown", { keyCode: "39" })
+              );
+            } else if (axis.toFixed(4) == -1.0) {
+              console.log("left : 37");
+              window.dispatchEvent(
+                new KeyboardEvent("keydown", { keyCode: "37" })
+              );
+            }
+          }
+        }
+        this.axisValue.set(i, axis.toFixed(4));
+      });
     }
   }
 
@@ -83,6 +116,7 @@ const Controller = (function () {
 
     if (pGamepad) {
       pGamepad.analyzeButtons(gamepad.buttons);
+      pGamepad.analyzeAxes(gamepad.axes);
     }
   }
 

@@ -17,6 +17,7 @@ import {
 } from "src/common/utils";
 import InfiniteScroll from "react-infinite-scroller";
 import LoaderPopup from "src/pages/loader";
+import ErrorPopUp from "src/pages/error";
 export default function SearchGames({
   focusKey: focusKeyParam,
 }: FocusabelComponentProps) {
@@ -27,7 +28,12 @@ export default function SearchGames({
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
   const [haveMoreGames, setHaveMoreGames] = useState(true);
-
+  const [popUp, setPopUp] = useState({
+    show: false,
+    message: "",
+    title: "",
+    returnFocusTo: "",
+  });
   const { focusKey, setFocus } = useFocusable({
     focusable: true,
     focusKey: focusKeyParam,
@@ -103,7 +109,15 @@ export default function SearchGames({
         GAME_FETCH_LIMIT
       );
       setShowLoading(false);
-
+      if (!searchResp.success) {
+        setPopUp({
+          show: true,
+          message: searchResp.message ?? "",
+          title: "Error!",
+          returnFocusTo: "game_search",
+        });
+        return;
+      }
       if (searchResp.games && searchResp.games.length) {
         if (page > 0) {
           setSearchResult((prevGames) => {
@@ -131,6 +145,15 @@ export default function SearchGames({
         GAME_FETCH_LIMIT
       );
       setShowLoading(false);
+       if (!customGamesResp.success) {
+         setPopUp({
+           show: true,
+           message: customGamesResp.message ?? "",
+           title: "Error!",
+           returnFocusTo: "game_search",
+         });
+         return;
+       }
       if (customGamesResp.games) {
         if (customGamesResp.games && customGamesResp.games.length) {
           if (page > 0) {
@@ -152,6 +175,11 @@ export default function SearchGames({
         }
       }
     }
+  };
+  const onPopupOkClick = () => {
+    const returnFocusTo = popUp.returnFocusTo;
+    setPopUp({ show: false, message: "", title: "", returnFocusTo: "" });
+    setFocus(returnFocusTo);
   };
   return (
     <FocusContext.Provider value={focusKey}>
@@ -232,6 +260,14 @@ export default function SearchGames({
         </div>
       </div>
       {showLoading ? <LoaderPopup focusKeyParam="Loader" /> : null}
+      {popUp.show && (
+        <ErrorPopUp
+          title={popUp.title}
+          message={popUp.message}
+          onOkClick={onPopupOkClick}
+          focusKeyParam="modal-popup"
+        />
+      )}
     </FocusContext.Provider>
   );
 }
@@ -329,7 +365,6 @@ const FocusableGameWrapper = (props: any) => {
       ref.current.scrollIntoView({
         behavior: "smooth",
         block: "center",
-        inline: "nearest",
       });
     },
     onArrowPress: (direction, keyProps, detils) => {

@@ -3,13 +3,13 @@ import Clock from "../../../assets/images/setting/Alarm.svg";
 import { useContext, useEffect, useState } from "react";
 import { SessionContext } from "src/App";
 import { getCurrentSubscriptions } from "src/common/services";
-import Swal from "sweetalert2";
 import { SESSION_TOKEN_LOCAL_STORAGE } from "src/common/constants";
 import moment from "moment";
 import {
   FocusContext,
   useFocusable,
 } from "@noriginmedia/norigin-spatial-navigation";
+import ErrorPopUp from "src/pages/error";
 
 export default function SubscriptionComponent({
   focusKey: focusKeyParam,
@@ -21,6 +21,12 @@ export default function SubscriptionComponent({
     focusable: true,
     trackChildren: true,
     focusKey: focusKeyParam,
+  });
+  const [popUp, setPopUp] = useState({
+    show: false,
+    message: "",
+    title: "",
+    returnFocusTo: "",
   });
   useEffect(() => {
     if (
@@ -38,15 +44,18 @@ export default function SubscriptionComponent({
         sessionContext.sessionToken
       );
       if (!subscriptionResp.success) {
-        Swal.fire({
+        /*   Swal.fire({
           title: "Error!",
           text: subscriptionResp.message,
           icon: "error",
           confirmButtonText: "OK",
+        }); */
+        setPopUp({
+          show: true,
+          message: subscriptionResp.message ?? "",
+          title: "Error!",
+          returnFocusTo: "buy-now",
         });
-        localStorage.removeItem(SESSION_TOKEN_LOCAL_STORAGE);
-        sessionContext.setSessionToken(null);
-        navigate("/");
         return;
       }
 
@@ -164,6 +173,11 @@ export default function SubscriptionComponent({
       </FocusableTr>
     );
   };
+  const onPopupOkClick = () => {
+    const returnFocusTo = popUp.returnFocusTo;
+    setPopUp({ show: false, message: "", title: "", returnFocusTo: "" });
+    setFocus(returnFocusTo);
+  };
   return (
     <FocusContext.Provider value={focusKey}>
       <div className="row">
@@ -207,6 +221,14 @@ export default function SubscriptionComponent({
           </div>
         </div>
       </div>
+      {popUp.show && (
+        <ErrorPopUp
+          title={popUp.title}
+          message={popUp.message}
+          onOkClick={onPopupOkClick}
+          focusKeyParam="modal-popup"
+        />
+      )}
     </FocusContext.Provider>
   );
 }

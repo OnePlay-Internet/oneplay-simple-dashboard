@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useContext, useEffect, useState } from "react";
 import { SessionContext } from "src/App";
 import { getAllGames } from "../../../common/services";
-import Swal from "sweetalert2";
+
 import { GAME_FETCH_LIMIT } from "src/common/constants";
 import {
   FocusContext,
@@ -11,6 +11,7 @@ import {
 import InfiniteScroll from "react-infinite-scroller";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import { getCoords } from "src/common/utils";
+import ErrorPopUp from "src/pages/error";
 export default function AllGames({
   focusKey: focusKeyParam,
 }: FocusabelComponentProps) {
@@ -19,7 +20,12 @@ export default function AllGames({
   const [currentPage, setCurrentPage] = useState(0);
   const [haveMoreGames, setHaveMoreGames] = useState(true);
   const navigate = useNavigate();
-
+  const [popUp, setPopUp] = useState({
+    show: false,
+    message: "",
+    title: "",
+    returnFocusTo: "",
+  });
   const { focusSelf, focusKey, setFocus } = useFocusable({
     focusable: true,
     trackChildren: true,
@@ -64,11 +70,17 @@ export default function AllGames({
       GAME_FETCH_LIMIT
     );
     if (!allGamesResp.success) {
-      Swal.fire({
+      /* Swal.fire({
         title: "Error!",
         text: allGamesResp.message,
         icon: "error",
         confirmButtonText: "OK",
+      }); */
+      setPopUp({
+        show: true,
+        message: allGamesResp.message ?? "",
+        title: "Error!",
+        returnFocusTo: "",
       });
     }
     if (allGamesResp.games && allGamesResp.games.length) {
@@ -92,6 +104,15 @@ export default function AllGames({
       loadMoreGames();
     }
   };
+  const onPopupOkClick = () => {
+    const returnFocusTo = popUp.returnFocusTo;
+    setPopUp({ show: false, message: "", title: "", returnFocusTo: "" });
+    if (returnFocusTo) {
+      setFocus(returnFocusTo);
+    } else {
+      setFocus("Sidebar");
+    }
+  };
   return (
     <FocusContext.Provider value={focusKey}>
       <InfiniteScroll
@@ -103,6 +124,14 @@ export default function AllGames({
           {allGames?.map((game) => renderSingleGame(game))}
         </div>
       </InfiniteScroll>
+      {popUp.show && (
+        <ErrorPopUp
+          title={popUp.title}
+          message={popUp.message}
+          onOkClick={onPopupOkClick}
+          focusKeyParam="modal-popup"
+        />
+      )}
     </FocusContext.Provider>
   );
 }

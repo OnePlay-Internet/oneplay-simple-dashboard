@@ -236,15 +236,37 @@ function callHeartBeatAPI() {
 
       //heartBeatData.last_input_received_at = vidStats.last_input_received_at;
       heartBeatData.stats.decoder = vidStats.decoder;
+      heartBeatData.last_input_received_at = parseInt(
+        vidStats.last_input_received_at
+      );
       heartBeatData.stats.received_fps = parseInt(vidStats.received_fps);
       heartBeatData.stats.rendered_fps = parseInt(vidStats.rendered_fps);
       heartBeatData.stats.net_drops = parseInt(vidStats.net_drops);
       heartBeatData.stats.net_latency = parseInt(vidStats.net_latency);
       heartBeatData.stats.variance = parseInt(vidStats.variance);
       heartBeatData.stats.decode_time = parseInt(vidStats.decode_time);
-      console.log("heart beat data :", heartBeatData);
+      //console.log("heart beat data :", heartBeatData);
+      const statString = ` VM: ${urlParams.get(
+        "server_ip"
+      )}<br /> Resolution: ${
+        heartBeatData.stats.resolution
+      }<br /> Last Input: ${
+        heartBeatData.last_input_received_at
+      }<br /> Total FPS: ${
+        heartBeatData.stats.total_fps
+      }<br /> CPU Load: ${cpuLoad} %<br /> RAM:${heartBeatData.ram.available}/${
+        heartBeatData.ram.total
+      } MB<br /> Decoder: ${vidStats.decoder}<br /> Received FPS: ${
+        vidStats.received_fps
+      }<br /> Rendered FPS: ${vidStats.rendered_fps}<br /> Net Drops: ${
+        vidStats.net_drops
+      }<br /> Net Latency : ${vidStats.net_latency}<br /> Variance: ${
+        vidStats.variance
+      }<br /> Decode Time: ${vidStats.decode_time}`;
+      $("#heart_beat_stats").html(statString);
       $.ajax({
-        url: "https://client-apis.oneream.com/client/v2/heart_beat",
+        //url: "https://client-apis.oneream.com/client/v2/heart_beat",
+        url: "https://client-apis.oneplay.in/client/v2/heart_beat",
         type: "POST",
         data: JSON.stringify(heartBeatData),
         dataType: "json",
