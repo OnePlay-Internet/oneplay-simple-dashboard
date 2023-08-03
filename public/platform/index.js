@@ -819,10 +819,7 @@ function startGame(host, appID) {
   if (gameStartedSuccessfully) {
     gameReconnectTryCount++;
     if (gameReconnectTryCount > 3) {
-      window.location.replace(
-        "/index.html/?redirect=/games-detail/" +
-          urlParams.get("game_id").toString()
-      );
+      goToReact();
       return;
     }
   }
@@ -1690,6 +1687,34 @@ function setGameStartedSuccessfully() {
   gameReconnectTryCount = 0;
 }
 
+function quitStreaming() {
+  if (!api) {
+    goToReact();
+  }
+  api.quitApp().then(
+    function (ret2) {
+      console.log(
+        "%c[index.js, stopGame]",
+        "color:green;",
+        "quit streaming success:" + ret2
+      );
+      goToReact();
+      return;
+    },
+    function (failedQuitApp) {
+      console.error(
+        "%c[index.js, stopGame]",
+        "color:green;",
+        "Failed to quit app! Returned error was:" + failedQuitApp
+      );
+    }
+  );
+}
+function goToReact() {
+  window.location.replace(
+    "/index.html/?redirect=/games-detail/" + urlParams.get("game_id").toString()
+  );
+}
 /* function loadHTTPCertsCb() {
   console.log("load the HTTP cert and unique ID if we have one.");
   getData("cert", function (savedCert) {

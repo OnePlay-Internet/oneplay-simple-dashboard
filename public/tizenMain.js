@@ -34,6 +34,7 @@ var init = function () {
           tizen.application.getCurrentApplication().exit();
         } else {
           console.log("go back");
+
           window.history.go(-1);
         }
         break;

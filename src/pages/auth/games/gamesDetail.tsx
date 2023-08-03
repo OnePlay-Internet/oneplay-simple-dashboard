@@ -10,6 +10,8 @@ import {
   terminateGame,
   getStreamingSessionInfo,
   setPin,
+  customFeedGames,
+  getSimilarGames,
 } from "../../../common/services";
 import moment from "moment";
 //import Swal from "sweetalert2";
@@ -20,7 +22,9 @@ import {
 import {
   getCoords,
   getScrolledCoords,
+  railScrollTo,
   scrollToElement,
+  scrollToTop,
 } from "src/common/utils";
 import ErrorPopUp from "src/pages/error";
 import LoaderPopup from "src/pages/loader";
@@ -32,8 +36,13 @@ export default function GamesDetail({
   let { id } = useParams();
   const navigate = useNavigate();
   const [gameDetails, setGameDetails] = useState<any>(null);
+  const [developerGames, setDeveloperGames] = useState<any[]>([]);
+  const [genreGames, setGenreGames] = useState<any[]>([]);
+  const [similarGames, setSimilarGames] = useState<any[]>([]);
   const [selectedStore, setSelectedStore] = useState<string>("");
   const [debugInfo, setDebugInfo] = useState("");
+  const [playNowButtonText, setPlayNowButtonText] =
+    useState<string>("Play Now");
   const [activeSessionStatus, setActiveSessionStatus] = useState<GameStatusDTO>(
     {
       is_user_connected: false,
@@ -198,10 +207,127 @@ export default function GamesDetail({
     }
   };
   useEffect(() => {
+    if (!gameDetails) {
+      return;
+    }
     (async () => {
       await getActiveSessionStatus();
     })();
+
+    (async () => {
+      const existingGameIds = new Set();
+      existingGameIds.add(gameDetails.oplay_id);
+      for await (const genre of gameDetails.genre_mappings) {
+        const genreGamesResp = await customFeedGames(
+          sessionContext.sessionToken,
+          { genres: genre, order_by: "trend_score:desc" },
+          0,
+          0,
+          false
+        );
+        if (genreGamesResp.success && genreGamesResp.games) {
+          const newGames: any[] = [];
+          for (const game of genreGamesResp.games) {
+            if (!existingGameIds.has(game.oplay_id)) {
+              newGames.push(game);
+              existingGameIds.add(game.oplay_id);
+            }
+          }
+          setGenreGames((prev) => [...prev, ...newGames]);
+        }
+      }
+    })();
+    (async () => {
+      const existingGameIds = new Set();
+      existingGameIds.add(gameDetails.oplay_id);
+      for await (const developer of gameDetails.developer) {
+        const developerGameResp = await customFeedGames(
+          sessionContext.sessionToken,
+          { developer: developer, order_by: "trend_score:desc" },
+          0,
+          0,
+          false
+        );
+        if (developerGameResp.success && developerGameResp.games) {
+          const newGames: any[] = [];
+          for (const game of developerGameResp.games) {
+            if (!existingGameIds.has(game.oplay_id)) {
+              newGames.push(game);
+              existingGameIds.add(game.oplay_id);
+            }
+          }
+          setDeveloperGames((prev) => [...prev, ...newGames]);
+        }
+      }
+    })();
+    (async () => {
+      const existingGameIds = new Set();
+      existingGameIds.add(gameDetails.oplay_id);
+      const similarGamesResp = await getSimilarGames(
+        sessionContext.sessionToken,
+        gameDetails.oplay_id
+      );
+      if (similarGamesResp.success && similarGamesResp.games) {
+        const newGames: any[] = [];
+        for (const game of similarGamesResp.games) {
+          if (!existingGameIds.has(game.oplay_id)) {
+            newGames.push(game);
+            existingGameIds.add(game.oplay_id);
+          }
+        }
+        setSimilarGames((prev) => [...prev, ...newGames]);
+      }
+    })();
   }, [gameDetails]);
+  const renderSimilarGames = () => {
+    return similarGames.length ? (
+      <div className="col-12" key={`feed_similar_games`}>
+        <p className="rail-heading">Similar Games</p>
+
+        <div className="scrolltab">
+          {similarGames.map((game: any) =>
+            renderSingeGameForRail(game, "similar_games")
+          )}
+        </div>
+      </div>
+    ) : null;
+  };
+  const renderDevelopersGames = () => {
+    return developerGames.length ? (
+      <div className="col-12" key={`feed_from_developer`}>
+        <p className="rail-heading">From Developer</p>
+
+        <div className="scrolltab">
+          {developerGames.map((game: any) =>
+            renderSingeGameForRail(game, "from_developer")
+          )}
+        </div>
+      </div>
+    ) : null;
+  };
+  const renderGenreGames = () => {
+    return genreGames.length ? (
+      <div className="col-12" key={`feed_from_genre`}>
+        <p className="rail-heading">From Genre</p>
+
+        <div className="scrolltab">
+          {genreGames.map((game: any) =>
+            renderSingeGameForRail(game, "from_genre")
+          )}
+        </div>
+      </div>
+    ) : null;
+  };
+  const renderSingeGameForRail = (game: any, feedId: string) => {
+    return (
+      <FocusableRailGameWrapper
+        key={`rail_${feedId}_${game.oplay_id}`}
+        game={game}
+        goToDetail={navigate}
+        focusKeyParam={`rail_${feedId}_${game.oplay_id}`}
+      />
+    );
+  };
 
   const getStoreImage = (storeName: string): string => {
     if (/^epic/i.exec(storeName)) {
@@ -286,7 +412,7 @@ export default function GamesDetail({
     } else if (activeSessionStatus.success) {
       return (
         <FocusableButton onClick={onPlayNowClicked} focusKeyParam="play-now">
-          Play Now
+          {playNowButtonText}
         </FocusableButton>
       );
     } else {
@@ -331,6 +457,7 @@ export default function GamesDetail({
         sStore = gameDetails.preferred_store;
       }
       setDebugInfo("");
+      setPlayNowButtonText("Initializing...");
       const startGameResp = await startGame(
         userId,
         sessionId,
@@ -348,7 +475,7 @@ export default function GamesDetail({
           icon: "error",
           confirmButtonText: "OK",
         }); */
-
+        setPlayNowButtonText("Play Now");
         setshowLoading(false);
         setPopUp({
           show: true,
@@ -369,6 +496,7 @@ export default function GamesDetail({
           returnFocusTo: "play-now",
           icon: "queue",
         });
+        setPlayNowButtonText("Play Now");
       } else if (startGameResp.data?.api_action === "call_session") {
         if (startGameResp.data.session?.id) {
           setStartGameSession(startGameResp.data.session.id);
@@ -376,6 +504,7 @@ export default function GamesDetail({
       } else if (startGameResp.data?.api_action === "call_terminate") {
         await onTerminateGame(startGameResp.data.session?.id ?? null);
       } else {
+        setPlayNowButtonText("Play Now");
         //   this.stopLoading();
         setshowLoading(false);
         /*   Swal.fire({
@@ -397,6 +526,7 @@ export default function GamesDetail({
           returnFocusTo: "play-now",
           icon: "group",
         });
+        
       }
     }
   };
@@ -494,6 +624,7 @@ export default function GamesDetail({
         return;
       }
       setshowLoading(false);
+       setPlayNowButtonText("Play Now");
       await getActiveSessionStatus();
     }
   };
@@ -548,13 +679,8 @@ export default function GamesDetail({
               {getShortDescription()}
               {/* <span className="text-white">...Read more</span> */}
             </p>
-            <p style={{ color: "transparent", overflowWrap: "break-word" }}>
-              Debug : {debugInfo ?? ""}
-              <br />
-              Active session response : {JSON.stringify(activeSessionStatus)}
-            </p>
           </div>
-          <div className="col-md-6">
+          {/*   <div className="col-md-6">
             <div className="col-auto pr-lg-5 mt-4">
               {gameDetails?.stores_mappings?.length ? (
                 <p className="font500 text-white">Store</p>
@@ -563,7 +689,68 @@ export default function GamesDetail({
                 renderSingleStore(store, index)
               )}
             </div>
+          </div> */}
+          <div className="col-md-6 ps-lg-5">
+            <div className="row">
+              {gameDetails?.stores_mappings?.length ? (
+                <div className="col-auto mt-4 p-0">
+                  <p className="font500 gamesDescription mb-1">Store</p>
+
+                  {gameDetails?.stores_mappings?.map(
+                    (store: any, index: number) =>
+                      renderSingleStore(store, index)
+                  )}
+                </div>
+              ) : null}
+              {gameDetails.developer.length ? (
+                <div className="col">
+                  <div className="col-auto  mt-4">
+                    <p className="font500 gamesDescription mb-1">Developer</p>
+
+                    {gameDetails.developer.map((developer: string) => (
+                      <span
+                        className="suggestionResult text-white"
+                        key={`detail_genre_${developer}`}
+                      >
+                        {developer + " "}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+            </div>
+            {gameDetails.genre_mappings.length ? (
+              <div className="row mt-4">
+                <div
+                  className="col-12"
+                  style={{
+                    paddingLeft: 0,
+                  }}
+                >
+                  <p className="font500 gamesDescription mb-1">Tags</p>
+
+                  {gameDetails.genre_mappings.map((genre: string) => (
+                    <span
+                      key={`detail_genre_${genre}`}
+                      className="badge rounded-pill text-capitalize customLinearGradient smallText text-white me-3 mt-3 px-4 pb-2"
+                    >
+                      {genre}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ) : null}
           </div>
+        </div>
+        <div className="row">{renderSimilarGames()}</div>
+        <div className="row">{renderGenreGames()}</div>
+        <div className="row">{renderDevelopersGames()}</div>
+        <div className="row">
+          <p style={{ color: "transparent", overflowWrap: "break-word" }}>
+            Debug : {debugInfo ?? ""}
+            <br />
+            Active session response : {JSON.stringify(activeSessionStatus)}
+          </p>
         </div>
       </div>
 
@@ -586,9 +773,9 @@ const FocusableButton = (props: any) => {
   const { ref, focused, setFocus } = useFocusable({
     focusable: true,
     focusKey: props.focusKeyParam,
-    /* onFocus: () => {
-      scrollToElement(ref.current, 100);
-    }, */
+    onFocus: () => {
+      scrollToTop();
+    },
     onEnterPress: () => {
       props.onClick();
     },
@@ -619,9 +806,10 @@ const FocusableButton = (props: any) => {
 const FocusableStore = (props: any) => {
   const { ref, focused } = useFocusable({
     focusable: true,
-    /* onFocus: () => {
-      scrollToElement(ref.current, 100);
-    }, */
+    onFocus: () => {
+      // scrollToElement(ref.current, 100);
+      scrollToTop();
+    },
     onEnterPress: () => {
       props.onChange(!props.isSelected, props.store.name);
     },
@@ -649,5 +837,48 @@ const FocusableStore = (props: any) => {
         onChange={() => props.onChange(!props.isSelected, props.store.name)}
       />
     </a>
+  );
+};
+
+const FocusableRailGameWrapper = (props: any) => {
+  const { ref, focused, setFocus } = useFocusable({
+    focusable: true,
+    focusKey: props.focusKeyParam,
+    onFocus: () => {
+      scrollToElement(ref.current, 120);
+      railScrollTo(ref.current);
+    },
+    onEnterPress: () => {
+      props.goToDetail(`/games-detail/${props.game.oplay_id}`);
+    },
+    onArrowPress: (direction, keyProps, detils) => {
+      if (
+        direction === "left" &&
+        getCoords(ref.current).left + ref.current.offsetLeft < 170
+      ) {
+        setFocus("Sidebar", { pos: getScrolledCoords(ref.current) });
+        return false;
+      }
+      return true;
+    },
+  });
+  return (
+    <div
+      ref={ref}
+      className={"fixedWidth tabOptions" + (focused ? " focusedElement" : "")}
+      style={{
+        padding: "10px",
+        borderRadius: "10px",
+        verticalAlign: "top",
+      }}
+    >
+      <img
+        src={props.game.text_background_image ?? "/img/default_bg.webp"}
+        className="img-fluid rounded coverImg"
+        alt={props.game.title ?? "game_" + props.game.oplay_id}
+      />
+      <h5 className="mt-3 mb-1 text-white">{props.game.title}</h5>
+      <p className="textOffWhite">{props.game.genre_mappings.join(", ")}</p>
+    </div>
   );
 };

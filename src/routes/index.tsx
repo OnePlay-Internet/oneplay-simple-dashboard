@@ -17,24 +17,24 @@ export default function Router() {
   const navigate = useNavigate();
   const { pathname, search } = useLocation();
   /*  useEffect(() => {
-    const searchQuery = new URLSearchParams(search);
-    const redirectTo = searchQuery.get("redirect");
-    if (!sessionContext.sessionToken) {
-      if (pathname.replace("/index.html", "") === "") {
-        if (redirectTo) {
-          navigate(`/?redirect=${redirectTo}`);
-        } else {
-          navigate("/");
-        }
-      } else {
-        navigate(`/?redirect=${pathname}`);
-      }
-    } else if (redirectTo) {
-      navigate(redirectTo);
-    } else {
-      navigate("/home");
-    }
-  }, [sessionContext.sessionToken]); */
+     const searchQuery = new URLSearchParams(search);
+     const redirectTo = searchQuery.get("redirect");
+     if (!sessionContext.sessionToken) {
+       if (pathname.replace("/index.html", "") === "") {
+         if (redirectTo) {
+           navigate(`/?redirect=${redirectTo}`);
+         } else {
+           navigate("/");
+         }
+       } else {
+         navigate(`/?redirect=${pathname}`);
+       }
+     } else if (redirectTo) {
+       navigate(redirectTo);
+     } else {
+       navigate("/home");
+     }
+   }, [sessionContext.sessionToken]); */
 
   return useRoutes([
     {

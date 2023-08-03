@@ -20,7 +20,12 @@ export type UserProfileResponseDTO = {
 export type AllGameResponseDTO = {
   success: boolean;
   message?: string;
-  games?: [];
+  games?: any[];
+};
+export type TopResultsDTO = {
+  success: boolean;
+  message?: string;
+  results?: string[] | any[];
 };
 export type PersonalizedResponseDTO = {
   success: boolean;
@@ -99,9 +104,9 @@ export async function getProfile(
         session_token: sessionToken,
       },
     });
-     if (profileResp.status !== 200) {
-       return handleNon200Response(profileResp.data.message);
-     }
+    if (profileResp.status !== 200) {
+      return handleNon200Response(profileResp.data.message);
+    }
     return { success: true, profile: profileResp.data };
   } catch (error: any) {
     return handleError(error, "get profile.");
@@ -239,24 +244,68 @@ export async function customFeedGames(
     [key: string]: string | number | boolean;
   },
   page: number = 0,
-  limit: number = GAME_FETCH_LIMIT
+  limit: number = GAME_FETCH_LIMIT,
+  addPagination: boolean = true
 ): Promise<AllGameResponseDTO> {
   try {
-    const gameSearchResponse = await axios.post(
-      `${API_BASE_URL}games/feed/custom?page=${page}&limit=${limit}`,
-      body,
-      {
-        headers: {
-          session_token: sessionToken,
-        },
-      }
-    );
+    let url = `${API_BASE_URL}games/feed/custom?textBackground=290x185`;
+    if (addPagination) {
+      url += `&page=${page}&limit=${limit}`;
+    }
+    const gameSearchResponse = await axios.post(url, body, {
+      headers: {
+        session_token: sessionToken,
+      },
+    });
     if (gameSearchResponse.status !== 200) {
       return handleNon200Response(gameSearchResponse.data.message);
     }
     return { success: true, games: gameSearchResponse.data };
   } catch (error: any) {
     return handleError(error, "custom feed");
+  }
+}
+export async function getSimilarGames(
+  sessionToken: string,
+  gameId: string
+): Promise<AllGameResponseDTO> {
+  try {
+    const similarGameResp = await axios.get(
+      `${API_BASE_URL}games/${gameId}/similar?textBackground=290x185`,
+      {
+        headers: {
+          session_token: sessionToken,
+        },
+      }
+    );
+    if (similarGameResp.status !== 200) {
+      return handleNon200Response(similarGameResp.data.message);
+    }
+    return { success: true, games: similarGameResp.data };
+  } catch (error: any) {
+    return handleError(error, "similar games");
+  }
+}
+export async function getTopResults(
+  sessionToken: string,
+  top: string,
+  limit: number
+): Promise<TopResultsDTO> {
+  try {
+    const similarGameResp = await axios.get(
+      `${API_BASE_URL}games/${top}?limit=${limit}`,
+      {
+        headers: {
+          session_token: sessionToken,
+        },
+      }
+    );
+    if (similarGameResp.status !== 200) {
+      return handleNon200Response(similarGameResp.data.message);
+    }
+    return { success: true, results: similarGameResp.data };
+  } catch (error: any) {
+    return handleError(error, "top genres");
   }
 }
 export async function getCurrentSubscriptions(sessionToken: string) {

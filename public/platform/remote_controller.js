@@ -3,23 +3,36 @@ function remoteControllerHandler(e) {
   console.log("remote key code : ", keyCode);
   switch (keyCode) {
     case tvKey.KEY_UP:
-      Navigation.up();
+      toogleSettings();
+      // Navigation.up();
       break;
     case tvKey.KEY_DOWN:
-      Navigation.down();
+      //Navigation.down();
       break;
     case tvKey.KEY_LEFT:
-      Navigation.left();
+      //Navigation.left();
+      if (settingsMode) {
+        settingsFocusPrevious();
+      } else if (keyboardMode) {
+        keyboardFocusPrevious();
+      }
+       
       break;
     case tvKey.KEY_RIGHT:
-      Navigation.right();
+      if (settingsMode) {
+        settingsFocusNext();
+      } else if (keyboardMode) {
+        keyboardFocusNext();
+      }
+      //Navigation.right();
       break;
     case tvKey.KEY_ENTER:
     case tvKey.KEY_REMOTE_ENTER:
-      Navigation.accept();
+      //Navigation.accept();
       break;
     case tvKey.KEY_RETURN:
-      Navigation.back();
+      //Navigation.back();
+      quitStreaming();
       break;
   }
 }

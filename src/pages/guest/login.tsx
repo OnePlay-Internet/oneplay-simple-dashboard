@@ -29,8 +29,8 @@ export default function Login({
     focusKey: focusKeyParam,
   });
 
-  const [userId, setUserId] = useState("maulik@oneplay.in");
-  const [password, setPassword] = useState("Test@1234");
+  const [userId, setUserId] = useState("");
+  const [password, setPassword] = useState("");
 
   useEffect(() => {
     const delayedFocus = setTimeout(() => {
@@ -44,12 +44,14 @@ export default function Login({
   useEffect(() => {
     if (sessionContext.sessionToken) {
       let redirectTo = searchQuery.get("redirect") ?? "";
-      redirectTo = redirectTo?.replace("/index.html", "");
+      redirectTo = redirectTo?.replace("/index.html/", "");
       console.log("redirect : ", redirectTo);
       if (!redirectTo) {
+        console.log("redirect to /home");
         navigate("/home");
         return;
       }
+      console.log("redirect to : %s", redirectTo);
       navigate(redirectTo);
     }
   }, [sessionContext, navigate]);

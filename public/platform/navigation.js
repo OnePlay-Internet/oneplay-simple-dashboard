@@ -374,10 +374,7 @@ const Navigation = (function () {
       if (view && view[name]) {
         view[name]();
       } else {
-        window.location.replace(
-          "/index.html/?redirect=/games-detail/" +
-            urlParams.get("game_id").toString()
-        );
+        goToReact();
       }
     };
   }

@@ -1,5 +1,6 @@
 /* eslint-disable */
 
+
 const SyncFunctions = {
   // no parameters
   makeCert: (...args) => Module.makeCert(...args),
@@ -13,6 +14,8 @@ const SyncFunctions = {
   streamStats: (...args) => Module.VidStreamStats(...args),
   //no parameters
   toogleMouse: (...args) => Module.EnableEmulatedMouseEvent(...args),
+  //no parameters
+  keyboardKeyPressed: (...args) => Module.SendKeyCodeToServer(...args),
 };
 
 const AsyncFunctions = {
@@ -87,7 +90,8 @@ function handleMessage(msg) {
     snackbarLogLong("Connection terminated");
     //}
     stopHeartBeatAPI();
-    api.refreshServerInfo().then(
+    goToReact();
+    /* api.refreshServerInfo().then(
       function (ret) {
         // Return to app list with new currentgame
         showApps(api);
@@ -96,7 +100,7 @@ function handleMessage(msg) {
         // Return to app list anyway
         showApps(api);
       }
-    );
+    ); */
   } else if (msg === "Connection Established") {
     setGameStartedSuccessfully();
     startHeartBeatAPI();

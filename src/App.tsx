@@ -43,10 +43,13 @@ function App() {
   const userProfileContextValue = { userProfile, setUserProfile };
   const [showLoading, setShowLoading] = useState(true);
   const { pathname, search } = useLocation();
+  const [goTo, setGoTo] = useState<string>("");
   const navigate = useNavigate();
 
   useEffect(() => {
+    console.log("app on load");
     const savedToken = localStorage.getItem(SESSION_TOKEN_LOCAL_STORAGE);
+    console.log("saved token : ", savedToken);
     if (savedToken) {
       setShowLoading(true);
       (async () => {
@@ -57,34 +60,80 @@ function App() {
         } else {
           setUserProfile(profileResp.profile);
           setSessionToken(savedToken);
-          setTimeout(() => {
-            setShowLoading(false);
-          }, 100);
+          setShowLoading(false);
         }
       })();
     } else {
       setShowLoading(false);
+      navigate("/");
     }
   }, []);
   useEffect(() => {
+    /*  console.log("app path name : ", pathname);
     const searchQuery = new URLSearchParams(search);
     const redirectTo = searchQuery.get("redirect");
-    if (!sessionToken) {
+    console.log("app redirect to : ", redirectTo);
+    const savedToken = localStorage.getItem(SESSION_TOKEN_LOCAL_STORAGE);
+    if (!sessionToken && savedToken && pathname === "/index.html/") {
+      setShowLoading(true);
+      (async () => {
+        const profileResp = await getProfile(savedToken);
+        if (!profileResp.success) {
+          setShowLoading(false);
+          localStorage.removeItem(SESSION_TOKEN_LOCAL_STORAGE);
+        } else {
+          setUserProfile(profileResp.profile);
+          setSessionToken(savedToken);
+          if (redirectTo) {
+            navigate(redirectTo);
+          } else {
+            navigate("/home");
+          }
+        }
+      })();
+    } else if (!sessionToken) {
+      setShowLoading(false);
+      navigate("/");
+    } */
+
+    const searchQuery = new URLSearchParams(search);
+    const redirectTo = searchQuery.get("redirect");
+    if (pathname === "/index.html/" && redirectTo && goTo !== "-") {
+      console.log("set go to : ", redirectTo);
+      setGoTo(redirectTo);
+    }
+  }, [pathname]);
+
+  useEffect(() => {
+    if (sessionToken) {
+      setShowLoading(false);
+      if (goTo) {
+        setGoTo("");
+        navigate(goTo);
+      } else {
+        navigate("/home");
+      }
+    } else {
+      navigate("/");
+    }
+  }, [sessionToken]);
+  /* useEffect(() => {
+    const searchQuery = new URLSearchParams(search);
+    const redirectTo = searchQuery.get("redirect");
+    console.log("app redirect to : ", redirectTo);
+    if (sessionToken) {
+      setShowLoading(false);
+      console.log("app session token path name : ", pathname);
+
       if (pathname.replace("/index.html", "") === "") {
         if (redirectTo) {
           navigate(`/?redirect=${redirectTo}`);
-        } else {
-          navigate("/");
         }
-      } else {
-        navigate(`/?redirect=${pathname}`);
       }
-    } else if (redirectTo) {
-      navigate(redirectTo);
     } else {
-      navigate("/home");
+      navigate("/");
     }
-  }, [sessionToken]);
+  }, [sessionToken]); */
   useLayoutEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
   }, [pathname]);

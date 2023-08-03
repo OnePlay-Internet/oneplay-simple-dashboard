@@ -1,7 +1,11 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { useContext, useEffect, useState } from "react";
 import { SessionContext } from "src/App";
-import { getAllGames } from "../../../common/services";
+import {
+  customFeedGames,
+  getAllGames,
+  getTopResults,
+} from "../../../common/services";
 
 import { GAME_FETCH_LIMIT } from "src/common/constants";
 import {
@@ -10,15 +14,17 @@ import {
 } from "@noriginmedia/norigin-spatial-navigation";
 import InfiniteScroll from "react-infinite-scroller";
 import { LazyLoadImage } from "react-lazy-load-image-component";
-import { getCoords } from "src/common/utils";
 import ErrorPopUp from "src/pages/error";
+import LoaderPopup from "src/pages/loader";
 export default function AllGames({
   focusKey: focusKeyParam,
 }: FocusabelComponentProps) {
   const sessionContext = useContext(SessionContext);
+
   const [allGames, setAllGames] = useState<{ [key: string]: any }[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [haveMoreGames, setHaveMoreGames] = useState(true);
+  const [showLoading, setShowLoading] = useState(false);
   const navigate = useNavigate();
   const [popUp, setPopUp] = useState({
     show: false,
@@ -26,6 +32,48 @@ export default function AllGames({
     title: "",
     returnFocusTo: "",
   });
+  const [currentFilterId, setCurrentFilterId] =
+    useState<string>("static_filter_0");
+  const [currentFilterTitle, setCurrentFilterTitle] =
+    useState<string>("All Games");
+  const [staticFilters, setStaticFilters] = useState<any[]>([
+    {
+      text: "All Games",
+      filterId: "static_filter_0",
+      body: { order_by: "release_date:desc" },
+    },
+    {
+      text: "Best of 2021",
+      filterId: "static_filter_1",
+      body: {
+        order_by: "release_date:desc",
+        release_date: "2020-12-31T18:30:00.000Z#2021-12-31T18:30:00.000Z",
+      },
+    },
+    {
+      text: "Best of 2022",
+      filterId: "static_filter_2",
+      body: {
+        order_by: "release_date:desc",
+        release_date: "2021-12-31T18:30:00.000Z#2022-12-31T18:30:00.000Z",
+      },
+    },
+    {
+      text: "Free Games",
+      filterId: "static_filter_3",
+      body: {
+        order_by: "release_date:desc",
+        is_free: "true",
+      },
+    },
+  ]);
+  const [topGenres, setTopGenres] = useState<any[]>([]);
+  const [topDevelopers, setTopDevelopers] = useState<any[]>([]);
+  const [topStores, setTopStores] = useState<any[]>([]);
+  const [topPublishers, setTopPublishers] = useState<any[]>([]);
+  const [currentFilter, setCurrentFilter] = useState<{
+    [key: string]: string;
+  }>({ order_by: "release_date:desc" });
   const { focusSelf, focusKey, setFocus } = useFocusable({
     focusable: true,
     trackChildren: true,
@@ -33,11 +81,97 @@ export default function AllGames({
   });
   useEffect(() => {
     if (sessionContext.sessionToken) {
-      loadMoreGames();
+      //   loadMoreGames();
+
+      (async () => {
+        const topGenres = await getTopResults(
+          sessionContext.sessionToken,
+          "top_genres",
+          3
+        );
+        if (topGenres.success && topGenres.results) {
+          setTopGenres(
+            topGenres.results.map((genre, index) => {
+              return {
+                text: genre,
+                filterId: "top_genre_" + index,
+                body: {
+                  genres: genre,
+                  order_by: "release_date:desc",
+                },
+              };
+            })
+          );
+        }
+      })();
+      (async () => {
+        const topDevelopers = await getTopResults(
+          sessionContext.sessionToken,
+          "top_developers",
+          3
+        );
+        if (topDevelopers.success && topDevelopers.results) {
+          setTopDevelopers(
+            topDevelopers.results.map((developer, index) => {
+              return {
+                text: developer,
+                filterId: "top_developer_" + index,
+                body: {
+                  developer: developer,
+                  order_by: "release_date:desc",
+                },
+              };
+            })
+          );
+        }
+      })();
+      (async () => {
+        const topPublishers = await getTopResults(
+          sessionContext.sessionToken,
+          "top_publishers",
+          3
+        );
+        if (topPublishers.success && topPublishers.results) {
+          setTopPublishers(
+            topPublishers.results.map((publisher, index) => {
+              return {
+                text: publisher,
+                filterId: "top_publisher_" + index,
+                body: {
+                  publisher: publisher,
+                  order_by: "release_date:desc",
+                },
+              };
+            })
+          );
+        }
+      })();
+      (async () => {
+        const topStores = await getTopResults(
+          sessionContext.sessionToken,
+          "stores",
+          3
+        );
+        if (topStores.success && topStores.results) {
+          setTopStores(
+            topStores.results.map((store, index) => {
+              return {
+                text: store.name,
+                filterId: "top_stores_" + index,
+                body: {
+                  order_by: "release_date:desc",
+                  stores: store.name,
+                },
+              };
+            })
+          );
+        }
+      })();
     }
   }, [sessionContext]);
 
   useEffect(() => {
+    console.log("current page : ", currentPage);
     if (currentPage === 1) {
       setFocusToFirstGame();
       //setFocus("game_" + allGames.at(0)?.oplay_id);
@@ -64,11 +198,14 @@ export default function AllGames({
   };
   const loadMoreGames = async () => {
     console.log("load more...", currentPage);
-    const allGamesResp = await getAllGames(
+    setShowLoading(true);
+    const allGamesResp = await customFeedGames(
       sessionContext.sessionToken,
+      currentFilter,
       currentPage,
       GAME_FETCH_LIMIT
     );
+    setShowLoading(false);
     if (!allGamesResp.success) {
       /* Swal.fire({
         title: "Error!",
@@ -94,11 +231,15 @@ export default function AllGames({
         setAllGames(allGamesResp.games);
       }
       setCurrentPage((prev) => prev + 1);
+      if (allGamesResp.games.length < GAME_FETCH_LIMIT) {
+        setHaveMoreGames(false);
+      }
     } else {
       setHaveMoreGames(false);
     }
   };
   const loadNextGames = async () => {
+    console.log("loadNextGames : ", currentPage);
     if (currentPage > 0 && sessionContext.sessionToken) {
       console.log("calling loadmore from loadNextGames");
       loadMoreGames();
@@ -113,6 +254,21 @@ export default function AllGames({
       setFocus("Sidebar");
     }
   };
+  useEffect(() => {
+    loadMoreGames();
+  }, [currentFilterId]);
+  const onFilterClicked = (
+    filterTitle: string,
+    filterId: string,
+    body: any
+  ) => {
+    console.log("filter clicked : ", filterId);
+    setCurrentFilterTitle(filterTitle);
+    setCurrentFilter(body);
+    setAllGames([]);
+    setCurrentPage(0);
+    setCurrentFilterId(filterId);
+  };
   return (
     <FocusContext.Provider value={focusKey}>
       <InfiniteScroll
@@ -124,79 +280,79 @@ export default function AllGames({
           <div className="col-md-3">
             <h3 className="heading">Games</h3>
             <div className="row mb-2">
-              <div className="col-auto pr-0 mt-2">
-                <a
-                  href="javascript:void(0)"
-                  className="card bgColorMuted mb-3 mutedColor activeBG border-0 text-decoration-none"
-                >
-                  <div className="bgColorMuted customPaddign mutedColor activeBGColor">All Games</div>
-                </a>
-              </div>
-              <div className="col-auto pr-0 mt-2">
-                <a
-                  href="javascript:void(0)"
-                  className="card bgColorMuted mb-3 mutedColor border-0 text-decoration-none"
-                >
-                  <div className="customPaddign bgColorMuted mutedColor">Best of 2021</div>
-                </a>
-              </div>
-              <div className="col-auto pr-0 mt-2">
-                <a
-                  href="javascript:void(0)"
-                  className="card bgColorMuted mb-3 mutedColor border-0 text-decoration-none"
-                >
-                  <div className="customPaddign bgColorMuted mutedColor">Best of 2021</div>
-                </a>
-              </div>
+              {staticFilters.map((filter) => (
+                <FocusableFilterButton
+                  key={filter.filterId}
+                  focusKeyParam={filter.filterId}
+                  text={filter.text}
+                  currentFilterID={currentFilterId}
+                  body={filter.body}
+                  onClick={onFilterClicked}
+                />
+              ))}
             </div>
             <h3 className="heading">Stores</h3>
             <div className="row mb-2">
-              <div className="col-auto pr-0 mt-2">
-                <a
-                  href="javascript:void(0)"
-                  className="card bgColorMuted mb-3 mutedColor border-0 text-decoration-none"
-                >
-                  <div className="customPaddign bgColorMuted mutedColor">Steam</div>
-                </a>
-              </div>
-              <div className="col-auto pr-0 mt-2">
-                <a
-                  href="javascript:void(0)"
-                  className="card bgColorMuted mb-3 mutedColor border-0 text-decoration-none"
-                >
-                  <div className="customPaddign bgColorMuted mutedColor">Epic Games</div>
-                </a>
-              </div>
+              {topStores.map((filter) => (
+                <FocusableFilterButton
+                  key={filter.filterId}
+                  focusKeyParam={filter.filterId}
+                  text={filter.text}
+                  currentFilterID={currentFilterId}
+                  body={filter.body}
+                  onClick={onFilterClicked}
+                />
+              ))}
             </div>
             <h3 className="heading">Top Genres</h3>
             <div className="row mb-2">
-              <div className="col-auto pr-0 mt-2">
-                <a
-                  href="javascript:void(0)"
-                  className="card bgColorMuted mb-3 mutedColor border-0 text-decoration-none"
-                >
-                  <div className="customPaddign bgColorMuted mutedColor">Action </div>
-                </a>
-              </div>
-              <div className="col-auto pr-0 mt-2">
-                <a
-                  href="javascript:void(0)"
-                  className="card bgColorMuted mb-3 mutedColor border-0 text-decoration-none"
-                >
-                  <div className="customPaddign bgColorMuted mutedColor">Adventure</div>
-                </a>
-              </div>
+              {topGenres.map((filter) => (
+                <FocusableFilterButton
+                  key={filter.filterId}
+                  focusKeyParam={filter.filterId}
+                  text={filter.text}
+                  currentFilterID={currentFilterId}
+                  body={filter.body}
+                  onClick={onFilterClicked}
+                />
+              ))}
+            </div>
+            <h3 className="heading">Top Developers</h3>
+            <div className="row mb-2">
+              {topDevelopers.map((filter) => (
+                <FocusableFilterButton
+                  key={filter.filterId}
+                  focusKeyParam={filter.filterId}
+                  text={filter.text}
+                  currentFilterID={currentFilterId}
+                  body={filter.body}
+                  onClick={onFilterClicked}
+                />
+              ))}
+            </div>
+            <h3 className="heading">Top Publishers</h3>
+            <div className="row mb-2">
+              {topPublishers.map((filter) => (
+                <FocusableFilterButton
+                  key={filter.filterId}
+                  focusKeyParam={filter.filterId}
+                  text={filter.text}
+                  currentFilterID={currentFilterId}
+                  body={filter.body}
+                  onClick={onFilterClicked}
+                />
+              ))}
             </div>
           </div>
           <div className="col-md-9">
-            <h3 className="heading">All Games</h3>
+            <h3 className="heading">{currentFilterTitle}</h3>
             <div className="row">
               {allGames?.map((game) => renderSingleGame(game))}
             </div>
           </div>
-          
         </div>
       </InfiniteScroll>
+      {showLoading ? <LoaderPopup focusKeyParam="Loader" /> : null}
       {popUp.show && (
         <ErrorPopUp
           title={popUp.title}
@@ -259,10 +415,11 @@ const FocusableGameWrapper = (props: any) => {
         <LazyLoadImage
           alt={props.game.title}
           loading="lazy"
-          src={props.game.poster_image ?? "/img/placeholder_265x352.svg"} // use normal <img> attributes as props
-          height="185"
+          src={
+            props.game.text_background_image ?? "/img/placeholder_265x352.svg"
+          } // use normal <img> attributes as props
           className="rounded w-100"
-          style={{objectFit: 'cover',objectPosition: 'top',}}
+          style={{ objectFit: "cover", objectPosition: "top" }}
           placeholder={
             <img
               alt={props.game.title}
@@ -275,6 +432,51 @@ const FocusableGameWrapper = (props: any) => {
         <h5 className="mt-3 mb-1 text-white">{props.game.title}</h5>
         <p className="textOffWhite">{props.game.genre_mappings.join(", ")}</p>
       </NavLink>
+    </div>
+  );
+};
+
+const FocusableFilterButton = (props: any) => {
+  const { ref, focused, setFocus } = useFocusable({
+    focusable: true,
+    focusKey: props.focusKeyParam,
+    onFocus: () => {
+      scrollToElement(ref.current, 300);
+    },
+    onEnterPress: () => {
+      props.onClick(props.text, props.focusKeyParam, props.body);
+    },
+  });
+  return (
+    <div
+      className={"col-auto pr-0 mt-2" + (focused ? " focusedElement" : "")}
+      style={{
+        borderRadius: "60px",
+        paddingRight: "0",
+        paddingLeft: "0",
+        marginRight: "12px",
+      }}
+      ref={ref}
+      onClick={() => props.onClick(props.text, props.focusKeyParam, props.body)}
+    >
+      <a
+        href="#"
+        className={
+          "card bgColorMuted mutedColor border-0 text-decoration-none" +
+          (props.focusKeyParam === props.currentFilterID ? " activeBG" : "")
+        }
+      >
+        <div
+          className={
+            "bgColorMuted customPaddign mutedColor" +
+            (props.focusKeyParam === props.currentFilterID
+              ? " activeBGColor"
+              : "")
+          }
+        >
+          {props.text}
+        </div>
+      </a>
     </div>
   );
 };

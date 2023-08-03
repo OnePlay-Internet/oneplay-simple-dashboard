@@ -162,6 +162,7 @@ function platformOnLoad(handler) {
 }
 
 function initHeartBeatData() {
+  renderKeyboradButtons();
   heartBeatData = {
     user_id: urlParams.get("user_id").toString(),
     token: urlParams.get("client_token").toString(),
@@ -234,11 +235,9 @@ function callHeartBeatAPI() {
         tizen.systeminfo.getAvailableMemory() / (1024 * 1024)
       );
 
-      //heartBeatData.last_input_received_at = vidStats.last_input_received_at;
+      //heartBeatData.last_input_received_at =   parseInt(vidStats.last_input_received_at)
       heartBeatData.stats.decoder = vidStats.decoder;
-      heartBeatData.last_input_received_at = parseInt(
-        vidStats.last_input_received_at
-      );
+      heartBeatData.last_input_received_at = 0;
       heartBeatData.stats.received_fps = parseInt(vidStats.received_fps);
       heartBeatData.stats.rendered_fps = parseInt(vidStats.rendered_fps);
       heartBeatData.stats.net_drops = parseInt(vidStats.net_drops);
@@ -246,9 +245,11 @@ function callHeartBeatAPI() {
       heartBeatData.stats.variance = parseInt(vidStats.variance);
       heartBeatData.stats.decode_time = parseInt(vidStats.decode_time);
       //console.log("heart beat data :", heartBeatData);
-      const statString = ` VM: ${urlParams.get(
-        "server_ip"
-      )}<br /> Resolution: ${
+      const statString = ` VM: ${urlParams.get("server_ip")}<br /> OS: ${
+        heartBeatData.device.os
+      }<br /> Network: ${
+        heartBeatData.network.connection_type
+      }<br /> Bit Rate: ${heartBeatData.network.bitrate}<br /> Resolution: ${
         heartBeatData.stats.resolution
       }<br /> Last Input: ${
         heartBeatData.last_input_received_at
@@ -335,4 +336,206 @@ function checkNetworkConnection() {
       );
     }
   );
+}
+
+var keyboardKeys = [
+  "CAPS LOCK",
+  "a",
+  "b",
+  "c",
+  "d",
+  "e",
+  "f",
+  "g",
+  "h",
+  "i",
+  "j",
+  "k",
+  "l",
+  "m",
+  "n",
+  "o",
+  "o",
+  "q",
+  "r",
+  "s",
+  "t",
+  "u",
+  "v",
+  "w",
+  "x",
+  "y",
+  "z",
+  "0",
+  "1",
+  "2",
+  "3",
+  "4",
+  "5",
+  "6",
+  "7",
+  "8",
+  "9",
+  "~",
+  "`",
+  "!",
+  "@",
+  "#",
+  "$",
+  "%",
+  "^",
+  "&",
+  "*",
+  "(",
+  ")",
+  "-",
+  "_",
+  "=",
+  "+",
+  "[",
+  "]",
+  "{",
+  "}",
+  "\\",
+  "|",
+  ";",
+  ":",
+  "'",
+  '"',
+  ",",
+  ".",
+  "<",
+  ">",
+  "/",
+  "?",
+];
+var settingsMode = false;
+var settingsCurrentIndex = 0;
+var keyboardMode = false;
+var keyboardCurrentIndex = 0;
+var capsLockOn = false;
+function virtualKeyboardButtonClick(index, char) {
+  console.log("virtual keyboard button pressed : ", index, char);
+  if (+index === 0) {
+    capsLockOn = !capsLockOn;
+    renderKeyboradButtons();
+    $("#btn-keyboard-0").focus();
+    return;
+  }
+
+  sendMessage("keyboardKeyPressed", [char.toString()]).then(
+    function (ret) {
+      console.log("keyboardKeyPressed success result : ", ret);
+      $("#btn-keyboard-" + keyboardCurrentIndex).focus();
+    },
+    function (error) {
+      console.log("keyboardKeyPressed error : ", error);
+      $("#btn-keyboard-" + keyboardCurrentIndex).focus();
+    }
+  );
+}
+
+function toogleSettings() {
+  if (settingsMode) {
+    $("#settingsOverLay").hide();
+    $("#nacl_module").focus();
+    $("#btn-settings-" + settingsCurrentIndex).removeClass("activeOption");
+    $("#btn-keyboard-" + keyboardCurrentIndex).removeClass("activeOption");
+    settingsCurrentIndex = 0;
+  } else {
+    keyboardMode = false;
+    keyboardCurrentIndex = 0;
+    $("#btn-keyboard-" + keyboardCurrentIndex).removeClass("activeOption");
+    $("#keyboardOverlay").hide();
+    settingsCurrentIndex = 1;
+    $("#settingsOverLay").show();
+    $("#btn-settings-1").addClass("activeOption");
+    $("#btn-settings-1").focus();
+  }
+  settingsMode = !settingsMode;
+}
+
+function toogleStats() {
+  $("#heart_beat_stats").toggle();
+  toogleSettings();
+}
+
+function toogleKeyboardOverlay() {
+  if (keyboardMode) {
+    $("#btn-keyboard-" + keyboardCurrentIndex).removeClass("activeOption");
+    $("#keyboardOverlay").hide();
+    keyboardCurrentIndex = 0;
+    $("#nacl_module").focus();
+  } else {
+    settingsMode = false;
+    settingsCurrentIndex = 0;
+    keyboardCurrentIndex = 0;
+    $("#settingsOverLay").hide();
+    $("#keyboardOverlay").show();
+    $("#btn-keyboard-0").addClass("activeOption");
+    $("#btn-keyboard-0").focus();
+  }
+  keyboardMode = !keyboardMode;
+}
+
+function settingsFocusNext() {
+  $("#btn-settings-" + settingsCurrentIndex).removeClass("activeOption");
+  settingsCurrentIndex++;
+  if (settingsCurrentIndex > 4) {
+    settingsCurrentIndex = 0;
+  }
+  $("#btn-settings-" + settingsCurrentIndex).addClass("activeOption");
+  $("#btn-settings-" + settingsCurrentIndex).focus();
+}
+
+function settingsFocusPrevious() {
+  $("#btn-settings-" + settingsCurrentIndex).removeClass("activeOption");
+  settingsCurrentIndex--;
+  if (settingsCurrentIndex < 0) {
+    settingsCurrentIndex = 4;
+  }
+  $("#btn-settings-" + settingsCurrentIndex).addClass("activeOption");
+  $("#btn-settings-" + settingsCurrentIndex).focus();
+}
+
+function keyboardFocusNext() {
+  if (!(capsLockOn && keyboardCurrentIndex === 0)) {
+    $("#btn-keyboard-" + keyboardCurrentIndex).removeClass("activeOption");
+  }
+  keyboardCurrentIndex++;
+  if (keyboardCurrentIndex > keyboardKeys.length - 1) {
+    keyboardCurrentIndex = 0;
+  }
+  $("#btn-keyboard-" + keyboardCurrentIndex).addClass("activeOption");
+  $("#btn-keyboard-" + keyboardCurrentIndex).focus();
+}
+function keyboardFocusPrevious() {
+  if (!(capsLockOn && keyboardCurrentIndex === 0)) {
+    $("#btn-keyboard-" + keyboardCurrentIndex).removeClass("activeOption");
+  }
+  keyboardCurrentIndex--;
+  if (keyboardCurrentIndex < 0) {
+    keyboardCurrentIndex = keyboardKeys.length - 1;
+  }
+  $("#btn-keyboard-" + keyboardCurrentIndex).addClass("activeOption");
+  $("#btn-keyboard-" + keyboardCurrentIndex).focus();
+}
+
+function renderKeyboradButtons() {
+  $("#keyWrapper").html("");
+  for (let i = 0; i < keyboardKeys.length; i++) {
+    let char = keyboardKeys[i];
+    if (capsLockOn && i >= 1 && i <= 26) {
+      char = char.toUpperCase();
+    }
+    let addActiveOption = false;
+    if ((i === 0 && capsLockOn) || keyboardCurrentIndex === i) {
+      addActiveOption = true;
+    }
+    $("#keyWrapper").append(
+      `<button class="keyboardButton settingsButton${
+        addActiveOption ? " activeOption" : ""
+      }" onclick="virtualKeyboardButtonClick('${i}','${char}')" id="btn-keyboard-${i}">${char}</button>`
+    );
+  }
 }

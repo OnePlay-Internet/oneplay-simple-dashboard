@@ -134,11 +134,10 @@ export default function Home({
   };
   const renderSingleRail = (feed: any) => {
     return (
-      <div className="row pt-4" key={`feed_${feed.feed_id}`}>
-        <div className="col-12">
-          <p className="rail-heading">{feed.title}</p>
-        </div>
-        <div className="row scrolltab">
+      <div className="col-12" key={`feed_${feed.feed_id}`}>
+        <p className="rail-heading">{feed.title}</p>
+
+        <div className="scrolltab">
           {feed.results.map((game: any) =>
             renderSingeGameForRail(game, feed.feed_id)
           )}
@@ -148,11 +147,10 @@ export default function Home({
   };
   const renderWishlist = () => {
     return (
-      <div className="row pt-4" key={`feed_wishlist`}>
-        <div className="col-12">
-          <p className="rail-heading">My Library</p>
-        </div>
-        <div className="row scrolltab">
+      <div className="col-12" key={`feed_wishlist`}>
+        <p className="rail-heading">My Library</p>
+
+        <div className="scrolltab">
           {wishlistGames.map((game: any) =>
             renderSingeGameForRail(game, "feed_wishlist")
           )}
@@ -277,11 +275,10 @@ export default function Home({
   };
   const renderCustomResut = () => {
     return (
-      <div className="row pt-4" key={`current_tab_${currentTab}`}>
-        <div className="col-12">
-          <p className="rail-heading">{currentTab}</p>
-        </div>
-        <div className="row scrolltab">
+      <div className="col-12" key={`current_tab_${currentTab}`}>
+        <p className="rail-heading">{currentTab}</p>
+
+        <div className="scrolltab">
           {customGames.map((game: any) =>
             renderSingeGameForRail(game, `current_tab_${currentTab}`)
           )}
@@ -313,67 +310,6 @@ export default function Home({
                   </FocusableTabButton>
                 </div>
               ))}
-
-              {/*   <div className="col-auto tabOptions">
-                <FocusableTabButton
-                  focusKeyParam="tab-free-to-play"
-                  tab="Free To Play"
-                  onClick={onTabButtonCliced}
-                  currentTab={currentTab}
-                >
-                  Free To Play
-                </FocusableTabButton>
-              </div>
-              <div className="col-auto tabOptions">
-                <FocusableTabButton
-                  focusKeyParam="tab-action"
-                  tab="Action"
-                  onClick={onTabButtonCliced}
-                  currentTab={currentTab}
-                >
-                  Action
-                </FocusableTabButton>
-              </div>
-              <div className="col-auto tabOptions">
-                <FocusableTabButton
-                  focusKeyParam="tab-Adventure"
-                  tab="Adventure"
-                  onClick={onTabButtonCliced}
-                  currentTab={currentTab}
-                >
-                  Adventure
-                </FocusableTabButton>
-              </div>
-              <div className="col-auto tabOptions">
-                <FocusableTabButton
-                  focusKeyParam="tab-casual"
-                  tab="Casual"
-                  onClick={onTabButtonCliced}
-                  currentTab={currentTab}
-                >
-                  Casual
-                </FocusableTabButton>
-              </div>
-              <div className="col-auto tabOptions">
-                <FocusableTabButton
-                  focusKeyParam="tab-rpg"
-                  tab="RPG"
-                  onClick={onTabButtonCliced}
-                  currentTab={currentTab}
-                >
-                  RPG
-                </FocusableTabButton>
-              </div>
-              <div className="col-auto tabOptions">
-                <FocusableTabButton
-                  focusKeyParam="tab-racing"
-                  tab="Racing"
-                  onClick={onTabButtonCliced}
-                  currentTab={currentTab}
-                >
-                  Racing
-                </FocusableTabButton>
-              </div> */}
             </div>
           </div>
         </div>
@@ -429,7 +365,14 @@ const FocusableTabButton = (props: any) => {
           (props.tab === props.currentTab ? " activeBG" : "")
         }
       >
-        <div className={"customBtnPadding bgColor mutedColor" + (props.tab === props.currentTab ? "text-white" : "")}>{props.children}</div>
+        <div
+          className={
+            "customBtnPadding bgColor mutedColor" +
+            (props.tab === props.currentTab ? "text-white" : "")
+          }
+        >
+          {props.children}
+        </div>
       </a>
     </div>
   );
@@ -448,7 +391,7 @@ const FocusableRailGameWrapper = (props: any) => {
     onArrowPress: (direction, keyProps, detils) => {
       if (
         direction === "left" &&
-        getCoords(ref.current).left + ref.current.offsetLeft < 170
+        getCoords(ref.current).left + ref.current.offsetLeft < 220
       ) {
         setFocus("Sidebar", { pos: getScrolledCoords(ref.current) });
         return false;
