@@ -23,6 +23,9 @@
     <tizen:privilege name="http://tizen.org/privilege/systemmonitor" />
     <tizen:privilege name="http://developer.samsung.com/privilege/drmplay" />
     <tizen:privilege name="http://developer.samsung.com/privilege/productinfo" />
+    <tizen:metadata key='http://samsung.com/tv/metadata/multiscreen.support' value='true' />
+    <tizen:metadata key='http://samsung.com/tv/metadata/multitasking.support' value='true' />
+    <tizen:metadata key='multiview_support_new' value='true' />
     <tizen:setting pointing-device-support='enable' />
     <access origin="*" subdomains="true"></access>
     <tizen:setting screen-orientation="landscape" context-menu="disable" background-support="enable"
