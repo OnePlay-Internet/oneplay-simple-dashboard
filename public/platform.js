@@ -266,7 +266,7 @@ function callHeartBeatAPI() {
       }<br /> Decode Time: ${vidStats.decode_time}`;
       $("#heart_beat_stats").html(statString);
       $.ajax({
-        //url: "https://client-apis.oneream.com/client/v2/heart_beat",
+        // url: "https://client-apis.oneream.com/client/v2/heart_beat",
         url: "https://client-apis.oneplay.in/client/v2/heart_beat",
         type: "POST",
         data: JSON.stringify(heartBeatData),
@@ -423,7 +423,7 @@ function virtualKeyboardButtonClick(index, char) {
     return;
   }
 
-  /*  sendMessage("keyboardKeyPressed", [char.toString()]).then(
+  sendMessage("keyboardKeyPressed", [char.toString()]).then(
     function (ret) {
       console.log("keyboardKeyPressed success result : ", ret);
       $("#btn-keyboard-" + keyboardCurrentIndex).focus();
@@ -432,7 +432,7 @@ function virtualKeyboardButtonClick(index, char) {
       console.log("keyboardKeyPressed error : ", error);
       $("#btn-keyboard-" + keyboardCurrentIndex).focus();
     }
-  ); */
+  );
 }
 
 function toogleSettings() {

@@ -26,12 +26,20 @@ var init = function () {
       case 13: //OK button
         break;
       case 10009: //RETURN button
+        console.log("tizenmain pathname : ", window.location.pathname);
+        const urlParams = new URLSearchParams(window.location.search);
+        console.log("back : ", urlParams.get("back"));
         if (
           window.location.pathname === "/" ||
           window.location.pathname === "/home"
         ) {
           console.log("exit app");
           tizen.application.getCurrentApplication().exit();
+        } else if (
+          window.location.pathname.startsWith("/games-detail") &&
+          urlParams.get("back")
+        ) {
+          window.reactNavigate("/home");
         } else {
           console.log("go back");
 

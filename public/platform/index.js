@@ -1689,8 +1689,9 @@ function setGameStartedSuccessfully() {
 
 function quitStreaming() {
   goToReact();
-  /* if (!api) {
+  /*  if (!api) {
     goToReact();
+    return;
   }
   api.quitApp().then(
     function (ret2) {
@@ -1712,10 +1713,9 @@ function quitStreaming() {
   ); */
 }
 function goToReact() {
-  // window.location.replace(
-  //   "/index.html/?redirect=/games-detail/" + urlParams.get("game_id").toString()
-  // );
-  window.location.replace("/index.html/?redirect=/home");
+  window.location.replace(
+    "/index.html/?redirect=/games-detail/" + urlParams.get("game_id").toString()
+  );
 }
 /* function loadHTTPCertsCb() {
   console.log("load the HTTP cert and unique ID if we have one.");

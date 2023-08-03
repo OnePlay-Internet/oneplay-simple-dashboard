@@ -45,7 +45,12 @@ function App() {
   const { pathname, search } = useLocation();
   const [goTo, setGoTo] = useState<string>("");
   const navigate = useNavigate();
-
+  useEffect(() => {
+    if (navigate) {
+      //@ts-ignore
+      window.reactNavigate = navigate;
+    }
+  }, [navigate]);
   useEffect(() => {
     console.log("app on load");
     const savedToken = localStorage.getItem(SESSION_TOKEN_LOCAL_STORAGE);
@@ -65,6 +70,7 @@ function App() {
       })();
     } else {
       setShowLoading(false);
+      console.log("app navigate to /");
       navigate("/");
     }
   }, []);
@@ -108,14 +114,15 @@ function App() {
     if (sessionToken) {
       setShowLoading(false);
       if (goTo) {
-        setGoTo("");
-        navigate(goTo);
+        setGoTo("-");
+        navigate(goTo + "?back=/home");
       } else {
         navigate("/home");
       }
-    } else {
+    } /* else {
+      console.log("app useEffect sessionToken navigate to /");
       navigate("/");
-    }
+    } */
   }, [sessionToken]);
   /* useEffect(() => {
     const searchQuery = new URLSearchParams(search);

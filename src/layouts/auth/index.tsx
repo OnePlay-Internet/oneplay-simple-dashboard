@@ -66,11 +66,13 @@ export default function AuthLayout({
         title: "Error!",
         returnFocusTo: "sidebar-logout",
       });
+      navigate("/");
       return;
     }
     localStorage.removeItem(SESSION_TOKEN_LOCAL_STORAGE);
     userContext.setUserProfile(null);
     sessionContext.setSessionToken(null);
+    navigate("/");
   };
   const onPopupOkClick = () => {
     const returnFocusTo = popUp.returnFocusTo;

@@ -211,7 +211,7 @@ export default function GamesDetail({
       return;
     }
     (async () => {
-      await getActiveSessionStatus();
+      getActiveSessionStatus();
     })();
 
     (async () => {
@@ -379,14 +379,16 @@ export default function GamesDetail({
       setStartGameSession(activeSessionStatus.session_id);
     }
   };
+
   const renderButtons = () => {
-    if (
+    /*  if (
       activeSessionStatus.is_running &&
       !activeSessionStatus.is_user_connected &&
       activeSessionStatus.resume_in_this_device &&
       activeSessionStatus.game_id &&
       activeSessionStatus.game_id === id
-    ) {
+    )  */
+    if (playNowButtonText === "Resume Now") {
       return (
         <>
           <FocusableButton
@@ -397,7 +399,7 @@ export default function GamesDetail({
                 onResumeNowClicked();
             }}
           >
-            Resume Now
+            {playNowButtonText}
           </FocusableButton>
           <FocusableButton
             onClick={() =>
@@ -496,6 +498,7 @@ export default function GamesDetail({
           returnFocusTo: "play-now",
           icon: "queue",
         });
+        setshowLoading(false);
         setPlayNowButtonText("Play Now");
       } else if (startGameResp.data?.api_action === "call_session") {
         if (startGameResp.data.session?.id) {
@@ -526,7 +529,6 @@ export default function GamesDetail({
           returnFocusTo: "play-now",
           icon: "group",
         });
-        
       }
     }
   };
@@ -542,6 +544,7 @@ export default function GamesDetail({
           icon: "error",
           confirmButtonText: "OK",
         }); */
+        setPlayNowButtonText("Play Now");
         setshowLoading(false);
         setPopUp({
           show: true,
@@ -569,6 +572,7 @@ export default function GamesDetail({
           icon: "error",
           confirmButtonText: "OK",
         }); */
+        setPlayNowButtonText("Play Now");
         setshowLoading(false);
         setPopUp({
           show: true,
@@ -624,7 +628,7 @@ export default function GamesDetail({
         return;
       }
       setshowLoading(false);
-       setPlayNowButtonText("Play Now");
+      setPlayNowButtonText("Play Now");
       await getActiveSessionStatus();
     }
   };
@@ -637,9 +641,24 @@ export default function GamesDetail({
     }
   };
   useEffect(() => {
-    if (activeSessionStatus.success) {
-      setFocus("play-now");
+    console.log(
+      "activesession status : %s %s %s",
+      id,
+      activeSessionStatus.is_running,
+      activeSessionStatus.resume_in_this_device
+    );
+    if (
+      activeSessionStatus.success &&
+      activeSessionStatus.game_id === id &&
+      activeSessionStatus.is_running &&
+      activeSessionStatus.resume_in_this_device &&
+      activeSessionStatus.game_id
+    ) {
+      setPlayNowButtonText("Resume Now");
+    } else {
+      setPlayNowButtonText("Play Now");
     }
+    setFocus("play-now");
   }, [activeSessionStatus, setFocus]);
   return gameDetails ? (
     <FocusContext.Provider value={focusKey}>

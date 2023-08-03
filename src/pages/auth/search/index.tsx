@@ -282,9 +282,9 @@ const FocusableInput = (props: any) => {
     onEnterPress: () => {
       ref.current.focus();
     },
-    onBlur: () => {
+    /* onBlur: () => {
       ref.current.blur();
-    },
+    }, */
     onArrowPress: (direction, keyProps, detils) => {
       if (direction === "down") {
         setFocus("search_suggetion_1");
@@ -294,6 +294,7 @@ const FocusableInput = (props: any) => {
         setFocus("Sidebar", getScrolledCoords(ref.current));
         return false;
       }
+      ref.current.blur();
       return true;
     },
   });
@@ -367,13 +368,13 @@ const FocusableGameWrapper = (props: any) => {
         block: "center",
       });
     },
-    onArrowPress: (direction, keyProps, detils) => {
+    /* onArrowPress: (direction, keyProps, detils) => {
       if (direction === "left" && getCoords(ref.current).left < 100) {
         setFocus("search");
         return false;
       }
       return true;
-    },
+    }, */
   });
 
   return (
