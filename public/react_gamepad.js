@@ -9,7 +9,10 @@ const Controller = (function () {
       this.pressedTime = -1;
     }
   }
-
+  const CONTROLLER_SELECT_BUTTON = 10; // 8
+  const CONTROLLER_START_BUTTON = 11; // 9
+  const CONTROLLER_X_BUTTON = 3; //2
+  const CONTROLLER_A_BUTTON = 0; //0
   class Gamepad {
     constructor(gamepad) {
       this.buttons = gamepad.buttons.map((button) => new Button(button));
@@ -27,7 +30,7 @@ const Controller = (function () {
           //   console.log(i + " pressed : " + newButtons[i].pressed);
 
           if (newButtons[i].pressed) {
-            if (i === 0) {
+            if (i === CONTROLLER_A_BUTTON) {
               window.dispatchEvent(
                 new KeyboardEvent("keydown", { keyCode: "13" })
               );

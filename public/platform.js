@@ -170,12 +170,9 @@ function initHeartBeatData() {
       vendor:
         "SAMSUNG_" +
         tizen.systeminfo.getCapability("http://tizen.org/system/model_name"),
-      os:
-        tizen.systeminfo.getCapability(
-          "http://tizen.org/feature/platform.version"
-        ) +
-        "_" +
-        tizen.systeminfo.getCapability("http://tizen.org/system/build.string"),
+      os: tizen.systeminfo.getCapability(
+        "http://tizen.org/feature/platform.version"
+      ),
       client_version: "",
       client_type: tizen.systeminfo.getCapability(
         "http://tizen.org/system/platform.name"
@@ -255,10 +252,12 @@ function callHeartBeatAPI() {
         heartBeatData.last_input_received_at
       }<br /> Total FPS: ${
         heartBeatData.stats.total_fps
-      }<br /> CPU Load: ${cpuLoad} %<br /> RAM:${heartBeatData.ram.available}/${
-        heartBeatData.ram.total
-      } MB<br /> Decoder: ${vidStats.decoder}<br /> Received FPS: ${
-        vidStats.received_fps
+      }<br /> CPU Load: ${cpuLoad} %<br /> RAM(available/total):${
+        heartBeatData.ram.available
+      }/${heartBeatData.ram.total} MB<br /> Decoder: ${
+        vidStats.decoder
+      }<br /> Received FPS: ${
+        heartBeatData.stats.received_fps
       }<br /> Rendered FPS: ${vidStats.rendered_fps}<br /> Net Drops: ${
         vidStats.net_drops
       }<br /> Net Latency : ${vidStats.net_latency}<br /> Variance: ${
@@ -291,6 +290,7 @@ function callHeartBeatAPI() {
 function stopHeartBeatAPI() {
   if (heartBeatIntervalId) {
     clearInterval(heartBeatIntervalId);
+    heartBeatIntervalId = null;
   }
 }
 function startHeartBeatAPI() {
@@ -338,8 +338,46 @@ function checkNetworkConnection() {
   );
 }
 
+function setGameStartedSuccessfully() {
+  gameStartedSuccessfully = true;
+  gameReconnectTryCount = 0;
+}
+
+function quitStreaming() {
+  stopHeartBeatAPI();
+  goToReact();
+
+  /*  if (!api) {
+    goToReact();
+    return;
+  }
+  api.quitApp().then(
+    function (ret2) {
+      console.log(
+        "%c[index.js, stopGame]",
+        "color:green;",
+        "quit streaming success:" + ret2
+      );
+      goToReact();
+      return;
+    },
+    function (failedQuitApp) {
+      console.error(
+        "%c[index.js, stopGame]",
+        "color:green;",
+        "Failed to quit app! Returned error was:" + failedQuitApp
+      );
+    }
+  ); */
+}
+function goToReact() {
+  window.location.replace(
+    "/index.html/?redirect=/games-detail/" + urlParams.get("game_id").toString()
+  );
+}
+
 var keyboardKeys = [
-  "CAPS LOCK",
+  "Caps Lock",
   "a",
   "b",
   "c",
@@ -366,6 +404,7 @@ var keyboardKeys = [
   "x",
   "y",
   "z",
+
   "0",
   "1",
   "2",
@@ -408,6 +447,8 @@ var keyboardKeys = [
   ">",
   "/",
   "?",
+  "␣",
+  "Backspace",
 ];
 var settingsMode = false;
 var settingsCurrentIndex = 0;
@@ -416,14 +457,24 @@ var keyboardCurrentIndex = 0;
 var capsLockOn = false;
 function virtualKeyboardButtonClick(index, char) {
   console.log("virtual keyboard button pressed : ", index, char);
+  let pressedCharCode = null;
   if (+index === 0) {
     capsLockOn = !capsLockOn;
     renderKeyboradButtons();
     $("#btn-keyboard-0").focus();
     return;
+  } else if (+index === keyboardKeys.length - 1) {
+    //backspace
+    pressedCharCode = 8;
+  } else if (+index === keyboardKeys.length - 2) {
+    //space
+    pressedCharCode = 32;
+  } else {
+    pressedCharCode = char.charCodeAt(0);
   }
-
-  sendMessage("keyboardKeyPressed", [char.toString()]).then(
+  console.log("pressedCharCode : ", pressedCharCode);
+  pressedCharCode = "0x" + pressedCharCode.toString(16);
+  sendMessage("keyboardKeyPressed", [pressedCharCode]).then(
     function (ret) {
       console.log("keyboardKeyPressed success result : ", ret);
       $("#btn-keyboard-" + keyboardCurrentIndex).focus();
@@ -481,7 +532,7 @@ function toogleKeyboardOverlay() {
 function settingsFocusNext() {
   $("#btn-settings-" + settingsCurrentIndex).removeClass("activeOption");
   settingsCurrentIndex++;
-  if (settingsCurrentIndex > 4) {
+  if (settingsCurrentIndex > 3) {
     settingsCurrentIndex = 0;
   }
   $("#btn-settings-" + settingsCurrentIndex).addClass("activeOption");
@@ -492,7 +543,7 @@ function settingsFocusPrevious() {
   $("#btn-settings-" + settingsCurrentIndex).removeClass("activeOption");
   settingsCurrentIndex--;
   if (settingsCurrentIndex < 0) {
-    settingsCurrentIndex = 4;
+    settingsCurrentIndex = 3;
   }
   $("#btn-settings-" + settingsCurrentIndex).addClass("activeOption");
   $("#btn-settings-" + settingsCurrentIndex).focus();
@@ -523,19 +574,32 @@ function keyboardFocusPrevious() {
 
 function renderKeyboradButtons() {
   $("#keyWrapper").html("");
-  for (let i = 0; i < keyboardKeys.length; i++) {
+
+  $("#keyWrapper").append(
+    `<button class="keyboardButton settingsButton${
+      capsLockOn ? " activeOption" : ""
+    }" style="width:100px" onclick="virtualKeyboardButtonClick('0','${
+      keyboardKeys[0]
+    }')" id="btn-keyboard-0">${keyboardKeys[0]}</button>`
+  );
+  for (let i = 1; i < keyboardKeys.length - 1; i++) {
     let char = keyboardKeys[i];
     if (capsLockOn && i >= 1 && i <= 26) {
       char = char.toUpperCase();
     }
-    let addActiveOption = false;
-    if ((i === 0 && capsLockOn) || keyboardCurrentIndex === i) {
-      addActiveOption = true;
-    }
     $("#keyWrapper").append(
       `<button class="keyboardButton settingsButton${
-        addActiveOption ? " activeOption" : ""
+        keyboardCurrentIndex === i ? " activeOption" : ""
       }" onclick="virtualKeyboardButtonClick('${i}','${char}')" id="btn-keyboard-${i}">${char}</button>`
     );
   }
+  $("#keyWrapper").append(
+    `<button class="keyboardButton settingsButton${
+      keyboardCurrentIndex === keyboardKeys.length - 1 ? " activeOption" : ""
+    }" style="width:100px" onclick="virtualKeyboardButtonClick('${
+      keyboardKeys.length - 1
+    }','Backspace')" id="btn-keyboard-${
+      keyboardKeys.length - 1
+    }">Backspace</button>`
+  );
 }

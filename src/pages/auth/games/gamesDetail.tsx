@@ -12,6 +12,7 @@ import {
   setPin,
   customFeedGames,
   getSimilarGames,
+  getGameConfig,
 } from "../../../common/services";
 import moment from "moment";
 //import Swal from "sweetalert2";
@@ -28,6 +29,7 @@ import {
 } from "src/common/utils";
 import ErrorPopUp from "src/pages/error";
 import LoaderPopup from "src/pages/loader";
+import GameLoading from "./loading";
 
 export default function GamesDetail({
   focusKey: focusKeyParam,
@@ -59,6 +61,9 @@ export default function GamesDetail({
     number | null
   >(null);
   const [showLoading, setshowLoading] = useState(false);
+  const [showGameLoading, setShowGameLoading] = useState<boolean>(false);
+  const [gameTips, setGameTips] = useState<any[]>([]);
+  const [gameLoadProgress, setGameLoadProgress] = useState<number>(0);
   const { focusSelf, focusKey, setFocus } = useFocusable({
     focusable: true,
     trackChildren: true,
@@ -97,12 +102,6 @@ export default function GamesDetail({
       (async () => {
         const gameResp = await getGameDetails(id, sessionContext.sessionToken);
         if (!gameResp.success) {
-          /* Swal.fire({
-            title: "Error!",
-            text: gameResp.message,
-            icon: "error",
-            confirmButtonText: "OK",
-          }); */
           setPopUp({
             show: true,
             message: gameResp.message ?? "",
@@ -140,12 +139,6 @@ export default function GamesDetail({
           gameClientToken
         );
         if (!streamSessionResp.success) {
-          /* Swal.fire({
-            title: "Error!",
-            text: streamSessionResp.message,
-            icon: "error",
-            confirmButtonText: "OK",
-          }); */
           setPopUp({
             show: true,
             message: streamSessionResp.message ?? "",
@@ -153,14 +146,10 @@ export default function GamesDetail({
             returnFocusTo: "play-now",
             icon: "",
           });
+          setShowGameLoading(false);
           return;
         }
-        /* Swal.fire({
-          title: "Info!",
-          text: JSON.stringify(streamSessionResp.streamInfo),
-          icon: "success",
-          confirmButtonText: "OK",
-        }); */
+
         goToMoonLight(streamSessionResp.streamInfo.data);
       }
     })();
@@ -194,6 +183,7 @@ export default function GamesDetail({
           icon: "error",
           confirmButtonText: "OK",
         }); */
+        setPlayNowButtonText("Play Now");
         setPopUp({
           show: true,
           message: activeSessionStatusResp.message ?? "",
@@ -204,6 +194,11 @@ export default function GamesDetail({
         return;
       }
       setActiveSessionStatus(activeSessionStatusResp);
+
+      const tipsResp = await getGameConfig(userId, sessionId);
+      if (tipsResp.success && tipsResp.tips) {
+        setGameTips(tipsResp.tips);
+      }
     }
   };
   useEffect(() => {
@@ -375,6 +370,8 @@ export default function GamesDetail({
   };
   const onResumeNowClicked = () => {
     if (activeSessionStatus?.session_id) {
+      setshowLoading(true);
+      setPlayNowButtonText("Initializing...");
       setClientTokenStartTime(null);
       setStartGameSession(activeSessionStatus.session_id);
     }
@@ -502,8 +499,12 @@ export default function GamesDetail({
         setPlayNowButtonText("Play Now");
       } else if (startGameResp.data?.api_action === "call_session") {
         if (startGameResp.data.session?.id) {
+          setShowGameLoading(true);
           setStartGameSession(startGameResp.data.session.id);
+        } else {
+          setPlayNowButtonText("Play Now");
         }
+        setshowLoading(false);
       } else if (startGameResp.data?.api_action === "call_terminate") {
         await onTerminateGame(startGameResp.data.session?.id ?? null);
       } else {
@@ -527,7 +528,7 @@ export default function GamesDetail({
           message: "Please try again in sometime, thank you for your patience!",
           title: "No server available!",
           returnFocusTo: "play-now",
-          icon: "group",
+          icon: "error",
         });
       }
     }
@@ -545,7 +546,9 @@ export default function GamesDetail({
           confirmButtonText: "OK",
         }); */
         setPlayNowButtonText("Play Now");
+        setGameLoadProgress(0);
         setshowLoading(false);
+        setShowGameLoading(false);
         setPopUp({
           show: true,
           message: "Time out.",
@@ -566,14 +569,9 @@ export default function GamesDetail({
         sessionId
       );
       if (!getClientTokenResp.success || getClientTokenResp.code !== 200) {
-        /* Swal.fire({
-          title: "Error!",
-          text: getClientTokenResp.message,
-          icon: "error",
-          confirmButtonText: "OK",
-        }); */
         setPlayNowButtonText("Play Now");
         setshowLoading(false);
+        setShowGameLoading(false);
         setPopUp({
           show: true,
           message: getClientTokenResp.message ?? "",
@@ -587,16 +585,13 @@ export default function GamesDetail({
           "game client token : ",
           getClientTokenResp.data.client_token
         );
+        setGameLoadProgress(100);
         setGameClientToken(getClientTokenResp.data.client_token);
-
-        /* Swal.fire({
-          title: "Success",
-          text: getClientTokenResp.data.client_token,
-          icon: "success",
-          confirmButtonText: "OK",
-        }); */
         setshowLoading(false);
       } else {
+        if (getClientTokenResp.data) {
+          setGameLoadProgress(getClientTokenResp.data.progress);
+        }
         await onGetClientToken(startGameSession);
       }
     }
@@ -606,11 +601,13 @@ export default function GamesDetail({
       ":"
     );
     if (userId && sessionToken && sessionId) {
+      setshowLoading(true);
       const terminateGameResp = await terminateGame(
         userId,
         sessionToken,
         sessionId
       );
+      setshowLoading(false);
       if (!terminateGameResp.success) {
         /*  Swal.fire({
           title: "Error!",
@@ -627,7 +624,6 @@ export default function GamesDetail({
         });
         return;
       }
-      setshowLoading(false);
       setPlayNowButtonText("Play Now");
       await getActiveSessionStatus();
     }
@@ -780,8 +776,17 @@ export default function GamesDetail({
           message={popUp.message}
           onOkClick={onPopupOkClick}
           focusKeyParam="modal-popup"
+          icon={popUp.icon}
         />
       )}
+
+      {showGameLoading ? (
+        <GameLoading
+          bg={gameDetails.background_image}
+          tips={gameTips}
+          progress={gameLoadProgress}
+        />
+      ) : null}
     </FocusContext.Provider>
   ) : (
     <LoaderPopup focusKeyParam="Loader" />

@@ -20,7 +20,7 @@ export default function ErrorPopUp(props: any) {
   }, [focusSelf]);
   const getIcon = () => {
     switch (props.icon) {
-      case "wait-queue":
+      case "queue":
         return waitQueueIcon;
       case "success":
         return sucessIcon;

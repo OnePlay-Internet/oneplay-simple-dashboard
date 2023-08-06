@@ -53,6 +53,7 @@ export default function AuthLayout({
   });
   const btnLogoutClick = async () => {
     const logoutResp = await logout(sessionContext.sessionToken);
+    console.log("logout resp : ", logoutResp);
     if (!logoutResp.success) {
       /* Swal.fire({
         title: "Error!",
@@ -60,13 +61,14 @@ export default function AuthLayout({
         icon: "error",
         confirmButtonText: "OK",
       }); */
+
       setPopUp({
         show: true,
         message: logoutResp.message ?? "",
         title: "Error!",
         returnFocusTo: "sidebar-logout",
       });
-      navigate("/");
+
       return;
     }
     localStorage.removeItem(SESSION_TOKEN_LOCAL_STORAGE);

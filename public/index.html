@@ -9,9 +9,41 @@
       name="description"
       content="Web site created using create-react-app"
     />
+    <script type="text/javascript">
+      const testArrayAt = [];
+      if (!testArrayAt.at) {
+        console.log("Array.at is not defined, adding at function to Array");
+        function at(n) {
+          // ToInteger() abstract op
+          n = Math.trunc(n) || 0;
+          // Allow negative indexing from the end
+          if (n < 0) n += this.length;
+          // OOB access is guaranteed to return undefined
+          if (n < 0 || n >= this.length) return undefined;
+          // Otherwise, this is just normal property access
+          return this[n];
+        }
+
+        const TypedArray = Reflect.getPrototypeOf(Int8Array);
+        for (const C of [Array, String, TypedArray]) {
+          Object.defineProperty(C.prototype, "at", {
+            value: at,
+            writable: true,
+            enumerable: false,
+            configurable: true,
+          });
+        }
+      }
+    </script>
     <link rel="apple-touch-icon" href="/logo192.png" />
     <link rel="manifest" href="manifest.json" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
     <title>OnePlay App</title>
   </head>
   <body>
@@ -19,6 +51,10 @@
     <div id="root"></div>
     <script type="text/javascript" src="/react_gamepad.js"></script>
     <script type="text/javascript" src="/tizenMain.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
+      crossorigin="anonymous"
+    ></script>
   </body>
 </html>

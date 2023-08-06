@@ -87,13 +87,13 @@ export default function Home({
   });
   const onPopupOkClick = () => {
     setPopUp({ show: false, message: "", title: "" });
-    //setFocus("home_header_slider");
-    setFocus("tab-for-you");
+    setFocus("home_header_slider");
+    //setFocus("tab-for-you");
   };
   useEffect(() => {
     if (firstHeaderFocusKey) {
-      //setFocus("home_header_slider");
-      setFocus("tab-for-you");
+      setFocus("home_header_slider");
+      // setFocus("tab-for-you");
     } else {
       focusSelf();
     }
@@ -288,9 +288,7 @@ export default function Home({
   };
   return (
     <FocusContext.Provider value={focusKey}>
-      {
-        //renderHeaderSlider()
-      }
+      {renderHeaderSlider()}
       <div
         className="container-fluid homeMainContainer"
         style={{ paddingLeft: "6rem" }}

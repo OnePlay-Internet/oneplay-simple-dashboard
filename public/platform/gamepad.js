@@ -2,6 +2,11 @@ const Controller = (function () {
   let pollingInterval = null;
   const gamepads = {};
 
+  const CONTROLLER_SELECT_BUTTON = 10; // 8
+  const CONTROLLER_START_BUTTON = 11; // 9
+  const CONTROLLER_X_BUTTON = 3; //2
+  const CONTROLLER_A_BUTTON = 0; //0
+
   class Button {
     constructor(button) {
       this.value = button.value;
@@ -31,10 +36,13 @@ const Controller = (function () {
           } else {
             this.pressedStartTime.set(i, -1);
           }
-          if (newButtons[9].pressed && newButtons[2].pressed) {
+          if (
+            newButtons[CONTROLLER_SELECT_BUTTON].pressed &&
+            newButtons[CONTROLLER_X_BUTTON].pressed
+          ) {
             toogleSettings();
           }
-          if (keyboardMode && i === 0) {
+          if (keyboardMode && i === CONTROLLER_A_BUTTON) {
             window.dispatchEvent(
               new KeyboardEvent("keydown", { keyCode: "13" })
             );
@@ -53,7 +61,7 @@ const Controller = (function () {
             this.pressedStartTime.set(i, -1);
             //alert("Sending toogleMouse");
             // console.log(i, " pressed for 3 seconds ");
-            if (i === 9) {
+            if (i === CONTROLLER_START_BUTTON) {
               sendMessage("toogleMouse", []).then(
                 function (ret) {
                   console.log("Toogle mouse result : ", ret);
@@ -65,10 +73,6 @@ const Controller = (function () {
                   //alert("Toogle mouse failed : " + error);
                   //snackbarLog("Toogle mouse failed : " + error);
                 }
-              );
-            } else if (i === 3) {
-              window.dispatchEvent(
-                new KeyboardEvent("keydown", { keyCode: "65" })
               );
             }
           }

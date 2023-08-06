@@ -1,4 +1,4 @@
-import { useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useContext, useEffect, useId, useMemo, useRef, useState } from "react";
 import { getProfile, login } from "../../common/services";
 import { SessionContext, UserProfileContext } from "src/App";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -29,8 +29,8 @@ export default function Login({
     focusKey: focusKeyParam,
   });
 
-  const [userId, setUserId] = useState("maulik@oneplay.in");
-  const [password, setPassword] = useState("Test@1234");
+  const [userId, setUserId] = useState<string>("rishabh@oneplay.in");
+  const [password, setPassword] = useState<string>("Test@1234");
 
   useEffect(() => {
     const delayedFocus = setTimeout(() => {
@@ -56,10 +56,43 @@ export default function Login({
     }
   }, [sessionContext, navigate]);
   const onLoginButtonClick = async () => {
-    if (!userId || !password) {
+    const errors: { [key: string]: string } = {};
+    let validEmail = false,
+      validPhone = false;
+    if (!userId) {
+      errors.userId = "Username is required";
+    } else if (/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(userId)) {
+      validEmail = true;
+    } else if (
+      /^(\+\d{1,2}\s?)?1?\-?\.?\s?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$/i.test(
+        userId
+      )
+    ) {
+      validPhone = true;
+    }
+
+    if (!errors.userId && !validEmail && !validPhone) {
+      errors.userId = "Invalid username";
+    }
+
+    if (!password) {
+      errors.password = "Password is required";
+    } else if (
+      !/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9!@#$%^&*]{8,64}$/i.test(
+        password
+      )
+    ) {
+      errors.password = "Invalid password";
+    }
+
+    if (errors.userId || errors.password) {
+      let err = errors.userId ? errors.userId : "";
+      if (errors.password) {
+        err += err.length ? "<br />" + errors.password : errors.password;
+      }
       setPopUp({
         show: true,
-        message: "Please enter username and password field",
+        message: err,
         title: "Error!",
         returnFocusTo: "btn-login",
       });

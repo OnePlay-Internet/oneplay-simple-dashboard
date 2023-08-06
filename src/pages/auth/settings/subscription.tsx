@@ -39,36 +39,39 @@ export default function SubscriptionComponent({
     }
   }, [subscriptions]);
   useEffect(() => {
-    (async () => {
-      const subscriptionResp: any = await getCurrentSubscriptions(
-        sessionContext.sessionToken
-      );
-      if (!subscriptionResp.success) {
-        /*   Swal.fire({
-          title: "Error!",
-          text: subscriptionResp.message,
-          icon: "error",
-          confirmButtonText: "OK",
-        }); */
-        setPopUp({
-          show: true,
-          message: subscriptionResp.message ?? "",
-          title: "Error!",
-          returnFocusTo: "buy-now",
-        });
-        return;
-      }
+    if (sessionContext.sessionToken) {
+      (async () => {
+        const subscriptionResp: any = await getCurrentSubscriptions(
+          sessionContext.sessionToken
+        );
+        if (!subscriptionResp.success) {
+          /*   Swal.fire({
+            title: "Error!",
+            text: subscriptionResp.message,
+            icon: "error",
+            confirmButtonText: "OK",
+          }); */
+          setPopUp({
+            show: true,
+            message: subscriptionResp.message ?? "",
+            title: "Error!",
+            returnFocusTo: "buy-now",
+          });
+          return;
+        }
 
-      setSubscriptions(subscriptionResp.subscriptions);
-      if (
-        subscriptionResp.subscriptions.length &&
-        subscriptionResp.subscriptions.at(0).subscription_status === "active"
-      ) {
-        setFocus("current-renew");
-      } else {
-        setFocus("buy-now");
-      }
-    })();
+        setSubscriptions(subscriptionResp.subscriptions);
+
+        if (
+          subscriptionResp.subscriptions.length &&
+          subscriptionResp.subscriptions.at(0).subscription_status === "active"
+        ) {
+          setFocus("current-renew");
+        } else {
+          setFocus("buy-now");
+        }
+      })();
+    }
   }, [sessionContext]);
 
   const renderCurrentPlan = () => {
@@ -127,9 +130,9 @@ export default function SubscriptionComponent({
                 <FocusableButton
                   focusKeyParam="current-renew"
                   onClick={() => {
-                    window.location.replace(
-                      "https://www.oneream.com/subscription.html"
-                    );
+                    // window.location.replace(
+                    //   "https://www.oneream.com/subscription.html"
+                    // );
                   }}
                 >
                   Renew
@@ -191,9 +194,9 @@ export default function SubscriptionComponent({
               <FocusableButton
                 focusKeyParam="buy-now"
                 onClick={() => {
-                  window.location.replace(
-                    "https://www.oneream.com/subscription.html"
-                  );
+                  // window.location.replace(
+                  //   "https://www.oneream.com/subscription.html"
+                  // );
                 }}
               >
                 Buy Now

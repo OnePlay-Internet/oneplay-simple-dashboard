@@ -1,18 +1,7 @@
 <svg width="336" height="189" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 336 189" preserveAspectRatio="none">
-      <defs>
-        <style type="text/css">
-          #holder text {
-            fill: #ffffff;
-            font-family: sans-serif;
-            font-size: 0px;
-            font-weight: 400;
-          }
-        </style>
-      </defs>
+     
       <g id="holder">
         <rect width="100%" height="100%" fill="#a83afe"></rect>
-        <g>
-          <text text-anchor="middle" x="50%" y="50%" dy=".3em">336 x 189</text>
-        </g>
+       
       </g>
     </svg>

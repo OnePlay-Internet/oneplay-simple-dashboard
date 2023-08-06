@@ -71,7 +71,13 @@ export type StartGameDTO = {
 };
 
 export type GetClientTokenDTO = {
-  data?: { client_token?: string; message?: string };
+  data?: { client_token?: string; message?: string; progress: number };
+  code?: number;
+  success: boolean;
+  message?: string;
+};
+export type GetLoadingConfigDTO = {
+  tips?: any[];
   code?: number;
   success: boolean;
   message?: string;
@@ -396,7 +402,11 @@ export async function logout(sessionToken: string): Promise<LogoutResponseDTO> {
     }
     return { success: false, message: "Invalid session." };
   } catch (error: any) {
-    return handleError(error, "logout");
+    if (error.response && error.response.status === 401) {
+      return { success: true };
+    } else {
+      return handleError(error, "logout");
+    }
   }
 }
 
@@ -510,6 +520,41 @@ export async function terminateGame(
     return handleError(error, "terminate game");
   }
 }
+export async function getGameConfig(
+  userId: string,
+  sessionToken: string
+): Promise<GetLoadingConfigDTO> {
+  const formData = new FormData();
+  formData.append("user_id", userId);
+  formData.append("session_token", sessionToken);
+  formData.append("type", "tips");
+  formData.append("client_type", "android_tv");
+  formData.append("client_version", "2.6.4");
+  try {
+    const configResp = await axios.post(
+      `${API_CLIENT_URL}/services/v2/get_config`,
+      formData
+    );
+    if (configResp.status !== 200) {
+      return handleNon200Response(configResp.data.msg);
+    }
+    return {
+      success: true,
+      message: configResp.data?.msg,
+      tips: configResp.data?.data.at(0).tips,
+      code: configResp.data?.code,
+    };
+  } catch (error: any) {
+    if (!error.response) {
+      return handleError(error, "get config");
+    }
+    return {
+      success: true,
+      code: error.response.data?.code,
+      message: error.response.data?.msg,
+    };
+  }
+}
 export async function getClientToken(
   userId: string,
   sessionToken: string,
@@ -533,6 +578,7 @@ export async function getClientToken(
       data: {
         client_token: clinetTokenResp.data?.data.client_token,
         message: clinetTokenResp.data?.data.msg,
+        progress: clinetTokenResp.data?.data.progress,
       },
       code: clinetTokenResp.data?.code,
     };

@@ -197,6 +197,7 @@ export default function AllGames({
     );
   };
   const loadMoreGames = async () => {
+    if (showLoading) return;
     console.log("load more...", currentPage);
     setShowLoading(true);
     const allGamesResp = await customFeedGames(

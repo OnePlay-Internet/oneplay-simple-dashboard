@@ -13,9 +13,7 @@
       href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700&display=swap"
       rel="stylesheet"
     />
-
     <script type="text/javascript" src="platform.js"></script>
-
     <style>
       .settingsWrapper {
         position: fixed;
@@ -127,7 +125,7 @@
         bottom: 10px;
         left: 10px;
         z-index: 1000;
-        display: none;
+        display: none;    
       }
       .keyboardButton {
         border-radius: 10px;
@@ -150,6 +148,7 @@
         display: flex;
         flex-direction: row;
         flex-wrap: wrap;
+        justify-content: center;
       }
 
       #heart_beat_stats{
@@ -683,7 +682,7 @@
               <p>Show/Hide <br />Game Stats</p>
             </div>
           </button>
-          <button
+          <!-- <button
             class="optionButton settingsButton"
             onclick="toogleSettings()"
             tabindex="3"
@@ -705,12 +704,12 @@
               </svg>
               <p>Controller Shortucuts</p>
             </div>
-          </button>
+          </button> -->
           <button
             class="optionButton removeMargin settingsButton"
             onclick="quitStreaming()"
             tabindex="4"
-            id="btn-settings-4"
+            id="btn-settings-3"
           >
             <div class="removeBlur">
               <svg
@@ -738,17 +737,3 @@
     </div>
   </body>
 </html>
-<!-- 
-  <button
-              class="keyboardButton settingsButton"
-              onclick="alert('a')"
-              
-              id="btn-keyboard-0"
-            >a</button>
-              
-                  <button
-              class="keyboardButton settingsButton"
-              onclick="alert('b')"
-              
-              id="btn-keyboard-1"
-            >b</button> -->
