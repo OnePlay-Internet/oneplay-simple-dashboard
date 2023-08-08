@@ -3,11 +3,16 @@ function remoteControllerHandler(e) {
   console.log("remote key code : ", keyCode);
   switch (keyCode) {
     case tvKey.KEY_UP:
-      toogleSettings();
+      if (keyboardMode) {
+        keyboardFocusUpLine();
+      }
       // Navigation.up();
       break;
     case tvKey.KEY_DOWN:
       //Navigation.down();
+      if (keyboardMode) {
+        keyboardFocusDownLine();
+      }
       break;
     case tvKey.KEY_LEFT:
       //Navigation.left();
@@ -16,7 +21,7 @@ function remoteControllerHandler(e) {
       } else if (keyboardMode) {
         keyboardFocusPrevious();
       }
-       
+
       break;
     case tvKey.KEY_RIGHT:
       if (settingsMode) {
@@ -32,7 +37,7 @@ function remoteControllerHandler(e) {
       break;
     case tvKey.KEY_RETURN:
       //Navigation.back();
-      quitStreaming();
+      //quitStreaming();
       break;
   }
 }

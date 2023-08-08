@@ -370,111 +370,128 @@ function quitStreaming() {
     }
   ); */
 }
+function toggleMouse() {
+  sendMessage("toogleMouse", []).then(
+    function (ret) {
+      console.log("Toogle mouse result : ", ret);
+      mouseMode = !mouseMode;
+      //  alert("Toogle mouse result : " + ret);
+      //snackbarLog("Toogle mouse result : ", ret);
+    },
+    function (error) {
+      console.log("Toogle mouse failed : " + error);
+      //alert("Toogle mouse failed : " + error);
+      //snackbarLog("Toogle mouse failed : " + error);
+    }
+  );
+}
 function goToReact() {
   window.location.replace(
     "/index.html/?redirect=/games-detail/" + urlParams.get("game_id").toString()
   );
 }
-
-var keyboardKeys = [
-  "Caps Lock",
-  "a",
-  "b",
-  "c",
-  "d",
-  "e",
-  "f",
-  "g",
-  "h",
-  "i",
-  "j",
-  "k",
-  "l",
-  "m",
-  "n",
-  "o",
-  "o",
-  "q",
-  "r",
-  "s",
-  "t",
-  "u",
-  "v",
-  "w",
-  "x",
-  "y",
-  "z",
-
-  "0",
-  "1",
-  "2",
-  "3",
-  "4",
-  "5",
-  "6",
-  "7",
-  "8",
-  "9",
-  "~",
-  "`",
-  "!",
-  "@",
-  "#",
-  "$",
-  "%",
-  "^",
-  "&",
-  "*",
-  "(",
-  ")",
-  "-",
-  "_",
-  "=",
-  "+",
-  "[",
-  "]",
-  "{",
-  "}",
-  "\\",
-  "|",
-  ";",
-  ":",
-  "'",
-  '"',
-  ",",
-  ".",
-  "<",
-  ">",
-  "/",
-  "?",
-  "␣",
-  "Backspace",
+var newKeyboardKeys = [
+  { char: "`", shiftChar: "~", charCode: 192 },
+  { char: "1", shiftChar: "!", charCode: 49 },
+  { char: "2", shiftChar: "@", charCode: 50 },
+  { char: "3", shiftChar: "#", charCode: 51 },
+  { char: "4", shiftChar: "$", charCode: 52 },
+  { char: "5", shiftChar: "%", charCode: 53 },
+  { char: "6", shiftChar: "^", charCode: 54 },
+  { char: "7", shiftChar: "&", charCode: 55 },
+  { char: "8", shiftChar: "*", charCode: 56 },
+  { char: "9", shiftChar: "(", charCode: 57 },
+  { char: "0", shiftChar: ")", charCode: 48 },
+  { char: "-", shiftChar: "_", charCode: 0xbd },
+  { char: "=", shiftChar: "+", charCode: 0xbb },
+  {
+    char: "Backspace",
+    shiftChar: "Backspace",
+    charCode: 8,
+  },
+  { char: "Tab", shiftChar: "Tab", charCode: 9 },
+  { char: "q", shiftChar: "Q", charCode: 81 },
+  { char: "w", shiftChar: "W", charCode: 87 },
+  { char: "e", shiftChar: "E", charCode: 69 },
+  { char: "r", shiftChar: "R", charCode: 82 },
+  { char: "t", shiftChar: "T", charCode: 84 },
+  { char: "y", shiftChar: "Y", charCode: 89 },
+  { char: "u", shiftChar: "U", charCode: 85 },
+  { char: "i", shiftChar: "I", charCode: 73 },
+  { char: "o", shiftChar: "O", charCode: 79 },
+  { char: "p", shiftChar: "P", charCode: 80 },
+  { char: "[", shiftChar: "{", charCode: 0xdb },
+  { char: "]", shiftChar: "}", charCode: 0xdd },
+  { char: "\\", shiftChar: "|", charCode: 0xdc },
+  // { char: "Capslock", shiftChar: "Capslock", charCode: "20" },
+  { char: "a", shiftChar: "A", charCode: 65 },
+  { char: "s", shiftChar: "S", charCode: 83 },
+  { char: "d", shiftChar: "D", charCode: 68 },
+  { char: "f", shiftChar: "F", charCode: 70 },
+  { char: "g", shiftChar: "G", charCode: 71 },
+  { char: "h", shiftChar: "H", charCode: 72 },
+  { char: "j", shiftChar: "J", charCode: 74 },
+  { char: "k", shiftChar: "K", charCode: 75 },
+  { char: "l", shiftChar: "L", charCode: 76 },
+  { char: ";", shiftChar: ":", charCode: 0xba },
+  { char: "'", shiftChar: '"', charCode: 222 },
+  { char: "Enter", shiftChar: "Enter", charCode: 13 },
+  { char: "Shift", shiftChar: "Shift", charCode: "" },
+  { char: "z", shiftChar: "Z", charCode: 90 },
+  { char: "x", shiftChar: "X", charCode: 88 },
+  { char: "c", shiftChar: "C", charCode: 67 },
+  { char: "v", shiftChar: "V", charCode: 86 },
+  { char: "b", shiftChar: "B", charCode: 66 },
+  { char: "n", shiftChar: "N", charCode: 78 },
+  { char: "m", shiftChar: "M", charCode: 77 },
+  { char: ",", shiftChar: "<", charCode: 0xbc },
+  { char: ".", shiftChar: ">", charCode: 0xbe },
+  { char: "/", shiftChar: "?", charCode: 0xbf },
+  { char: "Space", shiftChar: "Space", charCode: 32 },
+  { char: "←", shiftChar: "←", charCode: 37 },
+  { char: "↑", shiftChar: "↑", charCode: 38 },
+  { char: "↓", shiftChar: "↓", charCode: 40 },
+  { char: "→", shiftChar: "→", charCode: 39 },
+  { char: "Close Keyboard", shiftChar: "Close Keyboard", charCode: "" },
 ];
+var mouseMode = false;
 var settingsMode = false;
 var settingsCurrentIndex = 0;
 var keyboardMode = false;
 var keyboardCurrentIndex = 0;
 var capsLockOn = false;
-function virtualKeyboardButtonClick(index, char) {
-  console.log("virtual keyboard button pressed : ", index, char);
-  let pressedCharCode = null;
-  if (+index === 0) {
-    capsLockOn = !capsLockOn;
-    renderKeyboradButtons();
-    $("#btn-keyboard-0").focus();
-    return;
-  } else if (+index === keyboardKeys.length - 1) {
-    //backspace
-    pressedCharCode = 8;
-  } else if (+index === keyboardKeys.length - 2) {
-    //space
-    pressedCharCode = 32;
-  } else {
-    pressedCharCode = char.charCodeAt(0);
+var currentKeyboardLine = 0;
+var keyboardLines = [
+  { first: 0, last: 13 },
+  { first: 14, last: 27 },
+  { first: 28, last: 39 },
+  { first: 40, last: 50 },
+  { first: 51, last: 56 },
+];
+const MODIFIER_SHIFT = 0x01;
+function virtualKeyboardButtonClick(index) {
+  let pressedCharCode;
+  switch (newKeyboardKeys[index].char) {
+    case "Capslock":
+    case "Shift":
+      capsLockOn = !capsLockOn;
+      renderKeyboradButtons();
+      return;
+    case "Close Keyboard":
+      toogleKeyboardOverlay();
+      return;
+    default:
+      pressedCharCode = newKeyboardKeys[index].charCode;
+      break;
   }
-  console.log("pressedCharCode : ", pressedCharCode);
-  pressedCharCode = "0x" + pressedCharCode.toString(16);
-  sendMessage("keyboardKeyPressed", [pressedCharCode]).then(
+  let filter = 0;
+  if (capsLockOn) {
+    filter |= MODIFIER_SHIFT;
+  }
+  sendMessage("keyboardKeyPressed", [
+    pressedCharCode.toString(16),
+    filter.toString(),
+  ]).then(
     function (ret) {
       console.log("keyboardKeyPressed success result : ", ret);
       $("#btn-keyboard-" + keyboardCurrentIndex).focus();
@@ -488,12 +505,17 @@ function virtualKeyboardButtonClick(index, char) {
 
 function toogleSettings() {
   if (settingsMode) {
+    //hide settings menu
     $("#settingsOverLay").hide();
     $("#nacl_module").focus();
     $("#btn-settings-" + settingsCurrentIndex).removeClass("activeOption");
     $("#btn-keyboard-" + keyboardCurrentIndex).removeClass("activeOption");
     settingsCurrentIndex = 0;
   } else {
+    //show settings menu
+    if (mouseMode) {
+      toggleMouse();
+    }
     keyboardMode = false;
     keyboardCurrentIndex = 0;
     $("#btn-keyboard-" + keyboardCurrentIndex).removeClass("activeOption");
@@ -550,56 +572,148 @@ function settingsFocusPrevious() {
 }
 
 function keyboardFocusNext() {
-  if (!(capsLockOn && keyboardCurrentIndex === 0)) {
+  if (
+    !(
+      capsLockOn &&
+      (newKeyboardKeys[keyboardCurrentIndex].char === "Shift" ||
+        newKeyboardKeys[keyboardCurrentIndex].char === "Capslock")
+    )
+  ) {
     $("#btn-keyboard-" + keyboardCurrentIndex).removeClass("activeOption");
   }
   keyboardCurrentIndex++;
-  if (keyboardCurrentIndex > keyboardKeys.length - 1) {
+  if (keyboardCurrentIndex > newKeyboardKeys.length - 1) {
     keyboardCurrentIndex = 0;
   }
+  setKeyboardCurrentLine();
   $("#btn-keyboard-" + keyboardCurrentIndex).addClass("activeOption");
   $("#btn-keyboard-" + keyboardCurrentIndex).focus();
 }
 function keyboardFocusPrevious() {
-  if (!(capsLockOn && keyboardCurrentIndex === 0)) {
+  if (
+    !(
+      capsLockOn &&
+      (newKeyboardKeys[keyboardCurrentIndex].char === "Shift" ||
+        newKeyboardKeys[keyboardCurrentIndex].char === "Capslock")
+    )
+  ) {
     $("#btn-keyboard-" + keyboardCurrentIndex).removeClass("activeOption");
   }
   keyboardCurrentIndex--;
   if (keyboardCurrentIndex < 0) {
-    keyboardCurrentIndex = keyboardKeys.length - 1;
+    keyboardCurrentIndex = newKeyboardKeys.length - 1;
   }
+  setKeyboardCurrentLine();
   $("#btn-keyboard-" + keyboardCurrentIndex).addClass("activeOption");
   $("#btn-keyboard-" + keyboardCurrentIndex).focus();
 }
+function setKeyboardCurrentLine() {
+  for (const [line, index] in keyboardLines) {
+    if (
+      keyboardCurrentIndex >= line.first &&
+      keyboardCurrentIndex <= line.last
+    ) {
+      currentKeyboardLine = index;
+      break;
+    }
+  }
+}
+function keyboardFocusUpLine() {
+  let oldpos = keyboardCurrentIndex - keyboardLines[currentKeyboardLine].first;
+  currentKeyboardLine--;
+  if (currentKeyboardLine < 0) {
+    currentKeyboardLine = keyboardLines.length - 1;
+  }
+  if (
+    !(
+      capsLockOn &&
+      (newKeyboardKeys[keyboardCurrentIndex].char === "Shift" ||
+        newKeyboardKeys[keyboardCurrentIndex].char === "Capslock")
+    )
+  ) {
+    $("#btn-keyboard-" + keyboardCurrentIndex).removeClass("activeOption");
+  }
+  if (
+    oldpos >
+    keyboardLines[currentKeyboardLine].last -
+      keyboardLines[currentKeyboardLine].first
+  ) {
+    oldpos =
+      keyboardLines[currentKeyboardLine].last -
+      keyboardLines[currentKeyboardLine].first;
+  } else if (oldpos < 0) {
+    oldpos = 0;
+  }
+  let t = keyboardLines[currentKeyboardLine].first + oldpos;
 
+  if (t < 0) {
+    t = 0;
+  } else if (t >= newKeyboardKeys.length) {
+    t = keyboardLines.length - 1;
+  }
+  keyboardCurrentIndex = t; // keyboardLines[currentKeyboardLine].first + t;
+
+  $("#btn-keyboard-" + keyboardCurrentIndex).addClass("activeOption");
+  $("#btn-keyboard-" + keyboardCurrentIndex).focus();
+}
+function keyboardFocusDownLine() {
+  let oldpos = keyboardCurrentIndex - keyboardLines[currentKeyboardLine].first;
+  currentKeyboardLine++;
+  if (currentKeyboardLine >= keyboardLines.length) {
+    currentKeyboardLine = 0;
+  }
+  if (
+    !(
+      capsLockOn &&
+      (newKeyboardKeys[keyboardCurrentIndex].char === "Shift" ||
+        newKeyboardKeys[keyboardCurrentIndex].char === "Capslock")
+    )
+  ) {
+    $("#btn-keyboard-" + keyboardCurrentIndex).removeClass("activeOption");
+  }
+  if (
+    oldpos >
+    keyboardLines[currentKeyboardLine].last -
+      keyboardLines[currentKeyboardLine].first
+  ) {
+    oldpos =
+      keyboardLines[currentKeyboardLine].last -
+      keyboardLines[currentKeyboardLine].first;
+  } else if (oldpos < 0) {
+    oldpos = 0;
+  }
+  let t = keyboardLines[currentKeyboardLine].first + oldpos;
+  if (t < 0) {
+    t = 0;
+  } else if (t >= newKeyboardKeys.length) {
+    t = keyboardLines.length - 1;
+  }
+  keyboardCurrentIndex = t;
+  $("#btn-keyboard-" + keyboardCurrentIndex).addClass("activeOption");
+  $("#btn-keyboard-" + keyboardCurrentIndex).focus();
+}
 function renderKeyboradButtons() {
   $("#keyWrapper").html("");
 
-  $("#keyWrapper").append(
-    `<button class="keyboardButton settingsButton${
-      capsLockOn ? " activeOption" : ""
-    }" style="width:100px" onclick="virtualKeyboardButtonClick('0','${
-      keyboardKeys[0]
-    }')" id="btn-keyboard-0">${keyboardKeys[0]}</button>`
-  );
-  for (let i = 1; i < keyboardKeys.length - 1; i++) {
-    let char = keyboardKeys[i];
-    if (capsLockOn && i >= 1 && i <= 26) {
-      char = char.toUpperCase();
+  for (let index = 0; index < keyboardLines.length; index++) {
+    const element = keyboardLines[index];
+    var newLineHTML = '<div class="keyboardRow">';
+    //$("#keyWrapper").append("<div>");
+    for (let i = element.first; i <= element.last; i++) {
+      let char = newKeyboardKeys[i].char;
+      if (capsLockOn) {
+        char = newKeyboardKeys[i].shiftChar;
+      }
+      newLineHTML += `<button class="keyboardButton settingsButton${
+        keyboardCurrentIndex === i ||
+        (capsLockOn &&
+          (newKeyboardKeys[i].char === "Capslock" ||
+            (capsLockOn && newKeyboardKeys[i].char === "Shift")))
+          ? " activeOption"
+          : ""
+      }" onclick="virtualKeyboardButtonClick('${i}')" id="btn-keyboard-${i}">${char}</button>`;
     }
-    $("#keyWrapper").append(
-      `<button class="keyboardButton settingsButton${
-        keyboardCurrentIndex === i ? " activeOption" : ""
-      }" onclick="virtualKeyboardButtonClick('${i}','${char}')" id="btn-keyboard-${i}">${char}</button>`
-    );
+    newLineHTML += "</div>";
+    $("#keyWrapper").append(newLineHTML);
   }
-  $("#keyWrapper").append(
-    `<button class="keyboardButton settingsButton${
-      keyboardCurrentIndex === keyboardKeys.length - 1 ? " activeOption" : ""
-    }" style="width:100px" onclick="virtualKeyboardButtonClick('${
-      keyboardKeys.length - 1
-    }','Backspace')" id="btn-keyboard-${
-      keyboardKeys.length - 1
-    }">Backspace</button>`
-  );
 }

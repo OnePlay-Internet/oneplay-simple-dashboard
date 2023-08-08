@@ -2,10 +2,12 @@ const Controller = (function () {
   let pollingInterval = null;
   const gamepads = {};
 
-  const CONTROLLER_SELECT_BUTTON = 10; // 8
-  const CONTROLLER_START_BUTTON = 11; // 9
-  const CONTROLLER_X_BUTTON = 3; //2
-  const CONTROLLER_A_BUTTON = 0; //0
+  const CONTROLLER_SELECT_BUTTON = 8; //  -for shaks  = 10 - for xbox = 8
+  const CONTROLLER_START_BUTTON = 9; // for shaks = 11 - for xbox = 9
+  const CONTROLLER_X_BUTTON = 2; // -for shaks = 3 - for fox xbox = 2
+  const CONTROLLER_A_BUTTON = 0;
+  const JOYSTICK_LEFT_RIGHT = 0;
+  const JOYSTICK_UP_DOWN = 1;
 
   class Button {
     constructor(button) {
@@ -33,6 +35,14 @@ const Controller = (function () {
           //   console.log(i + " pressed : " + newButtons[i].pressed);
           if (newButtons[i].pressed) {
             this.pressedStartTime.set(i, Date.now());
+            if (i === CONTROLLER_A_BUTTON) {
+              if (settingsMode) {
+                $("#btn-settings-" + settingsCurrentIndex).click();
+              } else if (keyboardMode) {
+                console.log("fire keyboard click");
+                $("#btn-keyboard-" + keyboardCurrentIndex).click();
+              }
+            }
           } else {
             this.pressedStartTime.set(i, -1);
           }
@@ -42,11 +52,7 @@ const Controller = (function () {
           ) {
             toogleSettings();
           }
-          if (keyboardMode && i === CONTROLLER_A_BUTTON) {
-            window.dispatchEvent(
-              new KeyboardEvent("keydown", { keyCode: "13" })
-            );
-          }
+
           window.dispatchEvent(
             new CustomEvent("gamepadbuttonpressed", {
               detail: {
@@ -62,55 +68,51 @@ const Controller = (function () {
             //alert("Sending toogleMouse");
             // console.log(i, " pressed for 3 seconds ");
             if (i === CONTROLLER_START_BUTTON) {
-              sendMessage("toogleMouse", []).then(
-                function (ret) {
-                  console.log("Toogle mouse result : ", ret);
-                  //  alert("Toogle mouse result : " + ret);
-                  //snackbarLog("Toogle mouse result : ", ret);
-                },
-                function (error) {
-                  console.log("Toogle mouse failed : " + error);
-                  //alert("Toogle mouse failed : " + error);
-                  //snackbarLog("Toogle mouse failed : " + error);
-                }
-              );
+              toggleMouse();
             }
           }
         }
       }
-
       this.buttons = newButtons.map((button) => new Button(button));
     }
     analyzeAxes(axes) {
       axes.forEach((axis, i) => {
-        if (keyboardMode && this.axisValue.get(i) !== axis.toFixed(4)) {
-          if (i === 1) {
-            if (axis.toFixed(4) == 1.0) {
-              console.log("down : 40");
-              window.dispatchEvent(
-                new KeyboardEvent("keydown", { keyCode: "40" })
-              );
-            } else if (axis.toFixed(4) == -1.0) {
-              console.log("up : 38");
-              window.dispatchEvent(
-                new KeyboardEvent("keydown", { keyCode: "38" })
-              );
+        if (this.axisValue.get(i) !== axis.toFixed(2)) {
+          if (i === JOYSTICK_UP_DOWN) {
+            if (axis.toFixed(2) == 1.0) {
+              //down 40
+
+              if (keyboardMode) {
+                keyboardFocusDownLine();
+              }
+            } else if (axis.toFixed(2) == -1.0) {
+              //up 38
+
+              if (keyboardMode) {
+                keyboardFocusUpLine();
+              }
             }
-          } else if (i === 0) {
-            if (axis.toFixed(4) == 1.0) {
-              console.log("right : 39 ");
-              window.dispatchEvent(
-                new KeyboardEvent("keydown", { keyCode: "39" })
-              );
-            } else if (axis.toFixed(4) == -1.0) {
-              console.log("left : 37");
-              window.dispatchEvent(
-                new KeyboardEvent("keydown", { keyCode: "37" })
-              );
+          } else if (i === JOYSTICK_LEFT_RIGHT) {
+            if (axis.toFixed(2) == 1.0) {
+              //right 39
+
+              if (settingsMode) {
+                settingsFocusNext();
+              } else if (keyboardMode) {
+                keyboardFocusNext();
+              }
+            } else if (axis.toFixed(2) == -1.0) {
+              // left 37
+
+              if (settingsMode) {
+                settingsFocusPrevious();
+              } else if (keyboardMode) {
+                keyboardFocusPrevious();
+              }
             }
           }
         }
-        this.axisValue.set(i, axis.toFixed(4));
+        this.axisValue.set(i, axis.toFixed(2));
       });
     }
   }

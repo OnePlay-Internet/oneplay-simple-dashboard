@@ -99,6 +99,21 @@ export default function GamesDetail({
   }, [clientTokenStartTime]);
   useEffect(() => {
     if (sessionContext.sessionToken && id) {
+      setGameDetails(null);
+      setDeveloperGames([]);
+      setSimilarGames([]);
+      setGenreGames([]);
+      setActiveSessionStatus({
+        is_user_connected: false,
+        is_running: false,
+        game_id: null,
+        game_name: null,
+        session_id: null,
+        success: false,
+      });
+      setGameClientToken(null);
+      setStartGameSession(null);
+      setClientTokenStartTime(null);
       (async () => {
         const gameResp = await getGameDetails(id, sessionContext.sessionToken);
         if (!gameResp.success) {
@@ -779,7 +794,6 @@ export default function GamesDetail({
           icon={popUp.icon}
         />
       )}
-
       {showGameLoading ? (
         <GameLoading
           bg={gameDetails.background_image}

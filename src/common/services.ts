@@ -528,8 +528,8 @@ export async function getGameConfig(
   formData.append("user_id", userId);
   formData.append("session_token", sessionToken);
   formData.append("type", "tips");
-  formData.append("client_type", "android_tv");
-  formData.append("client_version", "2.6.4");
+  formData.append("client_type", "tizen");
+  formData.append("client_version", "1.0.0");
   try {
     const configResp = await axios.post(
       `${API_CLIENT_URL}/services/v2/get_config`,

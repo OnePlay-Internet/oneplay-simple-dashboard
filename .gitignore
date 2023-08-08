@@ -26,3 +26,7 @@ yarn-error.log*
 #tizen
 .project
 .tproject
+
+#test files
+public/platform/remote_controller_test.js
+public/moonlight-test.html

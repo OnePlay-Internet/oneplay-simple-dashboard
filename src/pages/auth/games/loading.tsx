@@ -31,7 +31,7 @@ export default function GameLoading(props: any) {
                 style={{
                   objectFit: "cover",
                   objectPosition: "top",
-                  height: "100vh",
+                  height: "100%",
                 }}
                 src={props.bg}
               />

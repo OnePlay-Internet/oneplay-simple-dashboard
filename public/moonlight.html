@@ -114,22 +114,22 @@
         margin-right: 0px !important;
       }
 
-      #keyboardOverlay {
+     #keyboardOverlay {
         background: rgba(0, 0, 0, 0.6);
         backdrop-filter: blur(9px);
-        width: 800px;
+        width: 900px;
         border-radius: 10px;
         margin-top: 20px;
-        padding: 40px;
+        padding: 60px 40px 40px 40px;
         position: fixed;
         bottom: 10px;
         left: 10px;
         z-index: 1000;
-        display: none;    
+        display: none;
       }
       .keyboardButton {
         border-radius: 10px;
-        width: 40px;
+        min-width: 40px;
         height: 40px;
         position: relative;
         display: flex;
@@ -149,6 +149,11 @@
         flex-direction: row;
         flex-wrap: wrap;
         justify-content: center;
+      }
+      .keyboardRow {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
       }
 
       #heart_beat_stats{

@@ -9,10 +9,12 @@ const Controller = (function () {
       this.pressedTime = -1;
     }
   }
-  const CONTROLLER_SELECT_BUTTON = 10; // 8
-  const CONTROLLER_START_BUTTON = 11; // 9
-  const CONTROLLER_X_BUTTON = 3; //2
-  const CONTROLLER_A_BUTTON = 0; //0
+  const CONTROLLER_SELECT_BUTTON = 8; //  -for shaks  = 10 - for xbox = 8
+  const CONTROLLER_START_BUTTON = 9; // for shaks = 11 - for xbox = 9
+  const CONTROLLER_X_BUTTON = 2; // -for shaks = 3 - for fox xbox = 2
+  const CONTROLLER_A_BUTTON = 0;
+  const JOYSTICK_LEFT_RIGHT = 0;
+  const JOYSTICK_UP_DOWN = 1;
   class Gamepad {
     constructor(gamepad) {
       this.buttons = gamepad.buttons.map((button) => new Button(button));
@@ -51,56 +53,38 @@ const Controller = (function () {
     }
     analyzeAxes(axes) {
       axes.forEach((axis, i) => {
-        if (this.axisValue.get(i) !== axis.toFixed(4)) {
-          if (i === 9) {
-            if (axis.toFixed(4) == 0.1429) {
-              console.log("down : 40");
+        if (this.axisValue.get(i) !== axis.toFixed(2)) {
+          if (i === JOYSTICK_UP_DOWN) {
+            if (axis.toFixed(2) == 1.0) {
+              //console.log("down : 40");
+              //down 40
               window.dispatchEvent(
                 new KeyboardEvent("keydown", { keyCode: "40" })
               );
-            } else if (axis.toFixed(4) == 0.7143) {
-              console.log("left : 37");
-              window.dispatchEvent(
-                new KeyboardEvent("keydown", { keyCode: "37" })
-              );
-            } else if (axis.toFixed(4) == -0.4286) {
-              console.log("right : 39");
-              window.dispatchEvent(
-                new KeyboardEvent("keydown", { keyCode: "39" })
-              );
-            } else if (axis.toFixed(4) == -1.0) {
-              console.log("up : 38");
+            } else if (axis.toFixed(2) == -1.0) {
+              //console.log("up : 38");
+              //up 38
               window.dispatchEvent(
                 new KeyboardEvent("keydown", { keyCode: "38" })
               );
             }
-          } else if (i === 1) {
-            if (axis.toFixed(4) == 1.0) {
-              console.log("down : 40");
-              window.dispatchEvent(
-                new KeyboardEvent("keydown", { keyCode: "40" })
-              );
-            } else if (axis.toFixed(4) == -1.0) {
-              console.log("up : 38");
-              window.dispatchEvent(
-                new KeyboardEvent("keydown", { keyCode: "38" })
-              );
-            }
-          } else if (i === 0) {
-            if (axis.toFixed(4) == 1.0) {
-              console.log("right : 39 ");
+          } else if (i === JOYSTICK_LEFT_RIGHT) {
+            if (axis.toFixed(2) == 1.0) {
+              //console.log("right : 39 ");
+              //rigth 39
               window.dispatchEvent(
                 new KeyboardEvent("keydown", { keyCode: "39" })
               );
-            } else if (axis.toFixed(4) == -1.0) {
-              console.log("left : 37");
+            } else if (axis.toFixed(2) == -1.0) {
+              // console.log("left : 37");
+              //left 37
               window.dispatchEvent(
                 new KeyboardEvent("keydown", { keyCode: "37" })
               );
             }
           }
         }
-        this.axisValue.set(i, axis.toFixed(4));
+        this.axisValue.set(i, axis.toFixed(2));
       });
     }
   }
