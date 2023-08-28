@@ -12,6 +12,9 @@ import Settings from "src/pages/auth/settings";
 import Home from "src/pages/auth/home";
 import ErrorPopUp from "src/pages/error";
 
+import TvLogin from "src/pages/guest/tv-login/tvLoginSteps";
+import TvFirstTimeUser from "src/pages/guest/tv-login/tvFirstTimeUser";
+
 export default function Router() {
   const sessionContext = useContext(SessionContext);
   const navigate = useNavigate();
@@ -39,7 +42,11 @@ export default function Router() {
   return useRoutes([
     {
       element: <GuestLayout />,
-      children: [{ path: "/", element: <Login focusKey="Login" /> }],
+      children: [
+        // { path: "/create", element: <TvFirstTimeUser /> },
+        // { path: "/tv", element: <TvLogin /> },
+        { path: "/", element: <Login focusKey="Login" /> }
+      ],
     },
     {
       element: <AuthLayout focusKey="Sidebar" />,
