@@ -1,10 +1,6 @@
 import axios from "axios";
-import {
-  API_BASE_URL,
-  API_CLIENT_URL,
-  GAME_FETCH_LIMIT,
-  SESSION_TOKEN_LOCAL_STORAGE,
-} from "./constants";
+import axiosInstance from "./axiosInstance";
+import { API_BASE_URL, API_CLIENT_URL, GAME_FETCH_LIMIT, SESSION_TOKEN_LOCAL_STORAGE } from "./constants";
 
 export type LoginResponseDTO = {
   success: boolean;
@@ -82,18 +78,15 @@ export type GetLoadingConfigDTO = {
   success: boolean;
   message?: string;
 };
-export async function login(
-  id: string,
-  password: string,
-  device: string
-): Promise<LoginResponseDTO> {
+export async function login(id: string, password: string, device: string): Promise<LoginResponseDTO> {
   try {
-    const loginResponse = await axios.post(API_BASE_URL + "accounts/login", {
+    const loginResponse = await axiosInstance.post(API_BASE_URL + "accounts/login", {
       id,
       password,
       device,
     });
-    if (loginResponse.status !== 200) {
+    console.log("service login resp : ");
+    if (loginResponse.status !== 201) {
       return handleNon200Response(loginResponse.data.message);
     }
     return { success: true, sessionToken: loginResponse.data.session_token };
@@ -101,11 +94,9 @@ export async function login(
     return handleError(error, "login");
   }
 }
-export async function getProfile(
-  sessionToken: string
-): Promise<UserProfileResponseDTO> {
+export async function getProfile(sessionToken: string): Promise<UserProfileResponseDTO> {
   try {
-    const profileResp = await axios.get(API_BASE_URL + "accounts/profile", {
+    const profileResp = await axiosInstance.get(API_BASE_URL + "accounts/profile", {
       headers: {
         session_token: sessionToken,
       },
@@ -119,10 +110,7 @@ export async function getProfile(
   }
 }
 
-export async function updateProfile(
-  sessionToken: string,
-  body: { [key: string]: string | Blob }
-): Promise<UserProfileResponseDTO> {
+export async function updateProfile(sessionToken: string, body: { [key: string]: string | Blob }): Promise<UserProfileResponseDTO> {
   try {
     const formData = new FormData();
     for (const key in body) {
@@ -131,15 +119,11 @@ export async function updateProfile(
       }
     }
     console.log("update profile form data : ", formData);
-    const profileResp = await axios.put(
-      API_BASE_URL + "accounts/profile",
-      formData,
-      {
-        headers: {
-          session_token: sessionToken,
-        },
-      }
-    );
+    const profileResp = await axios.put(API_BASE_URL + "accounts/profile", formData, {
+      headers: {
+        session_token: sessionToken,
+      },
+    });
     if (profileResp.status !== 200) {
       return handleNon200Response(profileResp.data.message);
     }
@@ -148,19 +132,13 @@ export async function updateProfile(
     return handleError(error, "get profile.");
   }
 }
-export async function getPersonalizedFeed(
-  sessionToken: string
-): Promise<PersonalizedResponseDTO> {
+export async function getPersonalizedFeed(sessionToken: string): Promise<PersonalizedResponseDTO> {
   try {
-    const pFeedResp = await axios.get(
-      API_BASE_URL +
-        `games/feed/personalized?textBackground=290x185&textLogo=400x320&poster=528x704`,
-      {
-        headers: {
-          session_token: sessionToken,
-        },
-      }
-    );
+    const pFeedResp = await axios.get(API_BASE_URL + `games/feed/personalized?textBackground=290x185&textLogo=400x320&poster=528x704`, {
+      headers: {
+        session_token: sessionToken,
+      },
+    });
     if (pFeedResp.status !== 200) {
       return handleNon200Response(pFeedResp.data.message);
     }
@@ -173,15 +151,10 @@ export async function getPersonalizedFeed(
   }
 }
 
-export async function getAllGames(
-  sessionToken: string,
-  page: number = 0,
-  limit: number = GAME_FETCH_LIMIT
-): Promise<AllGameResponseDTO> {
+export async function getAllGames(sessionToken: string, page: number = 0, limit: number = GAME_FETCH_LIMIT): Promise<AllGameResponseDTO> {
   try {
     const allGameResp = await axios.post(
-      API_BASE_URL +
-        `games/feed/custom?page=${page}&limit=${limit}&textBackground=320x240&textLogo=640x480&background=1920x1080&poster=265x352`,
+      API_BASE_URL + `games/feed/custom?page=${page}&limit=${limit}`, //&textBackground=320x240&textLogo=640x480&background=1920x1080&poster=265x352
       { order_by: "release_date:desc" },
       {
         headers: {
@@ -189,7 +162,7 @@ export async function getAllGames(
         },
       }
     );
-    if (allGameResp.status !== 200) {
+    if (allGameResp.status !== 201) {
       return handleNon200Response(allGameResp.data.message);
     }
     return {
@@ -200,19 +173,13 @@ export async function getAllGames(
     return handleError(error, "get games");
   }
 }
-export async function getGameDetails(
-  gameId: string,
-  sessionToken: string
-): Promise<GameDetailResponseDTO> {
+export async function getGameDetails(gameId: string, sessionToken: string): Promise<GameDetailResponseDTO> {
   try {
-    const gameDetailResp = await axios.get(
-      `${API_BASE_URL}games/${gameId}/info`,
-      {
-        headers: {
-          session_token: sessionToken,
-        },
-      }
-    );
+    const gameDetailResp = await axios.get(`${API_BASE_URL}games/${gameId}/info`, {
+      headers: {
+        session_token: sessionToken,
+      },
+    });
     if (gameDetailResp.status !== 200) {
       return handleNon200Response(gameDetailResp.data.message);
     }
@@ -228,14 +195,11 @@ export async function searchGame(
   limit: number = GAME_FETCH_LIMIT
 ): Promise<AllGameResponseDTO> {
   try {
-    const gameSearchResponse = await axios.get(
-      `${API_BASE_URL}games/search?query=${query}&page=${page}&limit=${limit}`,
-      {
-        headers: {
-          session_token: sessionToken,
-        },
-      }
-    );
+    const gameSearchResponse = await axios.get(`${API_BASE_URL}games/search?query=${query}&page=${page}&limit=${limit}`, {
+      headers: {
+        session_token: sessionToken,
+      },
+    });
     if (gameSearchResponse.status !== 200) {
       return handleNon200Response(gameSearchResponse.data.message);
     }
@@ -263,7 +227,7 @@ export async function customFeedGames(
         session_token: sessionToken,
       },
     });
-    if (gameSearchResponse.status !== 200) {
+    if (gameSearchResponse.status !== 201) {
       return handleNon200Response(gameSearchResponse.data.message);
     }
     return { success: true, games: gameSearchResponse.data };

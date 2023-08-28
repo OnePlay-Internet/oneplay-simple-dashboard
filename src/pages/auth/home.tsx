@@ -412,6 +412,33 @@ const FocusableRailGameWrapper = (props: any) => {
         className="img-fluid rounded coverImg"
         alt={props.game.title ?? "game_" + props.game.oplay_id}
       />
+      {props.game.is_free === "true" && props.game.status !== "coming_soon" ? (
+        <span className="freeTag px-x free tagText">FREE</span>
+      ) : null}
+      {props.game.status === "coming_soon" ? (
+        <span className="redGradient free px-2 tagText">COMING SOON</span>
+      ) : null}
+      {props.game.status === "maintenance" ? (
+        <div className="text-center" style={{ height: 0 }}>
+          <span className="orangeGradientBg px-2 bottomTag tagText">
+            MAINTENANCE
+          </span>
+        </div>
+      ) : null}
+      {props.game.status === "updating" ? (
+        <div className="text-center" style={{ height: 0 }}>
+          <span className="updatingGradient px-2 bottomTag tagText">
+            UPDATING
+          </span>
+        </div>
+      ) : null}
+      {props.game.status === "not_optimized" ? (
+        <div className="text-center" style={{ height: 0 }}>
+          <span className="darkredGradient px-2 bottomTag tagText">
+            NOT OPTIMIZED
+          </span>
+        </div>
+      ) : null}
       <h5 className="mt-3 mb-1 text-white">{props.game.title}</h5>
       <p className="textOffWhite">{props.game.genre_mappings.join(", ")}</p>
     </div>

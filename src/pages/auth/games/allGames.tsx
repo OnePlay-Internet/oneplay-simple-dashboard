@@ -407,7 +407,7 @@ const FocusableGameWrapper = (props: any) => {
         "col-md-4 col-lg-3 col-sm-6 col-6 mt-3" +
         (focused ? " focusedElement" : "")
       }
-      style={{ paddingTop: "10px", borderRadius: "10px" }}
+      style={{ paddingTop: "10px", borderRadius: "10px", position: "relative" }}
     >
       <NavLink
         to={`/games-detail/${props.game.oplay_id}`}
@@ -429,7 +429,34 @@ const FocusableGameWrapper = (props: any) => {
             />
           }
         />
-
+        {props.game.is_free === "true" &&
+        props.game.status !== "coming_soon" ? (
+          <span className="freeTag px-x free tagText">FREE</span>
+        ) : null}
+        {props.game.status === "coming_soon" ? (
+          <span className="redGradient free px-2 tagText">COMING SOON</span>
+        ) : null}
+        {props.game.status === "maintenance" ? (
+          <div className="text-center" style={{ height: 0 }}>
+            <span className="orangeGradientBg px-2 bottomTag tagText">
+              MAINTENANCE
+            </span>
+          </div>
+        ) : null}
+        {props.game.status === "updating" ? (
+          <div className="text-center" style={{ height: 0 }}>
+            <span className="updatingGradient px-2 bottomTag tagText">
+              UPDATING
+            </span>
+          </div>
+        ) : null}
+        {props.game.status === "not_optimized" ? (
+          <div className="text-center" style={{ height: 0 }}>
+            <span className="darkredGradient px-2 bottomTag tagText">
+              NOT OPTIMIZED
+            </span>
+          </div>
+        ) : null}
         <h5 className="mt-3 mb-1 text-white">{props.game.title}</h5>
         <p className="textOffWhite">{props.game.genre_mappings.join(", ")}</p>
       </NavLink>

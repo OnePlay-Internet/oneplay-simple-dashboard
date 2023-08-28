@@ -386,6 +386,7 @@ box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 1)!important;
 .scrolltab .tabOptions {
   display: inline-block;
   white-space: normal !important;
+  position: relative;
 }
 
 .scrolltab::-webkit-scrollbar {
@@ -645,4 +646,94 @@ box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 1)!important;
 
 .fixedHeight {
   height: 60px;
+}
+
+.tagText {
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 6px;
+  padding: 2px 6px;
+}
+
+.freeTag {
+  background: linear-gradient(270deg, #A83AFE 0%, #6E59FE 100%) !important;  
+}
+
+.redGradient {
+  background: linear-gradient(270deg, #8A54D0 -1.64%, #D71F7B 100%) !important;
+}
+
+.orangeGradientBg {
+  background: linear-gradient(270deg, #FE753A 0%, #F4C47A 100%) !important;
+}
+
+.updatingGradient {
+  background: linear-gradient(270deg, #3F0984 -1.64%, #8611BD 100%) !important;
+}
+
+.darkredGradient {
+  background: linear-gradient(270deg, #CE1B1B 0%, #F10E60 100%) !important;
+}
+
+.free {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  color: #fff;
+}
+
+.bottomTag {
+  position: relative;
+  bottom: 26px;
+  color: #fff;
+}
+.blackColor {
+  background-color: #151515 !important;
+}
+.borderRadius90 {
+    border-radius: 90px!important;
+}
+
+.GradientBtnPadding {
+  padding: 10px 20px !important;
+}
+
+.cancelgradientText {
+  background: linear-gradient(270deg, #8a54d0 -1.64%, #d71f7b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-fill-color: transparent;
+  font-size: 1.2rem;
+}
+
+.yellowGradient {
+  background: linear-gradient(270deg, #FE753A 0%, #F4C47A 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-fill-color: transparent;
+  font-size: 1.2rem;
+}
+
+.orangeGradient {
+  background: linear-gradient(270deg, #F2EDED 0%, #FF5B5B 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-fill-color: transparent;
+  font-size: 1.2rem;
+}
+
+.gradientInfoText {
+  background: linear-gradient(270deg, #3aa0fe 0%, #59fef4 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-fill-color: transparent;
+  font-size: 1.2rem;
+}
+
+.font600 {
+    font-weight: 600;
 }

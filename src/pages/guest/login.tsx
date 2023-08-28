@@ -34,8 +34,8 @@ export default function Login({
 
   useEffect(() => {
     const delayedFocus = setTimeout(() => {
-      setFocus("btn-login");
-    }, 100);
+      setFocus("input-username");
+    }, 300);
     return () => {
       clearTimeout(delayedFocus);
     };
@@ -63,11 +63,7 @@ export default function Login({
       errors.userId = "Username is required";
     } else if (/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(userId)) {
       validEmail = true;
-    } else if (
-      /^(\+\d{1,2}\s?)?1?\-?\.?\s?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$/i.test(
-        userId
-      )
-    ) {
+    } else if (/^(\+\d{1,2}\s?)?1?\-?\.?\s?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$/i.test(userId)) {
       validPhone = true;
     }
 
@@ -77,11 +73,7 @@ export default function Login({
 
     if (!password) {
       errors.password = "Password is required";
-    } else if (
-      !/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9!@#$%^&*]{8,64}$/i.test(
-        password
-      )
-    ) {
+    } else if (!/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9!@#$%^&*]{8,64}$/i.test(password)) {
       errors.password = "Invalid password";
     }
 
@@ -126,10 +118,7 @@ export default function Login({
       } else {
         userContext.setUserProfile(profileResp.profile);
       }
-      localStorage.setItem(
-        SESSION_TOKEN_LOCAL_STORAGE,
-        loginResponse.sessionToken
-      );
+      localStorage.setItem(SESSION_TOKEN_LOCAL_STORAGE, loginResponse.sessionToken);
       sessionContext.setSessionToken(loginResponse.sessionToken);
     }
   };

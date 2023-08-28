@@ -375,12 +375,12 @@ function toggleMouse() {
     function (ret) {
       console.log("Toogle mouse result : ", ret);
       mouseMode = !mouseMode;
-      //  alert("Toogle mouse result : " + ret);
+
       //snackbarLog("Toogle mouse result : ", ret);
     },
     function (error) {
       console.log("Toogle mouse failed : " + error);
-      //alert("Toogle mouse failed : " + error);
+
       //snackbarLog("Toogle mouse failed : " + error);
     }
   );

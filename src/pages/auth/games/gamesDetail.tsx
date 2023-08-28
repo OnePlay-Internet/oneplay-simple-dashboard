@@ -15,7 +15,6 @@ import {
   getGameConfig,
 } from "../../../common/services";
 import moment from "moment";
-//import Swal from "sweetalert2";
 import {
   FocusContext,
   useFocusable,
@@ -220,9 +219,13 @@ export default function GamesDetail({
     if (!gameDetails) {
       return;
     }
-    (async () => {
-      getActiveSessionStatus();
-    })();
+    if (
+      !["coming_soon", "maintenance", "updating"].includes(gameDetails.status)
+    ) {
+      (async () => {
+        getActiveSessionStatus();
+      })();
+    }
 
     (async () => {
       const existingGameIds = new Set();
@@ -400,11 +403,32 @@ export default function GamesDetail({
       activeSessionStatus.game_id &&
       activeSessionStatus.game_id === id
     )  */
+    if (
+      ["coming_soon", "maintenance", "updating"].includes(gameDetails.status)
+    ) {
+      return (
+        <div
+          className="borderRadius90 mt-3 blackColor"
+          style={{ width: "fit-content" }}
+        >
+          <FocusableButton
+            focusKeyParam="play-now"
+            onClick={doNothing}
+            className="btn blackColor borderRadius90 px-lg-4 border-0 text-white GradientBtnPadding position-relative fullWidthBtn font600"
+          >
+            {gameDetails.status === "coming_soon" ? "Coming Soon" : ""}
+            {gameDetails.status === "maintenance" ? "Under Maintenance" : ""}
+            {gameDetails.status === "updating" ? "Unavailable" : ""}
+          </FocusableButton>
+        </div>
+      );
+    }
     if (playNowButtonText === "Resume Now") {
       return (
         <>
           <FocusableButton
             focusKeyParam="play-now"
+            className="btn btnGradient px-4 m-1"
             onClick={() => {
               activeSessionStatus?.session_id &&
                 //setStartGameSession(activeSessionStatus.session_id);
@@ -414,6 +438,7 @@ export default function GamesDetail({
             {playNowButtonText}
           </FocusableButton>
           <FocusableButton
+            className="btn btnGradient px-4 m-1"
             onClick={() =>
               onTerminateGame(activeSessionStatus.session_id ?? null)
             }
@@ -425,15 +450,64 @@ export default function GamesDetail({
       );
     } else if (activeSessionStatus.success) {
       return (
-        <FocusableButton onClick={onPlayNowClicked} focusKeyParam="play-now">
+        <FocusableButton
+          className="btn btnGradient px-4 m-1"
+          onClick={onPlayNowClicked}
+          focusKeyParam="play-now"
+        >
           {playNowButtonText}
         </FocusableButton>
       );
     } else {
       return (
-        <FocusableButton focusKeyParam="play-now" onClick={doNothing}>
+        <FocusableButton
+          className="btn btnGradient px-4 m-1"
+          focusKeyParam="play-now"
+          onClick={doNothing}
+        >
           Loading...
         </FocusableButton>
+      );
+    }
+  };
+  const renderWarnings = () => {
+    if (
+      ["coming_soon", "maintenance", "updating", "not_optimized"].includes(
+        gameDetails.status
+      )
+    ) {
+      return (
+        <div className="font16 my-3 textCenterInResponsive">
+          {gameDetails.status === "coming_soon" ? (
+            <p className="cancelgradientText font600">
+              Stay tuned, Coming soon to OnePlay!
+            </p>
+          ) : (
+            ""
+          )}{" "}
+          {gameDetails.status === "maintenance" ? (
+            <p className="yellowGradient font600">
+              We are working diligently to ensure a smoother gameplay. Game will
+              be back soon!
+            </p>
+          ) : (
+            ""
+          )}
+          {gameDetails.status === "updating" ? (
+            <p className="gradientInfoText font600">
+              We're implementing important updates, game will be back shortly!
+            </p>
+          ) : (
+            ""
+          )}
+          {gameDetails.status === "not_optimized" ? (
+            <p className="orangeGradient font600">
+              The Quality of the gameplay may vary depending on your device.
+            </p>
+          ) : (
+            ""
+          )}
+        </div>
       );
     }
   };
@@ -694,10 +768,15 @@ export default function GamesDetail({
                     ) : null}
                     <p className="text-white fw-bold">
                       {moment(gameDetails?.release_date).format("MMM, YYYY")}
-                      {" - "}
-                      {gameDetails?.age_rating}
+
+                      {gameDetails?.age_rating &&
+                      gameDetails?.age_rating !== "null"
+                        ? " - " + gameDetails?.age_rating
+                        : ""}
+                      {gameDetails?.is_free === "true" ? " - Free" : ""}
                     </p>
                     {renderButtons()}
+                    {renderWarnings()}
                   </div>
                 </div>
               </div>
@@ -831,9 +910,7 @@ const FocusableButton = (props: any) => {
   return (
     <button
       ref={ref}
-      className={
-        "btn btnGradient px-4 m-1" + (focused ? " focusedElement" : "")
-      }
+      className={props.className + (focused ? " focusedElement" : "")}
       onClick={props.onClick}
     >
       {props.children}
@@ -908,6 +985,7 @@ const FocusableRailGameWrapper = (props: any) => {
         padding: "10px",
         borderRadius: "10px",
         verticalAlign: "top",
+        position: "relative",
       }}
     >
       <img
@@ -915,6 +993,33 @@ const FocusableRailGameWrapper = (props: any) => {
         className="img-fluid rounded coverImg"
         alt={props.game.title ?? "game_" + props.game.oplay_id}
       />
+      {props.game.is_free === "true" && props.game.status !== "coming_soon" ? (
+        <span className="freeTag px-x free tagText">FREE</span>
+      ) : null}
+      {props.game.status === "coming_soon" ? (
+        <span className="redGradient free px-2 tagText">COMING SOON</span>
+      ) : null}
+      {props.game.status === "maintenance" ? (
+        <div className="text-center" style={{ height: 0 }}>
+          <span className="orangeGradientBg px-2 bottomTag tagText">
+            MAINTENANCE
+          </span>
+        </div>
+      ) : null}
+      {props.game.status === "updating" ? (
+        <div className="text-center" style={{ height: 0 }}>
+          <span className="updatingGradient px-2 bottomTag tagText">
+            UPDATING
+          </span>
+        </div>
+      ) : null}
+      {props.game.status === "not_optimized" ? (
+        <div className="text-center" style={{ height: 0 }}>
+          <span className="darkredGradient px-2 bottomTag tagText">
+            NOT OPTIMIZED
+          </span>
+        </div>
+      ) : null}
       <h5 className="mt-3 mb-1 text-white">{props.game.title}</h5>
       <p className="textOffWhite">{props.game.genre_mappings.join(", ")}</p>
     </div>

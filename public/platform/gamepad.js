@@ -65,7 +65,6 @@ const Controller = (function () {
           const pressedStartTime = this.pressedStartTime.get(i);
           if (pressedStartTime >= 0 && Date.now() - pressedStartTime >= 2000) {
             this.pressedStartTime.set(i, -1);
-            //alert("Sending toogleMouse");
             // console.log(i, " pressed for 3 seconds ");
             if (i === CONTROLLER_START_BUTTON) {
               toggleMouse();
