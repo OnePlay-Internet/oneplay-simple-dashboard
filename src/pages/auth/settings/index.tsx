@@ -2,6 +2,7 @@ import { NavLink } from "react-router-dom";
 import Profile from "./profile";
 import Subscription from "./subscription";
 import DeviceHistory from "./deviceHistory";
+import General from "./general";
 import React, { useContext, useEffect, useState } from "react";
 import {
   FocusContext,
@@ -16,6 +17,7 @@ export default function Settings({
   const profileClick = () => setCurrentSelection("profile");
   const subscriptionClick = () => setCurrentSelection("subscriptions");
   const deviceHistoryClick = () => setCurrentSelection("deviceHistory");
+  const GeneralClick = () => setCurrentSelection("general");
   const { focusKey, setFocus, focusSelf } = useFocusable({
     focusable: true,
     focusKey: focusKeyParam,
@@ -30,6 +32,9 @@ export default function Settings({
   //const [settingsFocus, setSettingsFocus] = useState(0);
   const renderSelection = () => {
     switch (currentSelection) {
+      case "general":
+        return <General />;
+        
       case "profile":
         return <Profile focusKey="Profile" />;
 
@@ -46,6 +51,19 @@ export default function Settings({
         <div className="col-md-2">
           <h1 className="mainHeading">Settings</h1>
           <div className="settingsNavigation mt-4">
+            <FocusableParagraph
+              focusKeyParam="go-to-general"
+              onClick={GeneralClick}
+              currentSelection={currentSelection}
+            >
+              <NavLink
+                to=""
+                className={"text-decoration-none text-initial setting-menu" + (currentSelection === "General" ? " current" : "")}
+              >
+                General
+              </NavLink>
+            </FocusableParagraph>
+          
             <FocusableParagraph
               focusKeyParam="go-to-profile"
               onClick={profileClick}
@@ -120,6 +138,9 @@ const FocusableParagraph = (props: any) => {
           props.currentSelection
         );
         switch (props.currentSelection) {
+          case "general":
+            setFocus("General");
+            return false;
           case "profile":
             setFocus("Profile");
             return false;
@@ -141,7 +162,7 @@ const FocusableParagraph = (props: any) => {
   return (
     <p
       ref={ref}
-      style={{ borderRadius: "0.5rem", padding: "5px" }}
+      style={{ borderRadius: "0.5rem", padding: "5px", margin: '10px 0px 10px 0px' }}
       className={focused ? "focusedElement" : ""}
       onClick={props.onClick}
     >
