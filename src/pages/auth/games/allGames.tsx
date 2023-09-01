@@ -26,16 +26,17 @@ export default function AllGames({
   const [haveMoreGames, setHaveMoreGames] = useState(true);
   const [showLoading, setShowLoading] = useState(false);
   const navigate = useNavigate();
-  const [popUp, setPopUp] = useState({
+  const [popUp, setPopUp] = useState<ErrorPopupPorps>({
     show: false,
     message: "",
     title: "",
     returnFocusTo: "",
+    buttons: [],
+    focusKeyParam: "modal-popup",
+    icon: "",
   });
-  const [currentFilterId, setCurrentFilterId] =
-    useState<string>("static_filter_0");
-  const [currentFilterTitle, setCurrentFilterTitle] =
-    useState<string>("All Games");
+  const [currentFilterId, setCurrentFilterId] = useState<string>("static_filter_0");
+  const [currentFilterTitle, setCurrentFilterTitle] = useState<string>("All Games");
   const [staticFilters, setStaticFilters] = useState<any[]>([
     {
       text: "All Games",
@@ -84,11 +85,7 @@ export default function AllGames({
       //   loadMoreGames();
 
       (async () => {
-        const topGenres = await getTopResults(
-          sessionContext.sessionToken,
-          "top_genres",
-          3
-        );
+        const topGenres = await getTopResults(sessionContext.sessionToken, "top_genres", 3);
         if (topGenres.success && topGenres.results) {
           setTopGenres(
             topGenres.results.map((genre, index) => {
@@ -105,11 +102,7 @@ export default function AllGames({
         }
       })();
       (async () => {
-        const topDevelopers = await getTopResults(
-          sessionContext.sessionToken,
-          "top_developers",
-          3
-        );
+        const topDevelopers = await getTopResults(sessionContext.sessionToken, "top_developers", 3);
         if (topDevelopers.success && topDevelopers.results) {
           setTopDevelopers(
             topDevelopers.results.map((developer, index) => {
@@ -126,11 +119,7 @@ export default function AllGames({
         }
       })();
       (async () => {
-        const topPublishers = await getTopResults(
-          sessionContext.sessionToken,
-          "top_publishers",
-          3
-        );
+        const topPublishers = await getTopResults(sessionContext.sessionToken, "top_publishers", 3);
         if (topPublishers.success && topPublishers.results) {
           setTopPublishers(
             topPublishers.results.map((publisher, index) => {
@@ -147,11 +136,7 @@ export default function AllGames({
         }
       })();
       (async () => {
-        const topStores = await getTopResults(
-          sessionContext.sessionToken,
-          "stores",
-          3
-        );
+        const topStores = await getTopResults(sessionContext.sessionToken, "stores", 3);
         if (topStores.success && topStores.results) {
           setTopStores(
             topStores.results.map((store, index) => {
@@ -168,7 +153,7 @@ export default function AllGames({
         }
       })();
     }
-  }, [sessionContext]);
+  }, [sessionContext.sessionToken]);
 
   useEffect(() => {
     console.log("current page : ", currentPage);
@@ -200,12 +185,7 @@ export default function AllGames({
     if (showLoading) return;
     console.log("load more...", currentPage);
     setShowLoading(true);
-    const allGamesResp = await customFeedGames(
-      sessionContext.sessionToken,
-      currentFilter,
-      currentPage,
-      GAME_FETCH_LIMIT
-    );
+    const allGamesResp = await customFeedGames(sessionContext.sessionToken, currentFilter, currentPage, GAME_FETCH_LIMIT);
     setShowLoading(false);
     if (!allGamesResp.success) {
       /* Swal.fire({
@@ -218,15 +198,16 @@ export default function AllGames({
         show: true,
         message: allGamesResp.message ?? "",
         title: "Error!",
-        returnFocusTo: "",
+        returnFocusTo: "play-now",
+        buttons: [{ text: "Ok", className: "btn gradientBtn btn-lg border-0", focusKey: "btn-ok-popup", onClick: hidePopup }],
+        focusKeyParam: "modal-popup",
+        icon: "error",
       });
     }
     if (allGamesResp.games && allGamesResp.games.length) {
       if (currentPage > 0) {
         setAllGames((prevGames) => {
-          return allGamesResp.games
-            ? [...prevGames, ...allGamesResp.games]
-            : prevGames;
+          return allGamesResp.games ? [...prevGames, ...allGamesResp.games] : prevGames;
         });
       } else {
         setAllGames(allGamesResp.games);
@@ -246,9 +227,17 @@ export default function AllGames({
       loadMoreGames();
     }
   };
-  const onPopupOkClick = () => {
+  const hidePopup = () => {
     const returnFocusTo = popUp.returnFocusTo;
-    setPopUp({ show: false, message: "", title: "", returnFocusTo: "" });
+    setPopUp({
+      show: false,
+      message: "",
+      title: "",
+      returnFocusTo: "",
+      buttons: [],
+      focusKeyParam: "modal-popup",
+      icon: "",
+    });
     if (returnFocusTo) {
       setFocus(returnFocusTo);
     } else {
@@ -258,11 +247,7 @@ export default function AllGames({
   useEffect(() => {
     loadMoreGames();
   }, [currentFilterId]);
-  const onFilterClicked = (
-    filterTitle: string,
-    filterId: string,
-    body: any
-  ) => {
+  const onFilterClicked = (filterTitle: string, filterId: string, body: any) => {
     console.log("filter clicked : ", filterId);
     setCurrentFilterTitle(filterTitle);
     setCurrentFilter(body);
@@ -272,11 +257,7 @@ export default function AllGames({
   };
   return (
     <FocusContext.Provider value={focusKey}>
-      <InfiniteScroll
-        pageStart={0}
-        hasMore={haveMoreGames}
-        loadMore={loadNextGames}
-      >
+      <InfiniteScroll pageStart={0} hasMore={haveMoreGames} loadMore={loadNextGames}>
         <div className="row mainContainer">
           <div className="col-md-3">
             <h3 className="heading">Games</h3>
@@ -347,21 +328,12 @@ export default function AllGames({
           </div>
           <div className="col-md-9">
             <h3 className="heading">{currentFilterTitle}</h3>
-            <div className="row">
-              {allGames?.map((game) => renderSingleGame(game))}
-            </div>
+            <div className="row">{allGames?.map((game) => renderSingleGame(game))}</div>
           </div>
         </div>
       </InfiniteScroll>
       {showLoading ? <LoaderPopup focusKeyParam="Loader" /> : null}
-      {popUp.show && (
-        <ErrorPopUp
-          title={popUp.title}
-          message={popUp.message}
-          onOkClick={onPopupOkClick}
-          focusKeyParam="modal-popup"
-        />
-      )}
+      {popUp.show && <ErrorPopUp {...popUp} />}
     </FocusContext.Provider>
   );
 }

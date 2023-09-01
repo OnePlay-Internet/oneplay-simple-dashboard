@@ -21,10 +21,7 @@ import {
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-export default function Home({
-  focusKey: focusKeyParam,
-}: FocusabelComponentProps) {
-  const [popUp, setPopUp] = useState({ show: false, message: "", title: "" });
+export default function Home({ focusKey: focusKeyParam }: FocusabelComponentProps) {
   const [personalizedFeeds, setPersonalizedFeeds] = useState<any[]>([]);
   const [customGames, setCustomGames] = useState<any[]>([]);
   const [firstHeaderFocusKey, setFirstHeaderFocusKey] = useState("");
@@ -32,6 +29,15 @@ export default function Home({
   const sessionContext = useContext(SessionContext);
   const navigate = useNavigate();
   const [currentTab, setCurrentTab] = useState("For You");
+  const [popUp, setPopUp] = useState<ErrorPopupPorps>({
+    show: false,
+    message: "",
+    title: "",
+    returnFocusTo: "",
+    buttons: [],
+    focusKeyParam: "modal-popup",
+    icon: "",
+  });
   const [tabs, setTabs] = useState([
     { text: "For You", focusKeyParam: "tab-for-you", body: { is_free: true } },
     {
@@ -78,17 +84,14 @@ export default function Home({
     focusable: true,
     focusKey: focusKeyParam,
     preferredChildFocusKey: "tab-for-you",
-    onFocus: (componentLayout, extraProps, focusDetails) => {
-      console.log("home focus received");
-      if (focusDetails && focusDetails.pos) {
-        console.log(focusDetails.pos);
-      }
-    },
   });
-  const onPopupOkClick = () => {
-    setPopUp({ show: false, message: "", title: "" });
-    setFocus("home_header_slider");
-    //setFocus("tab-for-you");
+  const hidePopup = () => {
+    setPopUp((prev) => {
+      if (prev.returnFocusTo) {
+        setFocus(prev.returnFocusTo);
+      }
+      return { show: false, message: "", title: "", returnFocusTo: "", buttons: [], focusKeyParam: "modal-popup", icon: "" };
+    });
   };
   useEffect(() => {
     if (firstHeaderFocusKey) {
@@ -99,9 +102,7 @@ export default function Home({
     }
   }, [firstHeaderFocusKey]);
   const renderHeaderSlider = () => {
-    const headerIndex = personalizedFeeds.findIndex(
-      (feed: any) => feed.type === "header"
-    );
+    const headerIndex = personalizedFeeds.findIndex((feed: any) => feed.type === "header");
     console.log("header index : ", headerIndex);
     if (headerIndex >= 0) {
       return (
@@ -117,9 +118,7 @@ export default function Home({
   };
   const renderRails = () => {
     if (personalizedFeeds) {
-      return personalizedFeeds
-        .filter((feed) => feed.type === "rail")
-        .map((feed) => renderSingleRail(feed));
+      return personalizedFeeds.filter((feed) => feed.type === "rail").map((feed) => renderSingleRail(feed));
     }
   };
   const renderSingeGameForRail = (game: any, feedId: string) => {
@@ -137,11 +136,7 @@ export default function Home({
       <div className="col-12" key={`feed_${feed.feed_id}`}>
         <p className="rail-heading">{feed.title}</p>
 
-        <div className="scrolltab">
-          {feed.results.map((game: any) =>
-            renderSingeGameForRail(game, feed.feed_id)
-          )}
-        </div>
+        <div className="scrolltab">{feed.results.map((game: any) => renderSingeGameForRail(game, feed.feed_id))}</div>
       </div>
     );
   };
@@ -150,42 +145,46 @@ export default function Home({
       <div className="col-12" key={`feed_wishlist`}>
         <p className="rail-heading">My Library</p>
 
-        <div className="scrolltab">
-          {wishlistGames.map((game: any) =>
-            renderSingeGameForRail(game, "feed_wishlist")
-          )}
-        </div>
+        <div className="scrolltab">{wishlistGames.map((game: any) => renderSingeGameForRail(game, "feed_wishlist"))}</div>
       </div>
     );
   };
   useEffect(() => {
     if (sessionContext.sessionToken) {
       (async () => {
-        const wishlistsResp: any = await getUsersWishlist(
-          sessionContext.sessionToken
-        );
+        const wishlistsResp: any = await getUsersWishlist(sessionContext.sessionToken);
         if (!wishlistsResp.success) {
           setPopUp({
             show: true,
             message: wishlistsResp.message ?? "",
             title: "Error!",
+            returnFocusTo: "home_header_slider",
+            buttons: [
+              {
+                text: "OK",
+                className: "btn grayGradientBtn btn-lg border-0 mt-3",
+                focusKey: "btn-cancel-popup",
+                onClick: hidePopup,
+              },
+            ],
+            focusKeyParam: "modal-popup-error",
+            icon: "error",
           });
           return;
         }
         const body = {
           content_ids: wishlistsResp.wishlist,
         };
-        const wishlistGamesResp = await customFeedGames(
-          sessionContext.sessionToken,
-          body,
-          0,
-          wishlistsResp.wishlist.length
-        );
+        const wishlistGamesResp = await customFeedGames(sessionContext.sessionToken, body, 0, wishlistsResp.wishlist.length);
         if (!wishlistGamesResp.success) {
           setPopUp({
             show: true,
-            message: wishlistsResp.message ?? "",
-            title: "Error!",
+            message: wishlistGamesResp.message ?? "",
+            title: wishlistGamesResp.message ?? "",
+            returnFocusTo: "home_header_slider",
+            buttons: [{ text: "Ok", className: "btn gradientBtn btn-lg border-0", focusKey: "btn-ok-popup", onClick: hidePopup }],
+            focusKeyParam: "modal-popup-error",
+            icon: "error",
           });
           return;
         }
@@ -200,29 +199,73 @@ export default function Home({
         }
       })();
     }
-  }, [sessionContext]);
-
+  }, [sessionContext.sessionToken]);
+  useEffect(() => {
+    const onRemoteReturnClicked = (event: any) => {
+      console.log("remote return clicked : ", popUp);
+      if (popUp.show) {
+        hidePopup();
+      } else {
+        setPopUp({
+          show: true,
+          message: "Are you sure you want to exit oneplay app?",
+          title: "Exit OnePlay?",
+          returnFocusTo: "home_header_slider",
+          buttons: [
+            {
+              text: "Cancel",
+              className: "btn gradientBtn btn-lg border-0",
+              focusKey: "btn-ok-popup",
+              onClick: hidePopup,
+            },
+            {
+              text: "Exit",
+              className: "btn grayGradientBtn btn-lg border-0 mt-3",
+              focusKey: "btn-cancel-popup",
+              onClick: () => {
+                hidePopup();
+                //@ts-ignore
+                tizen.application.getCurrentApplication().exit();
+              },
+            },
+          ],
+          focusKeyParam: "modal-popup-confirm-exit",
+          icon: "error",
+        });
+      }
+    };
+    window.addEventListener("RemoteReturnClicked", onRemoteReturnClicked);
+    return () => {
+      window.removeEventListener("RemoteReturnClicked", onRemoteReturnClicked);
+    };
+  }, [popUp, hidePopup]);
   useEffect(() => {
     if (sessionContext.sessionToken) {
       (async () => {
         if (currentTab === "For You") {
-          const personlizedFeesResp = await getPersonalizedFeed(
-            sessionContext.sessionToken
-          );
+          const personlizedFeesResp = await getPersonalizedFeed(sessionContext.sessionToken);
           if (!personlizedFeesResp.success) {
             setPopUp({
               show: true,
               message: personlizedFeesResp.message ?? "",
               title: "Error!",
+              returnFocusTo: "home_header_slider",
+              buttons: [
+                {
+                  text: "OK",
+                  className: "btn grayGradientBtn btn-lg border-0 mt-3",
+                  focusKey: "btn-cancel-popup",
+                  onClick: hidePopup,
+                },
+              ],
+              focusKeyParam: "modal-popup-error",
+              icon: "error",
             });
             return;
           }
           setPersonalizedFeeds(personlizedFeesResp.feeds ?? []);
 
-          const headerIndex =
-            personlizedFeesResp.feeds?.findIndex(
-              (feed: any) => feed.type === "header"
-            ) ?? -1;
+          const headerIndex = personlizedFeesResp.feeds?.findIndex((feed: any) => feed.type === "header") ?? -1;
           if (headerIndex >= 0) {
             const headerFeed: any = personlizedFeesResp.feeds?.at(headerIndex);
             const k = headerFeed?.results?.[0].oplay_id ?? "";
@@ -242,17 +285,23 @@ export default function Home({
               break;
           }
 
-          const customGamesResp = await customFeedGames(
-            sessionContext.sessionToken,
-            body,
-            0,
-            12
-          );
+          const customGamesResp = await customFeedGames(sessionContext.sessionToken, body, 0, 12);
           if (!customGamesResp.success) {
             setPopUp({
               show: true,
               message: customGamesResp.message ?? "",
               title: "Error!",
+              returnFocusTo: "home_header_slider",
+              buttons: [
+                {
+                  text: "Ok",
+                  className: "btn grayGradientBtn btn-lg border-0 mt-3",
+                  focusKey: "btn-cancel-popup",
+                  onClick: hidePopup,
+                },
+              ],
+              focusKeyParam: "modal-popup-error",
+              icon: "error",
             });
             return;
           }
@@ -268,7 +317,7 @@ export default function Home({
         }
       })();
     }
-  }, [sessionContext, currentTab]);
+  }, [sessionContext.sessionToken, currentTab]);
 
   const onTabButtonCliced = (selectedTab: string) => {
     setCurrentTab(selectedTab);
@@ -277,33 +326,20 @@ export default function Home({
     return (
       <div className="col-12" key={`current_tab_${currentTab}`}>
         <p className="rail-heading">{currentTab}</p>
-
-        <div className="scrolltab">
-          {customGames.map((game: any) =>
-            renderSingeGameForRail(game, `current_tab_${currentTab}`)
-          )}
-        </div>
+        <div className="scrolltab">{customGames.map((game: any) => renderSingeGameForRail(game, `current_tab_${currentTab}`))}</div>
       </div>
     );
   };
   return (
     <FocusContext.Provider value={focusKey}>
       {renderHeaderSlider()}
-      <div
-        className="container-fluid homeMainContainer"
-        style={{ paddingLeft: "6rem" }}
-      >
+      <div className="container-fluid homeMainContainer" style={{ paddingLeft: "6rem" }}>
         <div className="row justify-content-center pt-4">
           <div className="col-auto">
             <div className="row justify-content-center scrolltab">
               {tabs.map((tab) => (
                 <div className="col-auto tabOptions" key={tab.focusKeyParam}>
-                  <FocusableTabButton
-                    focusKeyParam={tab.focusKeyParam}
-                    tab={tab.text}
-                    onClick={onTabButtonCliced}
-                    currentTab={currentTab}
-                  >
+                  <FocusableTabButton focusKeyParam={tab.focusKeyParam} tab={tab.text} onClick={onTabButtonCliced} currentTab={currentTab}>
                     {tab.text}
                   </FocusableTabButton>
                 </div>
@@ -316,14 +352,7 @@ export default function Home({
         {currentTab !== "For You" ? renderWishlist() : null}
       </div>
 
-      {popUp.show && (
-        <ErrorPopUp
-          focusKeyParam="modal-popup"
-          title={popUp.title}
-          message={popUp.message}
-          onOkClick={onPopupOkClick}
-        />
-      )}
+      {popUp.show && <ErrorPopUp {...popUp} />}
     </FocusContext.Provider>
   );
 }
@@ -356,21 +385,8 @@ const FocusableTabButton = (props: any) => {
         props.onClick(props.tab);
       }}
     >
-      <a
-        href="#"
-        className={
-          "card bgColor text-decoration-none mutedColor" +
-          (props.tab === props.currentTab ? " activeBG" : "")
-        }
-      >
-        <div
-          className={
-            "customBtnPadding bgColor mutedColor" +
-            (props.tab === props.currentTab ? "text-white" : "")
-          }
-        >
-          {props.children}
-        </div>
+      <a href="#" className={"card bgColor text-decoration-none mutedColor" + (props.tab === props.currentTab ? " activeBG" : "")}>
+        <div className={"customBtnPadding bgColor mutedColor" + (props.tab === props.currentTab ? "text-white" : "")}>{props.children}</div>
       </a>
     </div>
   );
@@ -387,10 +403,7 @@ const FocusableRailGameWrapper = (props: any) => {
       props.goToDetail(`/games-detail/${props.game.oplay_id}`);
     },
     onArrowPress: (direction, keyProps, detils) => {
-      if (
-        direction === "left" &&
-        getCoords(ref.current).left + ref.current.offsetLeft < 220
-      ) {
+      if (direction === "left" && getCoords(ref.current).left + ref.current.offsetLeft < 220) {
         setFocus("Sidebar", { pos: getScrolledCoords(ref.current) });
         return false;
       }
@@ -405,6 +418,10 @@ const FocusableRailGameWrapper = (props: any) => {
         padding: "10px",
         borderRadius: "10px",
         verticalAlign: "top",
+        cursor: "pointer",
+      }}
+      onClick={() => {
+        props.goToDetail(`/games-detail/${props.game.oplay_id}`);
       }}
     >
       <img
@@ -415,28 +432,20 @@ const FocusableRailGameWrapper = (props: any) => {
       {props.game.is_free === "true" && props.game.status !== "coming_soon" ? (
         <span className="freeTag px-x free tagText">FREE</span>
       ) : null}
-      {props.game.status === "coming_soon" ? (
-        <span className="redGradient free px-2 tagText">COMING SOON</span>
-      ) : null}
+      {props.game.status === "coming_soon" ? <span className="redGradient free px-2 tagText">COMING SOON</span> : null}
       {props.game.status === "maintenance" ? (
         <div className="text-center" style={{ height: 0 }}>
-          <span className="orangeGradientBg px-2 bottomTag tagText">
-            MAINTENANCE
-          </span>
+          <span className="orangeGradientBg px-2 bottomTag tagText">MAINTENANCE</span>
         </div>
       ) : null}
       {props.game.status === "updating" ? (
         <div className="text-center" style={{ height: 0 }}>
-          <span className="updatingGradient px-2 bottomTag tagText">
-            UPDATING
-          </span>
+          <span className="updatingGradient px-2 bottomTag tagText">UPDATING</span>
         </div>
       ) : null}
       {props.game.status === "not_optimized" ? (
         <div className="text-center" style={{ height: 0 }}>
-          <span className="darkredGradient px-2 bottomTag tagText">
-            NOT OPTIMIZED
-          </span>
+          <span className="darkredGradient px-2 bottomTag tagText">NOT OPTIMIZED</span>
         </div>
       ) : null}
       <h5 className="mt-3 mb-1 text-white">{props.game.title}</h5>
@@ -473,9 +482,7 @@ const FocusableHeaderSlider = (props: any) => {
           const ariaHidden = currentGame[index].getAttribute("aria-hidden");
           console.log("ariaHidden : ", ariaHidden);
           if (ariaHidden != null && ariaHidden === "false") {
-            const gId = currentGame[index]
-              .querySelector("[data-gameid]")
-              ?.getAttribute("data-gameid");
+            const gId = currentGame[index].querySelector("[data-gameid]")?.getAttribute("data-gameid");
             if (gId) {
               props.goToDetail(`/games-detail/${gId}`);
             }
@@ -509,27 +516,21 @@ const FocusableHeaderSlider = (props: any) => {
         className="col-auto"
         style={{ borderRadius: "6px" }}
         data-gameid={game.oplay_id}
+        onClick={() => {
+          props.goToDetail(`/games-detail/${game.oplay_id}`);
+        }}
       >
         <div className="card border-0 transparentBg">
-          <img
-            src={game.background_image}
-            className="card-img height50vh rounded"
-            alt="..."
-          />
+          <img src={game.background_image} className="card-img height50vh rounded" alt="..." />
           <div
             className="card-img-overlay"
             style={{
-              background:
-                "linear-gradient(180deg, rgba(0, 0, 0, 0.00) 58.85%, rgba(0, 0, 0, 0.52) 79.17%, rgba(0, 0, 0, 0.80) 100%)",
+              background: "linear-gradient(180deg, rgba(0, 0, 0, 0.00) 58.85%, rgba(0, 0, 0, 0.52) 79.17%, rgba(0, 0, 0, 0.80) 100%)",
             }}
           >
             <div className="row height45vh align-items-center">
               <div className="col">
-                <img
-                  src={game.text_logo}
-                  className="img-fluid text-logo"
-                  alt="..."
-                />
+                <img src={game.text_logo} className="img-fluid text-logo" alt="..." />
               </div>
             </div>
           </div>
@@ -537,9 +538,7 @@ const FocusableHeaderSlider = (props: any) => {
             <div className="row height45vh align-items-end">
               <div className="col-auto width20"></div>
               <div className="col-auto width70 ps-4">
-                <button className="btn text-white gradientBtn border-0 br90 px-4 btn-md fw400">
-                  Play Now
-                </button>
+                <button className="btn text-white gradientBtn border-0 br90 px-4 btn-md fw400">Play Now</button>
               </div>
             </div>
           </div>
@@ -548,12 +547,7 @@ const FocusableHeaderSlider = (props: any) => {
     );
   };
   return (
-    <div
-      className={"col-lg-12" + (focused ? " slick-focused" : "")}
-      ref={ref}
-      id="home-header-slider"
-      style={{ marginTop: "4rem" }}
-    >
+    <div className={"col-lg-12" + (focused ? " slick-focused" : "")} ref={ref} id="home-header-slider" style={{ marginTop: "4rem" }}>
       <div className="card border-0 transparentBg">
         <div className="row">
           <Slider {...sliderSettings} ref={sliderRef}>

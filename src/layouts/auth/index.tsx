@@ -13,19 +13,24 @@ import {
 } from "@noriginmedia/norigin-spatial-navigation";
 import { getScrolledCoords } from "src/common/utils";
 import ErrorPopUp from "src/pages/error";
-
-export default function AuthLayout({
-  focusKey: focusKeyParam,
-}: FocusabelComponentProps) {
+import { ReactComponent as IconSearch } from "../../assets/images/icon-search.svg";
+import { ReactComponent as IconHome } from "../../assets/images/icon-home.svg";
+import { ReactComponent as IconController } from "../../assets/images/icon-controller.svg";
+import { ReactComponent as IconSettings } from "../../assets/images/icon-settings.svg";
+import { ReactComponent as IconLogout } from "../../assets/images/icon-logout.svg";
+export default function AuthLayout({ focusKey: focusKeyParam }: FocusabelComponentProps) {
   const navigate = useNavigate();
   const sessionContext = useContext(SessionContext);
   const userContext = useContext(UserProfileContext);
   const [hasFocus, setHasFocus] = useState(false);
-  const [popUp, setPopUp] = useState({
+  const [popUp, setPopUp] = useState<ErrorPopupPorps>({
     show: false,
     message: "",
     title: "",
     returnFocusTo: "",
+    buttons: [],
+    focusKeyParam: "modal-popup",
+    icon: "",
   });
   const { focusSelf, focusKey, setFocus } = useFocusable({
     focusable: true,
@@ -61,24 +66,35 @@ export default function AuthLayout({
         icon: "error",
         confirmButtonText: "OK",
       }); */
-
       setPopUp({
         show: true,
         message: logoutResp.message ?? "",
         title: "Error!",
         returnFocusTo: "sidebar-logout",
+        buttons: [{ text: "Ok", className: "btn gradientBtn btn-lg border-0", focusKey: "btn-ok-popup", onClick: hidePopup }],
+        focusKeyParam: "modal-popup-confirm-exit",
+        icon: "error",
       });
-
       return;
     }
+
     localStorage.removeItem(SESSION_TOKEN_LOCAL_STORAGE);
     userContext.setUserProfile(null);
     sessionContext.setSessionToken(null);
     navigate("/");
   };
-  const onPopupOkClick = () => {
+
+  const hidePopup = () => {
     const returnFocusTo = popUp.returnFocusTo;
-    setPopUp({ show: false, message: "", title: "", returnFocusTo: "" });
+    setPopUp({
+      show: false,
+      message: "",
+      title: "",
+      returnFocusTo: "",
+      buttons: [],
+      focusKeyParam: "modal-popup",
+      icon: "",
+    });
     setFocus(returnFocusTo);
   };
   return (
@@ -87,40 +103,39 @@ export default function AuthLayout({
         <div className="row">
           <FocusContext.Provider value={focusKey}>
             <div
-              className="mt-4 sidebar text-center"
+              className={hasFocus ? "mt-4 sidebar focused text-center" : "mt-4 sidebar collapsed text-center"}
               /* style={{ width: hasFocus ? "120px" : "80px" }} */
             >
               <div
-                className="p-3"
+                className="sidebar-items-wrapper"
                 style={{
-                  position: "fixed",
-                  width: "140px",
-                  top: "0",
-                  left: "0",
-                  zIndex: "1031",
-                  height: "100vh",
-                  background:
-                    "linear-gradient(270deg, rgba(0, 0, 0, 0.00) 0%, #000 100%)",
+                  width: hasFocus ? "50%" : "120px",
                 }}
               >
-                <p className="mb-4" style={{ textAlign: "left" }}>
-                  <img
-                    className="rounded-circle"
-                    width="48"
-                    height="48"
-                    src={
-                      userContext.userProfile &&
-                      userContext.userProfile.profile_image
-                        ? userContext.userProfile.profile_image
-                        : defaultUser
-                    }
-                    alt={
-                      userContext.userProfile
-                        ? userContext.userProfile.first_name
-                        : ""
-                    }
-                  />
+                <p style={{ textAlign: "left", marginBottom: "32px" }}>
+                  <a href="#">
+                    <img
+                      className="rounded-circle sidebar-icon"
+                      width="48"
+                      height="48"
+                      src={
+                        userContext.userProfile && userContext.userProfile.profile_image
+                          ? userContext.userProfile.profile_image
+                          : defaultUser
+                      }
+                      alt={userContext.userProfile ? userContext.userProfile.first_name : ""}
+                      style={{ marginLeft: "-0.5rem", height: "52px" }}
+                    />
+                    {hasFocus ? (
+                      <span className="sidebar-text username-text">
+                        {userContext.userProfile ? userContext.userProfile.first_name + " " + userContext.userProfile.last_name : ""}
+                      </span>
+                    ) : (
+                      ""
+                    )}
+                  </a>
                 </p>
+
                 <p>
                   <FocusableLink
                     focusKeyParam="sidebar-home"
@@ -129,7 +144,9 @@ export default function AuthLayout({
                       navigate("/home");
                     }} */
                   >
-                    <i className="fa-solid fa-house"></i>
+                    {/* <img src={iconHome} className="sidebar-icon" alt="home-icon" /> */}
+                    <IconHome className="sidebar-icon" />
+                    {hasFocus ? <span className="sidebar-text">Home</span> : ""}
                   </FocusableLink>
                 </p>
 
@@ -141,7 +158,9 @@ export default function AuthLayout({
                       navigate("/search");
                     }} */
                   >
-                    <i className="fa-sharp fa-solid fa-magnifying-glass"></i>
+                    {/* <img src={iconSearch} className="sidebar-icon" alt="search-icon" /> */}
+                    <IconSearch className="sidebar-icon" />
+                    {hasFocus ? <span className="sidebar-text">Search</span> : ""}
                   </FocusableLink>
                 </p>
 
@@ -153,7 +172,9 @@ export default function AuthLayout({
                       navigate("/all-games");
                     }} */
                   >
-                    <i className="fa-solid fa-gamepad"></i>
+                    {/*     <img src={iconController} className="sidebar-icon" alt="controller-icon" /> */}
+                    <IconController className="sidebar-icon" />
+                    {hasFocus ? <span className="sidebar-text">Games</span> : ""}
                   </FocusableLink>
                 </p>
 
@@ -165,34 +186,24 @@ export default function AuthLayout({
                       navigate("/settings");
                     }} */
                   >
-                    <i className="fa-solid fa-gear"></i>
+                    {/* <img src={iconSettings} className="sidebar-icon" alt="settings-icon" /> */}
+                    <IconSettings className="sidebar-icon" />
+                    {hasFocus ? <span className="sidebar-text">Settings</span> : ""}
                   </FocusableLink>
                 </p>
                 <p>
-                  <FocusableLink
-                    focusKeyParam="sidebar-logout"
-                    onClick={btnLogoutClick}
-                    to="/"
-                  >
-                    <i className="fa-solid fa-arrow-right-from-bracket"></i>
+                  <FocusableLink focusKeyParam="sidebar-logout" onClick={btnLogoutClick} to="/">
+                    {/* <img src={iconLogout} alt="logout-icon" className="sidebar-icon" /> */}
+                    <IconLogout className="sidebar-icon" />
+                    {hasFocus ? <span className="sidebar-text">Logout</span> : ""}
                   </FocusableLink>
                 </p>
               </div>
             </div>
-            {popUp.show && (
-              <ErrorPopUp
-                title={popUp.title}
-                message={popUp.message}
-                onOkClick={onPopupOkClick}
-                focusKeyParam="modal-popup"
-              />
-            )}
+            {popUp.show && <ErrorPopUp {...popUp} />}
           </FocusContext.Provider>
           <div className="col">
-            <div
-              className="text-end px-3 pt-3 fixed-top"
-              style={{ backgroundColor: "#151617" }}
-            >
+            <div className="text-end px-3 pt-3 fixed-top" style={{ backgroundColor: "#151617" }}>
               <img src={brandLogo} className="img-fluid" alt="" />
             </div>
             <Outlet />
@@ -212,10 +223,7 @@ const FocusableLink = (props: any) => {
       setIsActive(false);
       return;
     }
-    if (
-      pathname === props.to ||
-      (props.to === "/all-games" && pathname.startsWith("/games-detail"))
-    ) {
+    if (pathname === props.to || (props.to === "/all-games" && pathname.startsWith("/games-detail"))) {
       setIsActive(true);
     } else {
       setIsActive(false);
@@ -235,10 +243,7 @@ const FocusableLink = (props: any) => {
       }
     },
     onArrowPress: (direction, keyProps, details) => {
-      if (
-        direction === "right" ||
-        (props.focusKeyParam === "sidebar-logout" && direction === "down")
-      ) {
+      if (direction === "right" || (props.focusKeyParam === "sidebar-logout" && direction === "down")) {
         console.log("sidebar pathname : ", pathname);
         switch (pathname) {
           case "/home":
@@ -268,11 +273,7 @@ const FocusableLink = (props: any) => {
 
   return (
     <NavLink
-      className={
-        "text-decoration-none text-initial" +
-        (focused ? " focusedElement" : "") +
-        (isActive ? " active" : "")
-      }
+      className={"text-decoration-none text-initial" + (focused ? " focused-sidebar-item" : "") + (isActive ? " active" : "")}
       ref={ref}
       to={props.to}
       onClick={props.onClick}

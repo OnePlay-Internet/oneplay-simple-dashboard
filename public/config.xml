@@ -3,16 +3,16 @@
     id="https://oneplay.in/tizen" version="0.2.1" viewmodes="maximized">
     <access origin="*" subdomains="true"></access>
     <tizen:application id="9xqCvMKehK.OnePlay" package="9xqCvMKehK" required_version="3.0" />
+    <name>OnePlay</name>
     <content src="index.html" />
     <feature name="http://tizen.org/feature/screen.size.normal.1080.1920" />
     <icon src="icon.png" />
     <tizen:metadata key="http://samsung.com/tv/metadata/prelaunch.support" value="true" />
     <tizen:metadata key="http://tizen.org/metadata/app_ui_type/base_screen_resolution"
         value="extensive" />
-    <tizen:metadata key="http://samsung.com/tv/metadata/multiscreen.support" value="true" />
-    <tizen:metadata key="http://samsung.com/tv/metadata/multitasking.support" value="true" />
-    <tizen:metadata key="multiview_support_new" value="true" />
-    <name>OnePlay</name>
+    <tizen:metadata key="http://samsung.com/tv/metadata/multiscreen.support" value="false" />
+    <tizen:metadata key="http://samsung.com/tv/metadata/multitasking.support" value="false" />
+    <tizen:metadata key="multiview_support_new" value="false" />
     <tizen:privilege name="http://developer.samsung.com/privilege/network.public" />
     <tizen:privilege name="http://tizen.org/privilege/application.launch" />
     <tizen:privilege name="http://tizen.org/privilege/tv.inputdevice" />
@@ -25,6 +25,8 @@
     <tizen:privilege name="http://tizen.org/privilege/systemmonitor" />
     <tizen:privilege name="http://developer.samsung.com/privilege/drmplay" />
     <tizen:privilege name="http://developer.samsung.com/privilege/productinfo" />
+    <tizen:privilege name="http://tizen.org/privilege/tv.audio" />
+    <tizen:setting pointing-device-support='enable' />
     <tizen:profile name="tv-samsung" />
     <tizen:setting />
     <tizen:setting screen-orientation="landscape" context-menu="disable"

@@ -28,11 +28,14 @@ export default function SearchGames({
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
   const [haveMoreGames, setHaveMoreGames] = useState(true);
-  const [popUp, setPopUp] = useState({
+  const [popUp, setPopUp] = useState<ErrorPopupPorps>({
     show: false,
     message: "",
     title: "",
     returnFocusTo: "",
+    buttons: [],
+    focusKeyParam: "modal-popup",
+    icon: "",
   });
   const { focusKey, setFocus } = useFocusable({
     focusable: true,
@@ -92,22 +95,12 @@ export default function SearchGames({
     }
   };
   const loadMoreGames = async (value: string, page: number) => {
-    console.log(
-      "calling loadmore from loadNextGames current page: ",
-      page,
-      " : search : ",
-      value
-    );
+    console.log("calling loadmore from loadNextGames current page: ", page, " : search : ", value);
     if (showLoading) return;
     console.log("loading more games...");
     if (value) {
       setShowLoading(true);
-      const searchResp = await searchGame(
-        sessionContext.sessionToken,
-        value,
-        page,
-        GAME_FETCH_LIMIT
-      );
+      const searchResp = await searchGame(sessionContext.sessionToken, value, page, GAME_FETCH_LIMIT);
       setShowLoading(false);
       if (!searchResp.success) {
         setPopUp({
@@ -115,15 +108,16 @@ export default function SearchGames({
           message: searchResp.message ?? "",
           title: "Error!",
           returnFocusTo: "game_search",
+          buttons: [{ text: "Ok", className: "btn gradientBtn btn-lg border-0", focusKey: "btn-ok-popup", onClick: hidePopup }],
+          focusKeyParam: "modal-popup",
+          icon: "error",
         });
         return;
       }
       if (searchResp.games && searchResp.games.length) {
         if (page > 0) {
           setSearchResult((prevGames) => {
-            return searchResp.games
-              ? [...prevGames, ...searchResp.games]
-              : prevGames;
+            return searchResp.games ? [...prevGames, ...searchResp.games] : prevGames;
           });
         } else {
           setSearchResult(searchResp.games);
@@ -138,29 +132,25 @@ export default function SearchGames({
       }
     } else {
       setShowLoading(true);
-      const customGamesResp = await customFeedGames(
-        sessionContext.sessionToken,
-        { order_by: "release_date:desc" },
-        page,
-        GAME_FETCH_LIMIT
-      );
+      const customGamesResp = await customFeedGames(sessionContext.sessionToken, { order_by: "release_date:desc" }, page, GAME_FETCH_LIMIT);
       setShowLoading(false);
-       if (!customGamesResp.success) {
-         setPopUp({
-           show: true,
-           message: customGamesResp.message ?? "",
-           title: "Error!",
-           returnFocusTo: "game_search",
-         });
-         return;
-       }
+      if (!customGamesResp.success) {
+        setPopUp({
+          show: true,
+          message: customGamesResp.message ?? "",
+          title: "Error!",
+          returnFocusTo: "game_search",
+          buttons: [{ text: "Ok", className: "btn gradientBtn btn-lg border-0", focusKey: "btn-ok-popup", onClick: hidePopup }],
+          focusKeyParam: "modal-popup",
+          icon: "error",
+        });
+        return;
+      }
       if (customGamesResp.games) {
         if (customGamesResp.games && customGamesResp.games.length) {
           if (page > 0) {
             setSearchResult((prevGames) => {
-              return customGamesResp.games
-                ? [...prevGames, ...customGamesResp.games]
-                : prevGames;
+              return customGamesResp.games ? [...prevGames, ...customGamesResp.games] : prevGames;
             });
           } else {
             setSearchResult(customGamesResp.games);
@@ -176,9 +166,17 @@ export default function SearchGames({
       }
     }
   };
-  const onPopupOkClick = () => {
+  const hidePopup = () => {
     const returnFocusTo = popUp.returnFocusTo;
-    setPopUp({ show: false, message: "", title: "", returnFocusTo: "" });
+    setPopUp({
+      show: false,
+      message: "",
+      title: "",
+      returnFocusTo: "",
+      buttons: [],
+      focusKeyParam: "modal-popup",
+      icon: "",
+    });
     setFocus(returnFocusTo);
   };
   return (
@@ -239,35 +237,16 @@ export default function SearchGames({
           </div>
         </div>
         <div className="col-md-9" style={{ paddingTop: "10px" }}>
-          <p className="heading">
-            {searchQuery ? `Search Result` : "All Games"}
-          </p>
+          <p className="heading">{searchQuery ? `Search Result` : "All Games"}</p>
 
-          <InfiniteScroll
-            pageStart={0}
-            hasMore={haveMoreGames}
-            loadMore={loadNextGames}
-          >
-            <div className="row">
-              {searchResult?.map((game) => renderSingleGame(game))}
-            </div>
+          <InfiniteScroll pageStart={0} hasMore={haveMoreGames} loadMore={loadNextGames}>
+            <div className="row">{searchResult?.map((game) => renderSingleGame(game))}</div>
           </InfiniteScroll>
-          {searchQuery && !searchResult?.length ? (
-            <p className="GamesTitle mb-0 mt-3">
-              No game found for "{searchQuery}"
-            </p>
-          ) : null}
+          {searchQuery && !searchResult?.length ? <p className="GamesTitle mb-0 mt-3">No game found for "{searchQuery}"</p> : null}
         </div>
       </div>
       {showLoading ? <LoaderPopup focusKeyParam="Loader" /> : null}
-      {popUp.show && (
-        <ErrorPopUp
-          title={popUp.title}
-          message={popUp.message}
-          onOkClick={onPopupOkClick}
-          focusKeyParam="modal-popup"
-        />
-      )}
+      {popUp.show && <ErrorPopUp {...popUp} />}
     </FocusContext.Provider>
   );
 }

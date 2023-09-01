@@ -2,6 +2,13 @@ import axios from "axios";
 import axiosInstance from "./axiosInstance";
 import { API_BASE_URL, API_CLIENT_URL, GAME_FETCH_LIMIT, SESSION_TOKEN_LOCAL_STORAGE } from "./constants";
 
+export type QRCodeDTO = {
+  success: boolean;
+  message?: string;
+  code?: string;
+  token?: string;
+};
+
 export type LoginResponseDTO = {
   success: boolean;
   message?: string;
@@ -78,14 +85,38 @@ export type GetLoadingConfigDTO = {
   success: boolean;
   message?: string;
 };
+export async function getQRCode(): Promise<QRCodeDTO> {
+  try {
+    const qrCodeResponse = await axios.post(API_BASE_URL + "accounts/qr/generate");
+
+    if (qrCodeResponse.status !== 201) {
+      return handleNon200Response(qrCodeResponse.data.message);
+    }
+    return { success: true, code: qrCodeResponse.data.code, token: qrCodeResponse.data.token };
+  } catch (error: any) {
+    return handleError(error, "qr generate");
+  }
+}
+export async function getQrSession(code: string, token: string): Promise<LoginResponseDTO> {
+  try {
+    const qrSesssionResponse = await axios.post(API_BASE_URL + "accounts/qr/get_session", { code, token });
+
+    if (qrSesssionResponse.status !== 201) {
+      return handleNon200Response(qrSesssionResponse.data.message);
+    }
+    return { success: true, sessionToken: qrSesssionResponse.data.sessionToken };
+  } catch (error: any) {
+    return handleError(error, "qr get session");
+  }
+}
 export async function login(id: string, password: string, device: string): Promise<LoginResponseDTO> {
   try {
-    const loginResponse = await axiosInstance.post(API_BASE_URL + "accounts/login", {
+    const loginResponse = await axios.post(API_BASE_URL + "accounts/login", {
       id,
       password,
       device,
     });
-    console.log("service login resp : ");
+
     if (loginResponse.status !== 201) {
       return handleNon200Response(loginResponse.data.message);
     }
@@ -96,7 +127,7 @@ export async function login(id: string, password: string, device: string): Promi
 }
 export async function getProfile(sessionToken: string): Promise<UserProfileResponseDTO> {
   try {
-    const profileResp = await axiosInstance.get(API_BASE_URL + "accounts/profile", {
+    const profileResp = await axios.get(API_BASE_URL + "accounts/profile", {
       headers: {
         session_token: sessionToken,
       },

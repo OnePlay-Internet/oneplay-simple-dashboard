@@ -14,6 +14,25 @@ interface FocusableItemProps {
 interface TestFocusableItemProps {
   $focused: boolean;
 }
+
+
+interface PopupButton {
+  text: string;
+  focusKey: string;
+  className: string;
+  onClick: Function;
+}
+
+interface ErrorPopupPorps {
+  title: string;
+  icon: string;
+  message: string;
+  returnFocusTo: string;
+  show: boolean;
+  focusKeyParam: string;
+  buttons: PopupButton[];
+}
+
 declare module "react-infinite-scroller";
 declare module "react-lazy-load-image-component";
 declare module "lodash.debounce";

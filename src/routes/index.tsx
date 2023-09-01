@@ -41,11 +41,11 @@ export default function Router() {
 
   return useRoutes([
     {
-      element: <GuestLayout />,
+      element: <GuestLayout focusKey="GuestLayout" />,
       children: [
-        // { path: "/create", element: <TvFirstTimeUser /> },
-        // { path: "/tv", element: <TvLogin /> },
-        { path: "/", element: <Login focusKey="Login" /> }
+        { path: "/", element: <TvFirstTimeUser focusKey="TVFirstTimeUser" /> },
+        { path: "/login", element: <TvLogin /> },
+        { path: "/login-input", element: <Login focusKey="Login" /> },
       ],
     },
     {

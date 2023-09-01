@@ -1,6 +1,5 @@
 function remoteControllerHandler(e) {
   const keyCode = e.keyCode;
-  console.log("remote key code : ", keyCode);
   switch (keyCode) {
     case tvKey.KEY_UP:
       if (keyboardMode) {
@@ -38,6 +37,15 @@ function remoteControllerHandler(e) {
     case tvKey.KEY_RETURN:
       //Navigation.back();
       //quitStreaming();
+      break;
+    case tvKey.KEY_VOLUME_UP:
+      tizen.tvaudiocontrol.setVolumeUp();
+      break;
+    case tvKey.KEY_VOLUME_DOWN:
+      tizen.tvaudiocontrol.setVolumeDown();
+      break;
+    case tvKey.KEY_VOLUME_MUTE:
+      tizen.tvaudiocontrol.setMute();
       break;
   }
 }

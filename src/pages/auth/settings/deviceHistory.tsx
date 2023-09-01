@@ -12,17 +12,18 @@ import { getUsersSessions, sessionLogout } from "src/common/services";
 import { scrollToElement, scrollToTop, timeAgo } from "src/common/utils";
 import ErrorPopUp from "src/pages/error";
 
-export default function DeviceHistory({
-  focusKey: focusKeyParam,
-}: FocusabelComponentProps) {
+export default function DeviceHistory({ focusKey: focusKeyParam }: FocusabelComponentProps) {
   const navigate = useNavigate();
   const sessionContext = useContext(SessionContext);
   const [sessions, setSessions] = useState<any[]>([]);
-  const [popUp, setPopUp] = useState({
+  const [popUp, setPopUp] = useState<ErrorPopupPorps>({
     show: false,
     message: "",
     title: "",
     returnFocusTo: "",
+    buttons: [],
+    focusKeyParam: "modal-popup",
+    icon: "",
   });
   const { focusSelf, focusKey, setFocus, focused } = useFocusable({
     focusable: true,
@@ -48,9 +49,7 @@ export default function DeviceHistory({
   }, [sessions]);
   const getSessions = async () => {
     if (sessionContext.sessionToken) {
-      const sessionsResp: any = await getUsersSessions(
-        sessionContext.sessionToken
-      );
+      const sessionsResp: any = await getUsersSessions(sessionContext.sessionToken);
       if (!sessionsResp.success) {
         /*  Swal.fire({
           title: "Error!",
@@ -68,7 +67,7 @@ export default function DeviceHistory({
   };
   useEffect(() => {
     getSessions();
-  }, [sessionContext]);
+  }, [sessionContext.sessionToken]);
   const renderSingleSessionRow = (session: any, index: number) => {
     const [userid, token] = atob(sessionContext.sessionToken).split(":");
 
@@ -81,14 +80,10 @@ export default function DeviceHistory({
         </td>
         <td className="py-3 px-0">
           <p className="mb-2">{session.location_info.city}</p>
-          <p className="gamesDescription mb-0">
-            {session.location_info.country}
-          </p>
+          <p className="gamesDescription mb-0">{session.location_info.country}</p>
         </td>
         <td className="py-3 px-0">
-          <p className={"mb-0" + (isActive ? " gradientText" : "")}>
-            {isActive ? "Active Now" : timeAgo(session.timestamp)}
-          </p>
+          <p className={"mb-0" + (isActive ? " gradientText" : "")}>{isActive ? "Active Now" : timeAgo(session.timestamp)}</p>
         </td>
         <td className="py-3 px-0">
           <FocusableSapn
@@ -112,19 +107,13 @@ export default function DeviceHistory({
         await sessionLogout(session.key, sessionContext.sessionToken);
       }
     }
-    await sessionLogout(
-      `user:${userid}:session:${token}`,
-      sessionContext.sessionToken
-    );
+    await sessionLogout(`user:${userid}:session:${token}`, sessionContext.sessionToken);
     localStorage.removeItem(SESSION_TOKEN_LOCAL_STORAGE);
     sessionContext.setSessionToken(null);
     navigate("/");
   };
   const onSingleLogout = async (sessionKey: string) => {
-    const logoutResp = await sessionLogout(
-      sessionKey,
-      sessionContext.sessionToken
-    );
+    const logoutResp = await sessionLogout(sessionKey, sessionContext.sessionToken);
     if (!logoutResp.success) {
       /* Swal.fire({
         title: "Error!",
@@ -137,14 +126,25 @@ export default function DeviceHistory({
         message: logoutResp.message ?? "",
         title: "Error!",
         returnFocusTo: "btn-logout-form-all",
+        buttons: [{ text: "Ok", className: "btn gradientBtn btn-lg border-0", focusKey: "btn-ok-popup", onClick: hidePopup }],
+        focusKeyParam: "modal-popup",
+        icon: "error",
       });
       return;
     }
     getSessions();
   };
-  const onPopupOkClick = () => {
+  const hidePopup = () => {
     const returnFocusTo = popUp.returnFocusTo;
-    setPopUp({ show: false, message: "", title: "", returnFocusTo: "" });
+    setPopUp({
+      show: false,
+      message: "",
+      title: "",
+      returnFocusTo: "",
+      buttons: [],
+      focusKeyParam: "modal-popup",
+      icon: "",
+    });
     setFocus(returnFocusTo);
   };
   return (
@@ -156,11 +156,7 @@ export default function DeviceHistory({
               <p className="GamesTitle mt-4">Device Hostory</p>
             </div>
             <div className="col-auto">
-              <FocusableButton
-                focusKeyParam="btn-logout-form-all"
-                onClick={onLogoutFromAllDevice}
-                classes="btn gradientBtn"
-              >
+              <FocusableButton focusKeyParam="btn-logout-form-all" onClick={onLogoutFromAllDevice} classes="btn gradientBtn">
                 Logout from all devices
               </FocusableButton>
             </div>
@@ -175,24 +171,12 @@ export default function DeviceHistory({
                   <th className="py-3 px-0">Status</th>
                 </tr>
               </thead>
-              <tbody>
-                {sessions &&
-                  sessions.map((session, index) =>
-                    renderSingleSessionRow(session, index)
-                  )}
-              </tbody>
+              <tbody>{sessions && sessions.map((session, index) => renderSingleSessionRow(session, index))}</tbody>
             </table>
           </div>
         </div>
       </div>
-      {popUp.show && (
-        <ErrorPopUp
-          title={popUp.title}
-          message={popUp.message}
-          onOkClick={onPopupOkClick}
-          focusKeyParam="modal-popup"
-        />
-      )}
+      {popUp.show && <ErrorPopUp {...popUp} />}
     </FocusContext.Provider>
   );
 }
@@ -215,7 +199,7 @@ const FocusableSapn = (props: any) => {
       switch (direction) {
         case "right":
         case "left":
-          setFocus("go-to-profile");
+          setFocus("go-to-device-history");
           return false;
         default:
           return true;
@@ -251,18 +235,14 @@ const FocusableButton = (props: any) => {
         case "right":
         case "left":
         case "up":
-          setFocus("go-to-profile");
+          setFocus("go-to-device-history");
           return false;
       }
       return true;
     },
   });
   return (
-    <button
-      ref={ref}
-      className={props.classes + (focused ? " focusedElement" : "")}
-      onClick={props.onClick}
-    >
+    <button ref={ref} className={props.classes + (focused ? " focusedElement" : "")} onClick={props.onClick}>
       {props.children}
     </button>
   );

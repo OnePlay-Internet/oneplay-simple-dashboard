@@ -6,11 +6,12 @@ import errorIcon from "../../assets/images/icon-error.svg";
 import sucessIcon from "../../assets/images/icon-verified.svg";
 import waitQueueIcon from "../../assets/images/icon-waitQueae.svg";
 import groupIcon from "../../assets/images/icon-group.svg";
+import noWifiIcon from "../../assets/images/icon-no-network.svg";
 import { useEffect } from "react";
-export default function ErrorPopUp(props: any) {
+export default function ErrorPopUp({ focusKeyParam, title, icon, message, buttons, returnFocusTo, show }: ErrorPopupPorps) {
   const { setFocus, focusKey, focusSelf } = useFocusable({
     focusable: true,
-    focusKey: props.focusKeyParam,
+    focusKey: focusKeyParam,
     preferredChildFocusKey: "btn-ok-popup",
     isFocusBoundary: true,
   });
@@ -19,13 +20,16 @@ export default function ErrorPopUp(props: any) {
     focusSelf();
   }, [focusSelf]);
   const getIcon = () => {
-    switch (props.icon) {
+    switch (icon) {
       case "queue":
         return waitQueueIcon;
       case "success":
         return sucessIcon;
       case "group":
         return groupIcon;
+      case "no-wifi":
+        return noWifiIcon;
+      case "error":
       default:
         return errorIcon;
     }
@@ -43,24 +47,34 @@ export default function ErrorPopUp(props: any) {
           <div className="modal-content" style={{ backgroundColor: "#212123" }}>
             <div className="modal-body text-center p-5">
               <img src={getIcon()} className="img-fluid" alt="" />
-              <p
-                className="font500 text-white mt-4"
-                style={{ fontSize: "20px" }}
-              >
-                {props.title}
+              <p className="font500 text-white mt-4" style={{ fontSize: "20px" }}>
+                {title}
               </p>
-              <p
-                className="font500"
-                style={{ fontSize: "16px", color: "#959595" }}
-                dangerouslySetInnerHTML={{ __html: props.message }}
-              ></p>
+              <p className="font500" style={{ fontSize: "16px", color: "#959595" }} dangerouslySetInnerHTML={{ __html: message }}></p>
               <div className="d-grid mt-4" data-bs-dismiss="modal">
-                <FocusableButton
-                  focusKeyParam="btn-ok-popup"
-                  onClick={props.onOkClick}
-                >
-                  OK
-                </FocusableButton>
+                {buttons.map((button, index) => {
+                  return (
+                    <FocusableButton
+                      key={`modal-button-${index}`}
+                      focusKeyParam={button.focusKey}
+                      onClick={button.onClick}
+                      //className="btn gradientBtn btn-lg border-0"
+                      className={button.className}
+                    >
+                      {button.text}
+                    </FocusableButton>
+                  );
+                })}
+
+                {/*  props.showCancel && (
+                  <FocusableButton
+                    focusKeyParam="btn-cancel-popup"
+                    onClick={props.onCancelClick}
+                    className="btn grayGradientBtn btn-lg border-0 mt-3"
+                  >
+                    Cancel
+                  </FocusableButton>
+                ) */}
               </div>
             </div>
           </div>
@@ -82,13 +96,7 @@ const FocusableButton = (props: any) => {
     }, */
   });
   return (
-    <button
-      ref={ref}
-      className={
-        "btn gradientBtn btn-lg border-0" + (focused ? " focusedElement" : "")
-      }
-      onClick={props.onClick}
-    >
+    <button ref={ref} className={props.className + (focused ? " focusedElement" : "")} onClick={props.onClick}>
       {props.children}
     </button>
   );
