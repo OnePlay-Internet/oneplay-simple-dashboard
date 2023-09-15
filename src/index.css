@@ -195,6 +195,7 @@ body {
 .borderLeft {
   border-left: 2px solid #3e4246;
   height: 100vh;
+  overflow-y: scroll;
 }
 
 .transparentBg {
@@ -307,7 +308,7 @@ body {
   padding-top: 90px;
 }
 .mainContainer {
-  padding: 70px 18px 60px 6rem;
+  padding: 70px 18px 10px 6rem;
 }
 .homeMainContainer {
   padding: 20px 18px 60px 6rem;
@@ -774,9 +775,9 @@ body {
 }
 
 .font20Text {
-  font-size: 20px;
-  font-weight: 500;
-  line-height: 34px;
+  font-size: 20px !important;
+  font-weight: 500 !important;
+  line-height: 34px !important;
   color: #dcdcdc;
 }
 
@@ -862,4 +863,132 @@ body {
   object-fit: cover;
   object-position: top;
   transition: transform 0.2s;
+}
+
+.font50 {
+  font-size: 40px;
+  line-height: 50px;
+  letter-spacing: 2%;
+}
+
+.customAccordion .accordion-button:not(.collapsed)::after {
+  background-image: url('./assets/images/setting/FAQs/-.svg');
+}
+
+.customAccordion .accordion-button::after {
+background-image: url('./assets/images/setting/FAQs/+.svg');
+}
+
+.accordion-button:not(.collapsed) {
+  background: linear-gradient(180.3deg, #0575E6 9.6%, #FF0CF5 92.85%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text !important;
+  border-bottom: 0px !important;
+}
+
+.removeButtonFocus:focus {
+  box-shadow: none !important;
+}
+
+.customBorder {
+  border-color: #3E4246 !important;
+}
+
+.bgTransparent  {
+  background-color: transparent !important;
+}
+
+.offWhiteColor {
+  color: #95959595 !important;
+}
+
+.gradientBorderbottom {
+  height: 2px;
+  background: linear-gradient(270deg, #151515 19.53%, #1E6AE7 75.65%, #E815F3 100%);
+  border-radius: 3px;
+}
+
+.font800 {
+  font-weight: 800;
+}
+
+.customOffWhite {
+  color: #DCDCDC;
+}
+
+a {
+  text-decoration: none !important;
+}
+
+.gradientAnchor a {
+  background: linear-gradient(270deg, #A83AFE 0%, #6E59FE 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.linearGradient {
+  background: linear-gradient(300.3deg, #0575E6 9.6%, #FF0CF5 92.85%);
+}
+
+.borderRadius30 {
+  border-radius: 30px !important;
+}
+
+.font22 {
+  font-size: 22px;
+  line-height: 32px;
+}
+
+.borderRadius60 {
+  border-radius: 60px !important;
+}
+
+.buttonLinear {
+  background: linear-gradient(270deg, #3AA0FE 0%, #59FEF4 100%);
+  box-shadow: 0px 8px 20px rgba(91, 24, 166, 0.19);
+}
+
+.mr-130 {
+  margin-right: -70px;
+}
+
+.customBorderColor {
+  border-color: #3E4246 !important;
+}
+
+#advwebForm {
+  background-color: transparent !important;
+}
+.fbfpoptitle {
+  display: none;
+}
+.zsfeedbkrpanel {
+  background-color: transparent !important;
+  border: none !important;
+}
+.feedbackformmdiv input, .feedbackformmdiv textarea  {
+  border-radius: 10px !important;
+  background-color: transparent !important;
+  border: 2px solid #434343 !important;
+}
+#zsfeedbackwidgetdiv .dt-blue-btn {
+  background: linear-gradient(300.3deg, #0575E6 9.6%, #FF0CF5 92.85%) !important;
+  border-radius: 60px !important;
+  height: 50px;
+  width: 135px !important;
+  padding: 20px 30px !important;
+  font-size: 18px !important;
+  line-height: 21px !important;
+}
+
+#zsfeedbackwidgetdiv .dt-blue-btn:focus {
+  border: 2px solid #ffffff !important;
+}
+
+.fright {
+  float: none !important;
+  text-align: center !important;
+  margin-top: 20px !important;
 }

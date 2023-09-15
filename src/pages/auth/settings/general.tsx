@@ -15,6 +15,10 @@ import { getProfile, logout, setUserSearchPrivacy } from "src/common/services";
 import { SESSION_TOKEN_LOCAL_STORAGE } from "src/common/constants";
 import { useNavigate } from "react-router-dom";
 import ErrorPopUp from "src/pages/error";
+import FAQS from "./faqs";
+import Privacy from './privacy';
+import TermsAndCondition from './termsAndCondition';
+import Support from './support';
 
 export default function General({ focusKey: focusKeyParam }: FocusabelComponentProps) {
   const { focusSelf, focusKey, setFocus } = useFocusable({
@@ -183,6 +187,10 @@ export default function General({ focusKey: focusKeyParam }: FocusabelComponentP
   };
   return (
     <FocusContext.Provider value={focusKeyParam}>
+      <Support />
+      <TermsAndCondition />
+      <Privacy/>
+      <FAQS />
       <div className="row ps-5">
         <div className="col-lg-10">
           <div className="row">
