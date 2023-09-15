@@ -20,6 +20,10 @@ export type UserProfileResponseDTO = {
   message?: string;
   profile?: { [key: string]: string } | null;
 };
+export type UserUpdateSearchPrivacyResponseDTO = {
+  success: boolean;
+  message?: string;
+};
 export type AllGameResponseDTO = {
   success: boolean;
   message?: string;
@@ -89,7 +93,7 @@ export async function getQRCode(): Promise<QRCodeDTO> {
   try {
     const qrCodeResponse = await axios.post(API_BASE_URL + "accounts/qr/generate");
 
-    if (qrCodeResponse.status !== 201) {
+    if (qrCodeResponse.status !== 201 && qrCodeResponse.status !== 200) {
       return handleNon200Response(qrCodeResponse.data.message);
     }
     return { success: true, code: qrCodeResponse.data.code, token: qrCodeResponse.data.token };
@@ -101,7 +105,7 @@ export async function getQrSession(code: string, token: string): Promise<LoginRe
   try {
     const qrSesssionResponse = await axios.post(API_BASE_URL + "accounts/qr/get_session", { code, token });
 
-    if (qrSesssionResponse.status !== 201) {
+    if (qrSesssionResponse.status !== 201 && qrSesssionResponse.status !== 200) {
       return handleNon200Response(qrSesssionResponse.data.message);
     }
     return { success: true, sessionToken: qrSesssionResponse.data.sessionToken };
@@ -117,7 +121,7 @@ export async function login(id: string, password: string, device: string): Promi
       device,
     });
 
-    if (loginResponse.status !== 201) {
+    if (loginResponse.status !== 201 && loginResponse.status !== 200) {
       return handleNon200Response(loginResponse.data.message);
     }
     return { success: true, sessionToken: loginResponse.data.session_token };
@@ -163,6 +167,27 @@ export async function updateProfile(sessionToken: string, body: { [key: string]:
     return handleError(error, "get profile.");
   }
 }
+
+export async function setUserSearchPrivacy(sessionToken: string, search_privacy: boolean): Promise<UserUpdateSearchPrivacyResponseDTO> {
+  try {
+    const response = await axios.put(
+      API_BASE_URL + "accounts/set_search_privacy",
+      { search_privacy },
+      {
+        headers: {
+          session_token: sessionToken,
+        },
+      }
+    );
+    console.log('search privacy : ',response.data)
+    if (response.status !== 200 && response.status !== 201) {
+      return handleNon200Response(response.data.message);
+    }
+    return { success: response.data?.success };
+  } catch (error: any) {
+    return handleError(error, "set search privacy.");
+  }
+}
 export async function getPersonalizedFeed(sessionToken: string): Promise<PersonalizedResponseDTO> {
   try {
     const pFeedResp = await axios.get(API_BASE_URL + `games/feed/personalized?textBackground=290x185&textLogo=400x320&poster=528x704`, {
@@ -193,7 +218,7 @@ export async function getAllGames(sessionToken: string, page: number = 0, limit:
         },
       }
     );
-    if (allGameResp.status !== 201) {
+    if (allGameResp.status !== 201 && allGameResp.status !== 200) {
       return handleNon200Response(allGameResp.data.message);
     }
     return {
@@ -258,7 +283,7 @@ export async function customFeedGames(
         session_token: sessionToken,
       },
     });
-    if (gameSearchResponse.status !== 201) {
+    if (gameSearchResponse.status !== 201 && gameSearchResponse.status !== 200) {
       return handleNon200Response(gameSearchResponse.data.message);
     }
     return { success: true, games: gameSearchResponse.data };

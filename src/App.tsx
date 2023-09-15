@@ -8,7 +8,7 @@ import "./App.css";
 import Routes from "./routes";
 import { getProfile } from "./common/services";
 import { API_BASE_URL, NETWORK_CHECK_URL, SESSION_TOKEN_LOCAL_STORAGE } from "./common/constants";
-import { init, setKeyMap } from "@noriginmedia/norigin-spatial-navigation";
+import { init, setKeyMap, useFocusable } from "@noriginmedia/norigin-spatial-navigation";
 import { useLocation, useNavigate } from "react-router-dom";
 import LoaderPopup from "./pages/loader";
 import { HttpStatusCode } from "axios";
@@ -20,7 +20,14 @@ export const SessionContext = createContext<{
   sessionToken: "",
   setSessionToken: () => {},
 });
-
+export const NetworkStatusContext = createContext<boolean>(true);
+export const CurrentFocusContext = createContext<{
+  focusKey: string;
+  setFocusKey: Function;
+}>({
+  focusKey: "",
+  setFocusKey: () => {},
+});
 export const UserProfileContext = createContext<{
   userProfile: any;
   setUserProfile: any;
@@ -42,11 +49,14 @@ function App() {
   const [networkStatus, setNetworkStatus] = useState<boolean>(true);
   const [sessionToken, setSessionToken] = useState("");
   const [userProfile, setUserProfile] = useState<any>(null);
+  const [focusKey, setFocusKey] = useState<string>("");
   const sessionContextValue = { sessionToken, setSessionToken };
   const userProfileContextValue = { userProfile, setUserProfile };
+  const CurrentFocusContextValue = { focusKey, setFocusKey };
   const [showLoading, setShowLoading] = useState(true);
   const { pathname, search } = useLocation();
   const [goTo, setGoTo] = useState<string>("");
+  const [reloadingNetwork, setReloadingNetwork] = useState<boolean>(false);
   const [networkStatusPopup, setNetworkStatusPopUp] = useState<ErrorPopupPorps>({
     show: false,
     message: "",
@@ -63,7 +73,7 @@ function App() {
       window.reactNavigate = navigate;
     }
   }, [navigate]);
-
+  const { setFocus } = useFocusable();
   useEffect(() => {
     console.log("app on load");
     const savedToken = localStorage.getItem(SESSION_TOKEN_LOCAL_STORAGE);
@@ -72,6 +82,7 @@ function App() {
       setShowLoading(true);
       (async () => {
         const profileResp = await getProfile(savedToken);
+        console.log(profileResp.profile);
         if (!profileResp.success) {
           setShowLoading(false);
           localStorage.removeItem(SESSION_TOKEN_LOCAL_STORAGE);
@@ -88,6 +99,10 @@ function App() {
     }
 
     const onlineStatusCheckInterval = setInterval(async () => {
+      if (reloadingNetwork) {
+        console.log("reloading network .... ");
+        return;
+      }
       try {
         const controller = new AbortController();
         const id = setTimeout(() => controller.abort(), 5 * 1000);
@@ -108,13 +123,73 @@ function App() {
       clearInterval(onlineStatusCheckInterval);
     };
   }, []);
-  const hideNetworkErrorPopup = () => {
-    setNetworkStatus(true);
+  const reloadNetwork = async () => {
+    console.log("inside reload network");
+    setShowLoading(true);
+    setReloadingNetwork(true);
     setNetworkStatusPopUp((prev) => {
-      if (prev.returnFocusTo) {
-        //    setFocus(prev.returnFocusTo);
-      }
       return { show: false, message: "", title: "", returnFocusTo: "", buttons: [], focusKeyParam: "modal-popup-no-internet", icon: "" };
+    });
+
+    try {
+      const controller = new AbortController();
+      const id = setTimeout(() => controller.abort(), 5 * 1000);
+      const internetStatusResponse = await fetch(NETWORK_CHECK_URL, {
+        signal: controller.signal,
+      });
+      clearTimeout(id);
+      if (!internetStatusResponse || internetStatusResponse.status !== HttpStatusCode.Ok) {
+        setReloadingNetwork(false);
+        setShowLoading(false);
+        setNetworkStatus(false);
+        showNetworkErrorPopup();
+      } else {
+        setReloadingNetwork(false);
+        setShowLoading(false);
+        setNetworkStatus(true);
+      }
+    } catch (error) {
+      setReloadingNetwork(false);
+      setShowLoading(false);
+      setNetworkStatus(false);
+      showNetworkErrorPopup();
+    }
+  };
+
+  const hideNetworkErrorPopup = () => {
+    setNetworkStatusPopUp((prev) => {
+      return { show: false, message: "", title: "", returnFocusTo: "", buttons: [], focusKeyParam: "modal-popup-no-internet", icon: "" };
+    });
+    setFocus(focusKey);
+  };
+  const showNetworkErrorPopup = () => {
+    setNetworkStatusPopUp({
+      show: true,
+      message: "You are not connected to internet. Please connect to the internet and try again.",
+      title: "NO INTERNET CONNECTION",
+      returnFocusTo: "",
+      buttons: [
+        {
+          text: "Refresh",
+          className: "btn gradientBtn btn-lg border-0",
+          focusKey: "btn-ok-popup",
+          onClick: () => {
+            hideNetworkErrorPopup();
+            reloadNetwork();
+          },
+        },
+        {
+          text: "Exit OnePlay App",
+          className: "btn grayGradientBtn btn-lg border-0 mt-3",
+          focusKey: "btn-cancel-popup",
+          onClick: () => {
+            //@ts-ignore
+            tizen.application.getCurrentApplication().exit();
+          },
+        },
+      ],
+      focusKeyParam: "modal-popup-no-internet",
+      icon: "no-wifi",
     });
   };
   useEffect(() => {
@@ -122,19 +197,25 @@ function App() {
     if (networkStatus) {
       hideNetworkErrorPopup();
     } else {
-      setNetworkStatusPopUp({
-        show: true,
-        message: "You are not connected to internet. Please connect to the internet and try again.",
-        title: "NO INTERNET CONNECTION",
-        returnFocusTo: "btn-tv-login",
-        buttons: [
-          { text: "Refresh", className: "btn gradientBtn btn-lg border-0", focusKey: "btn-ok-popup", onClick: hideNetworkErrorPopup },
-        ],
-        focusKeyParam: "modal-popup-no-internet",
-        icon: "no-wifi",
-      });
+      showNetworkErrorPopup();
     }
   }, [networkStatus]);
+  /*  useEffect(() => {
+    console.log("focus changes to : ", focusKey);
+  }, [focusKey]); */
+
+  useEffect(() => {
+    const onRemoteReturnClicked = (event: any) => {
+      if (networkStatusPopup.show) {
+        event.stopPropagation();
+        hideNetworkErrorPopup();
+      }
+    };
+    window.addEventListener("RemoteReturnClicked", onRemoteReturnClicked);
+    return () => {
+      window.removeEventListener("RemoteReturnClicked", onRemoteReturnClicked);
+    };
+  }, [networkStatusPopup, hideNetworkErrorPopup]);
   /*useEffect(() => {
      console.log("app path name : ", pathname);
     const searchQuery = new URLSearchParams(search);
@@ -215,8 +296,13 @@ function App() {
   return (
     <SessionContext.Provider value={sessionContextValue}>
       <UserProfileContext.Provider value={userProfileContextValue}>
-        {showLoading ? <LoaderPopup focusKeyParam="Loader" /> : <Routes />}
-        {networkStatusPopup.show && <ErrorPopUp {...networkStatusPopup} />}
+        <CurrentFocusContext.Provider value={CurrentFocusContextValue}>
+          <NetworkStatusContext.Provider value={networkStatus}>
+            {networkStatus && <Routes />}
+            {showLoading && <LoaderPopup focusKeyParam="Loader" />}
+            {networkStatusPopup.show && <ErrorPopUp {...networkStatusPopup} />}
+          </NetworkStatusContext.Provider>
+        </CurrentFocusContext.Provider>
       </UserProfileContext.Provider>
     </SessionContext.Provider>
   );

@@ -828,7 +828,7 @@ function startGame(host, appID) {
   console.log("refreshServerInfo from startGame");
   host.refreshServerInfo().then(function (ret) {
     host.getAppById(appID).then(function (appToStart) {
-      if (host.currentGame != 0 && host.currentGame != appID) {
+      /* if (host.currentGame != 0 && host.currentGame != appID) {
         host.getAppById(host.currentGame).then(
           function (currentApp) {
             var quitAppDialog = document.querySelector("#quitAppDialog");
@@ -880,7 +880,7 @@ function startGame(host, appID) {
           }
         );
         return;
-      }
+      } */
 
       var frameRate = urlParams.get("game_fps").toString(); //$("#selectFramerate").data("value").toString();
       var optimize = 1; //$("#optimizeGamesSwitch").parent().hasClass("is-checked")? 1: 0;
@@ -888,16 +888,8 @@ function startGame(host, appID) {
       var streamHeight = urlParams.get("resolution").toString().split("x")[1]; //$("#selectResolution").data("value").split(":")[1];
       // we told the user it was in Mbps. We're dirty liars and use Kbps behind their back.
       var bitrate = urlParams.get("bitrate_kbps").toString(); //parseInt($("#bitrateSlider").val()) * 1000;
-      const framePacingEnabled = $("#framePacingSwitch")
-        .parent()
-        .hasClass("is-checked")
-        ? 1
-        : 0;
-      const audioSyncEnabled = $("#audioSyncSwitch")
-        .parent()
-        .hasClass("is-checked")
-        ? 1
-        : 0;
+      const framePacingEnabled = $("#framePacingSwitch").parent().hasClass("is-checked") ? 1 : 0;
+      const audioSyncEnabled = $("#audioSyncSwitch").parent().hasClass("is-checked") ? 1 : 0;
       console.log(
         "%c[index.js, startGame]",
         "color:green;",
@@ -939,12 +931,7 @@ function startGame(host, appID) {
               $root = $xml.find("root");
 
               if ($root.attr("status_code") != 200) {
-                snackbarLog(
-                  "Error " +
-                    $root.attr("status_code") +
-                    ": " +
-                    $root.attr("status_message")
-                );
+                snackbarLog("Error " + $root.attr("status_code") + ": " + $root.attr("status_message"));
                 showApps(host);
                 return;
               }
@@ -970,23 +957,15 @@ function startGame(host, appID) {
               ]);
             },
             function (failedResumeApp) {
-              console.error(
-                "%c[index.js, startGame]",
-                "color:green;",
-                "Failed to resume the app! Returned error was" + failedResumeApp
-              );
+              console.error("%c[index.js, startGame]", "color:green;", "Failed to resume the app! Returned error was" + failedResumeApp);
               showApps(host);
               return;
             }
           );
       }
 
-      var remote_audio_enabled = $("#remoteAudioEnabledSwitch")
-        .parent()
-        .hasClass("is-checked")
-        ? 1
-        : 0;
-
+      // var remote_audio_enabled = $("#remoteAudioEnabledSwitch").parent().hasClass("is-checked") ? 1 : 0;
+      var remote_audio_enabled = 1;
       host
         .launchApp(
           appID,
@@ -1004,12 +983,7 @@ function startGame(host, appID) {
             $root = $xml.find("root");
 
             if ($root.attr("status_code") != 200) {
-              snackbarLog(
-                "Error " +
-                  $root.attr("status_code") +
-                  ": " +
-                  $root.attr("status_message")
-              );
+              snackbarLog("Error " + $root.attr("status_code") + ": " + $root.attr("status_message"));
               showApps(host);
               return;
             }
@@ -1037,10 +1011,7 @@ function startGame(host, appID) {
             console.error(
               "%c[index.js, launchApp]",
               "color: green;",
-              "Failed to launch app width id: " +
-                appID +
-                "\nReturned error was: " +
-                failedLaunchApp
+              "Failed to launch app width id: " + appID + "\nReturned error was: " + failedLaunchApp
             );
             showApps(host);
             return;
@@ -1051,11 +1022,7 @@ function startGame(host, appID) {
 }
 
 function playGameMode() {
-  console.log(
-    "%c[index.js, playGameMode]",
-    "color:green;",
-    "Entering play game mode"
-  );
+  console.log("%c[index.js, playGameMode]", "color:green;", "Entering play game mode");
   isInGame = true;
 
   $("#main-navigation").hide();
@@ -1098,28 +1065,18 @@ function stopGameWithConfirmation() {
     api.getAppById(api.currentGame).then(function (currentGame) {
       var quitAppDialog = document.querySelector("#quitAppDialog");
       document.getElementById("quitAppDialogText").innerHTML =
-        " Are you sure you would like to quit " +
-        currentGame.title +
-        "?  Unsaved progress will be lost.";
+        " Are you sure you would like to quit " + currentGame.title + "?  Unsaved progress will be lost.";
       quitAppDialog.showModal();
       Navigation.push(Views.CloseAppDialog);
       $("#cancelQuitApp").off("click");
       $("#cancelQuitApp").on("click", function () {
-        console.log(
-          "%c[index.js, stopGameWithConfirmation]",
-          "color:green;",
-          "Closing app dialog, and returning"
-        );
+        console.log("%c[index.js, stopGameWithConfirmation]", "color:green;", "Closing app dialog, and returning");
         quitAppDialog.close();
         Navigation.pop();
       });
       $("#continueQuitApp").off("click");
       $("#continueQuitApp").on("click", function () {
-        console.log(
-          "%c[index.js, stopGameWithConfirmation]",
-          "color:green;",
-          "Stopping game, and closing app dialog, and returning"
-        );
+        console.log("%c[index.js, stopGameWithConfirmation]", "color:green;", "Stopping game, and closing app dialog, and returning");
         stopGame(api);
         quitAppDialog.close();
         Navigation.pop();
@@ -1152,16 +1109,13 @@ function stopGame(host, callbackFunction) {
                 function (ret3) {
                   // refresh to show no app is currently running.
                   showApps(host);
-                  if (typeof callbackFunction === "function")
-                    callbackFunction();
+                  if (typeof callbackFunction === "function") callbackFunction();
                 },
                 function (failedRefreshInfo2) {
                   console.error(
                     "%c[index.js, stopGame]",
                     "color:green;",
-                    "Failed to refresh server info! Returned error was:" +
-                      failedRefreshInfo +
-                      " and failed server was:",
+                    "Failed to refresh server info! Returned error was:" + failedRefreshInfo + " and failed server was:",
                     host,
                     host.toString()
                   );
@@ -1169,29 +1123,17 @@ function stopGame(host, callbackFunction) {
               );
             },
             function (failedQuitApp) {
-              console.error(
-                "%c[index.js, stopGame]",
-                "color:green;",
-                "Failed to quit app! Returned error was:" + failedQuitApp
-              );
+              console.error("%c[index.js, stopGame]", "color:green;", "Failed to quit app! Returned error was:" + failedQuitApp);
             }
           );
         },
         function (failedGetApp) {
-          console.error(
-            "%c[index.js, stopGame]",
-            "color:green;",
-            "Failed to get app ID! Returned error was:" + failedRefreshInfo
-          );
+          console.error("%c[index.js, stopGame]", "color:green;", "Failed to get app ID! Returned error was:" + failedRefreshInfo);
         }
       );
     },
     function (failedRefreshInfo) {
-      console.error(
-        "%c[index.js, stopGame]",
-        "color:green;",
-        "Failed to refresh server info! Returned error was:" + failedRefreshInfo
-      );
+      console.error("%c[index.js, stopGame]", "color:green;", "Failed to refresh server info! Returned error was:" + failedRefreshInfo);
     }
   );
 }
@@ -1513,9 +1455,9 @@ function initSamsungKeys() {
       //'SmartHub',      // F5
       "Source", // F6
       "ChannelList", // F7
-      "VolumeMute", // F8
-      "VolumeDown", // F9
-      "VolumeUp", // F10
+      //"VolumeMute", // F8
+      //"VolumeDown", // F9
+      //"VolumeUp", // F10
       "ChannelDown", // F11
       "ChannelUp", // F12
     ],

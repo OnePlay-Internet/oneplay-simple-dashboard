@@ -53,7 +53,7 @@
 // argument of platformOnLoad.
 //
 // When handling button input, use values from tvKey.
-var buttonsNames = {
+/*var buttonsNames = {
   KEY_0: "0",
   KEY_1: "1",
   KEY_2: "2",
@@ -78,7 +78,7 @@ var buttonsNames = {
   KEY_CHANNEL_UP: "ChannelUp",
   KEY_CHANNEL_DOWN: "ChannelDown",
   KEY_CHANNEL_LIST: "ChannelList",
-  /*
+  
   This keys are registered by default.
   There is no way to unregister them.
   Registration try will end with error.
@@ -88,8 +88,8 @@ var buttonsNames = {
   KEY_DOWN: 'ArrowDown',
   KEY_ENTER: 'Enter',
   KEY_RETURN: 'Return',
-*/
-};
+
+};*/
 
 // Dictionary containing key names for usage in input handler function. This
 // variable is set by platformOnLoad.
@@ -125,9 +125,9 @@ function platformOnLoad(handler) {
     KEY_PAUSE: 19,
     KEY_PLAYPAUSE: 10252,
     KEY_STOP: 413,
-    KEY_VOLUME_UP: 447,
-    KEY_VOLUME_DOWN: 448,
-    KEY_VOLUME_MUTE: 449,
+    // KEY_VOLUME_UP: 447,
+    // KEY_VOLUME_DOWN: 448,
+    // KEY_VOLUME_MUTE: 449,
     KEY_CHANNEL_UP: 427,
     KEY_CHANNEL_DOWN: 428,
     KEY_CHANNEL_LIST: 10073,
@@ -344,8 +344,7 @@ function setGameStartedSuccessfully() {
 }
 
 function quitStreaming() {
-  stopHeartBeatAPI();
-  goToReact();
+  showConfirmQuitStreamDialog();
 
   /*  if (!api) {
     goToReact();
@@ -375,7 +374,15 @@ function toggleMouse() {
     function (ret) {
       console.log("Toogle mouse result : ", ret);
       mouseMode = !mouseMode;
-
+      if (mouseMode) {
+        $("#controller-mode").display("none");
+        $("#mouse-mode").display("inline-block");
+        snackbarLogLong("The controller is switched to mouse mode.");
+      } else {
+        $("#controller-mode").display("inline-block");
+        $("#mouse-mode").display("none");
+        snackbarLogLong("The controller is switched to normal mode.");
+      }
       //snackbarLog("Toogle mouse result : ", ret);
     },
     function (error) {
@@ -386,9 +393,64 @@ function toggleMouse() {
   );
 }
 function goToReact() {
-  window.location.replace(
-    "/index.html/?redirect=/games-detail/" + urlParams.get("game_id").toString()
-  );
+  window.location.replace("/index.html/?redirect=/games-detail/" + urlParams.get("game_id").toString());
+}
+function toggleControllerShortcuts() {
+  if (controllerShortcutMode) {
+    $("#controllerShortcutOverlay").hide();
+  } else {
+    $("#controllerShortcutOverlay").show();
+    toogleSettings();
+  }
+  controllerShortcutMode = !controllerShortcutMode;
+}
+function gamepadBPressed() {
+  if (settingsMode) {
+    toogleSettings();
+  }
+  if (keyboardMode) {
+    toogleKeyboardOverlay();
+  }
+  if (controllerShortcutMode) {
+    toggleControllerShortcuts();
+  }
+  if (document.getElementById("quitAppDialog").open) {
+    document.getElementById("quitAppDialog").close();
+  }
+}
+function showConfirmQuitStreamDialog() {
+  if (settingsMode) {
+    toogleSettings();
+  }
+  if (keyboardMode) {
+    toogleKeyboardOverlay();
+  }
+  if (controllerShortcutMode) {
+    toggleControllerShortcuts();
+  }
+  var quitAppDialog = document.querySelector("#quitAppDialog");
+  quitAppDialog.showModal();
+  $("#cancelQuitApp").off("click");
+  $("#cancelQuitApp").on("click", function () {
+    quitAppDialog.close();
+  });
+  $("#continueQuitApp").off("click");
+  $("#continueQuitApp").on("click", function () {
+    stopHeartBeatAPI();
+    goToReact();
+  });
+  document.querySelector("#cancelQuitApp").focus();
+}
+
+function showStreamTerminatedUndexpectedlyDialog() {
+  var streamTerminatedDialog = document.querySelector("#streamTerminatedDialog");
+  streamTerminatedDialog.showModal();
+  $("#streamTerminatedDialogBtn").off("click");
+  $("#streamTerminatedDialogBtn").on("click", function () {
+    stopHeartBeatAPI();
+    goToReact();
+  });
+  document.querySelector("#streamTerminatedDialogBtn").focus();
 }
 var newKeyboardKeys = [
   { char: "`", shiftChar: "~", charCode: 192 },
@@ -461,6 +523,8 @@ var keyboardMode = false;
 var keyboardCurrentIndex = 0;
 var capsLockOn = false;
 var currentKeyboardLine = 0;
+var controllerShortcutMode = false;
+var quitAppDialogCurrentIndex = "cancelQuitApp";
 var keyboardLines = [
   { first: 0, last: 13 },
   { first: 14, last: 27 },
@@ -488,10 +552,7 @@ function virtualKeyboardButtonClick(index) {
   if (capsLockOn) {
     filter |= MODIFIER_SHIFT;
   }
-  sendMessage("keyboardKeyPressed", [
-    pressedCharCode.toString(16),
-    filter.toString(),
-  ]).then(
+  sendMessage("keyboardKeyPressed", [pressedCharCode.toString(16), filter.toString()]).then(
     function (ret) {
       console.log("keyboardKeyPressed success result : ", ret);
       $("#btn-keyboard-" + keyboardCurrentIndex).focus();
@@ -504,6 +565,14 @@ function virtualKeyboardButtonClick(index) {
 }
 
 function toogleSettings() {
+  if (controllerShortcutMode) {
+    $("#controllerShortcutOverlay").hide();
+    controllerShortcutMode = false;
+  }
+  var quitAppDialog = document.querySelector("#quitAppDialog");
+  if (quitAppDialog.open) {
+    quitAppDialog.close();
+  }
   if (settingsMode) {
     //hide settings menu
     $("#settingsOverLay").hide();
@@ -551,10 +620,19 @@ function toogleKeyboardOverlay() {
   keyboardMode = !keyboardMode;
 }
 
+function cahngeQuitAppButtonFocus() {
+  if (quitAppDialogCurrentIndex === "cancelQuitApp") {
+    quitAppDialogCurrentIndex = "continueQuitApp";
+    $("#continueQuitApp").focus();
+  } else if (quitAppDialogCurrentIndex === "continueQuitApp") {
+    quitAppDialogCurrentIndex = "cancelQuitApp";
+    $("#cancelQuitApp").focus();
+  }
+}
 function settingsFocusNext() {
   $("#btn-settings-" + settingsCurrentIndex).removeClass("activeOption");
   settingsCurrentIndex++;
-  if (settingsCurrentIndex > 3) {
+  if (settingsCurrentIndex > 4) {
     settingsCurrentIndex = 0;
   }
   $("#btn-settings-" + settingsCurrentIndex).addClass("activeOption");

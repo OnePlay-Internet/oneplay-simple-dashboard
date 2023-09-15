@@ -4,20 +4,11 @@ import {
   getPersonalizedFeed,
   getUsersWishlist,
 } from "src/common/services";
-import { SessionContext } from "src/App";
+import { CurrentFocusContext, SessionContext } from "src/App";
 import ErrorPopUp from "../error";
-import {
-  FocusContext,
-  useFocusable,
-} from "@noriginmedia/norigin-spatial-navigation";
+import { FocusContext, useFocusable } from "@noriginmedia/norigin-spatial-navigation";
 import { useNavigate } from "react-router-dom";
-import {
-  getCoords,
-  getScrolledCoords,
-  railScrollTo,
-  scrollToElement,
-  scrollToTop,
-} from "src/common/utils";
+import { getCoords, getScrolledCoords, railScrollTo, scrollToElement, scrollToTop } from "src/common/utils";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -27,6 +18,7 @@ export default function Home({ focusKey: focusKeyParam }: FocusabelComponentProp
   const [firstHeaderFocusKey, setFirstHeaderFocusKey] = useState("");
   const [wishlistGames, setWishlistGames] = useState<any[]>([]);
   const sessionContext = useContext(SessionContext);
+  const currentFocusContext = useContext(CurrentFocusContext);
   const navigate = useNavigate();
   const [currentTab, setCurrentTab] = useState("For You");
   const [popUp, setPopUp] = useState<ErrorPopupPorps>({
@@ -87,8 +79,12 @@ export default function Home({ focusKey: focusKeyParam }: FocusabelComponentProp
   });
   const hidePopup = () => {
     setPopUp((prev) => {
-      if (prev.returnFocusTo) {
+      if (currentFocusContext.focusKey) {
+        setFocus(currentFocusContext.focusKey);
+      } else if (prev.returnFocusTo) {
         setFocus(prev.returnFocusTo);
+      } else {
+        setFocus("home_header_slider");
       }
       return { show: false, message: "", title: "", returnFocusTo: "", buttons: [], focusKeyParam: "modal-popup", icon: "" };
     });
@@ -102,8 +98,7 @@ export default function Home({ focusKey: focusKeyParam }: FocusabelComponentProp
     }
   }, [firstHeaderFocusKey]);
   const renderHeaderSlider = () => {
-    const headerIndex = personalizedFeeds.findIndex((feed: any) => feed.type === "header");
-    console.log("header index : ", headerIndex);
+    const headerIndex = personalizedFeeds.findIndex((feed: any) => feed.type === "header" && feed.results.length);
     if (headerIndex >= 0) {
       return (
         <FocusableHeaderSlider
@@ -111,6 +106,7 @@ export default function Home({ focusKey: focusKeyParam }: FocusabelComponentProp
           focusKeyParam="home_header_slider"
           games={personalizedFeeds.at(headerIndex)}
           goToDetail={navigate}
+          setCurrentFocusContext={currentFocusContext.setFocusKey}
         />
       );
     }
@@ -121,13 +117,16 @@ export default function Home({ focusKey: focusKeyParam }: FocusabelComponentProp
       return personalizedFeeds.filter((feed) => feed.type === "rail").map((feed) => renderSingleRail(feed));
     }
   };
-  const renderSingeGameForRail = (game: any, feedId: string) => {
+  const renderSingeGameForRail = (game: any, feedId: string, isFirst: boolean, isLast: boolean) => {
     return (
       <FocusableRailGameWrapper
         key={`rail_${feedId}_${game.oplay_id}`}
         game={game}
         goToDetail={navigate}
         focusKeyParam={`rail_${feedId}_${game.oplay_id}`}
+        setCurrentFocusContext={currentFocusContext.setFocusKey}
+        isFirst={isFirst}
+        isLast={isLast}
       />
     );
   };
@@ -136,7 +135,11 @@ export default function Home({ focusKey: focusKeyParam }: FocusabelComponentProp
       <div className="col-12" key={`feed_${feed.feed_id}`}>
         <p className="rail-heading">{feed.title}</p>
 
-        <div className="scrolltab">{feed.results.map((game: any) => renderSingeGameForRail(game, feed.feed_id))}</div>
+        <div className="scrolltab">
+          {feed.results.map((game: any, index: number) =>
+            renderSingeGameForRail(game, feed.feed_id, index === 0, index === feed.results.length - 1)
+          )}
+        </div>
       </div>
     );
   };
@@ -145,11 +148,16 @@ export default function Home({ focusKey: focusKeyParam }: FocusabelComponentProp
       <div className="col-12" key={`feed_wishlist`}>
         <p className="rail-heading">My Library</p>
 
-        <div className="scrolltab">{wishlistGames.map((game: any) => renderSingeGameForRail(game, "feed_wishlist"))}</div>
+        <div className="scrolltab">
+          {wishlistGames.map((game: any, index: number) =>
+            renderSingeGameForRail(game, "feed_wishlist", index === 0, index === wishlistGames.length - 1)
+          )}
+        </div>
       </div>
     );
   };
   useEffect(() => {
+    console.log("wish list refresh ----- ");
     if (sessionContext.sessionToken) {
       (async () => {
         const wishlistsResp: any = await getUsersWishlist(sessionContext.sessionToken);
@@ -162,7 +170,7 @@ export default function Home({ focusKey: focusKeyParam }: FocusabelComponentProp
             buttons: [
               {
                 text: "OK",
-                className: "btn grayGradientBtn btn-lg border-0 mt-3",
+                className: "btn gradientBtn btn-lg border-0 mt-3",
                 focusKey: "btn-cancel-popup",
                 onClick: hidePopup,
               },
@@ -202,7 +210,6 @@ export default function Home({ focusKey: focusKeyParam }: FocusabelComponentProp
   }, [sessionContext.sessionToken]);
   useEffect(() => {
     const onRemoteReturnClicked = (event: any) => {
-      console.log("remote return clicked : ", popUp);
       if (popUp.show) {
         hidePopup();
       } else {
@@ -253,7 +260,7 @@ export default function Home({ focusKey: focusKeyParam }: FocusabelComponentProp
               buttons: [
                 {
                   text: "OK",
-                  className: "btn grayGradientBtn btn-lg border-0 mt-3",
+                  className: "btn gradientBtn btn-lg border-0 mt-3",
                   focusKey: "btn-cancel-popup",
                   onClick: hidePopup,
                 },
@@ -269,7 +276,7 @@ export default function Home({ focusKey: focusKeyParam }: FocusabelComponentProp
           if (headerIndex >= 0) {
             const headerFeed: any = personlizedFeesResp.feeds?.at(headerIndex);
             const k = headerFeed?.results?.[0].oplay_id ?? "";
-            console.log("k : ", k);
+            //console.log("k : ", k);
             setFirstHeaderFocusKey(`header_game_${k}`);
           }
         } else {
@@ -295,7 +302,7 @@ export default function Home({ focusKey: focusKeyParam }: FocusabelComponentProp
               buttons: [
                 {
                   text: "Ok",
-                  className: "btn grayGradientBtn btn-lg border-0 mt-3",
+                  className: "btn gradientBtn btn-lg border-0 mt-3",
                   focusKey: "btn-cancel-popup",
                   onClick: hidePopup,
                 },
@@ -326,7 +333,11 @@ export default function Home({ focusKey: focusKeyParam }: FocusabelComponentProp
     return (
       <div className="col-12" key={`current_tab_${currentTab}`}>
         <p className="rail-heading">{currentTab}</p>
-        <div className="scrolltab">{customGames.map((game: any) => renderSingeGameForRail(game, `current_tab_${currentTab}`))}</div>
+        <div className="scrolltab">
+          {customGames.map((game: any, index: number) =>
+            renderSingeGameForRail(game, `current_tab_${currentTab}`, index === 0, index === customGames.length - 1)
+          )}
+        </div>
       </div>
     );
   };
@@ -339,7 +350,13 @@ export default function Home({ focusKey: focusKeyParam }: FocusabelComponentProp
             <div className="row justify-content-center scrolltab">
               {tabs.map((tab) => (
                 <div className="col-auto tabOptions" key={tab.focusKeyParam}>
-                  <FocusableTabButton focusKeyParam={tab.focusKeyParam} tab={tab.text} onClick={onTabButtonCliced} currentTab={currentTab}>
+                  <FocusableTabButton
+                    focusKeyParam={tab.focusKeyParam}
+                    tab={tab.text}
+                    onClick={onTabButtonCliced}
+                    currentTab={currentTab}
+                    setCurrentFocusContext={currentFocusContext.setFocusKey}
+                  >
                     {tab.text}
                   </FocusableTabButton>
                 </div>
@@ -363,6 +380,7 @@ const FocusableTabButton = (props: any) => {
     focusKey: props.focusKeyParam,
     onFocus: () => {
       //scrollToElement(ref.current, 100);
+      props.setCurrentFocusContext(props.focusKeyParam);
       scrollToTop();
     },
     onEnterPress: () => {
@@ -396,6 +414,7 @@ const FocusableRailGameWrapper = (props: any) => {
     focusable: true,
     focusKey: props.focusKeyParam,
     onFocus: () => {
+      props.setCurrentFocusContext(props.focusKeyParam);
       scrollToElement(ref.current, 120);
       railScrollTo(ref.current);
     },
@@ -403,8 +422,12 @@ const FocusableRailGameWrapper = (props: any) => {
       props.goToDetail(`/games-detail/${props.game.oplay_id}`);
     },
     onArrowPress: (direction, keyProps, detils) => {
-      if (direction === "left" && getCoords(ref.current).left + ref.current.offsetLeft < 220) {
+      //if (direction === "left" && getCoords(ref.current).left + ref.current.offsetLeft < 220) {
+      if (direction === "left" && props.isFirst) {
         setFocus("Sidebar", { pos: getScrolledCoords(ref.current) });
+        return false;
+      } else if (direction === "right" && props.isLast) {
+        console.log("last game in rail");
         return false;
       }
       return true;
@@ -413,10 +436,9 @@ const FocusableRailGameWrapper = (props: any) => {
   return (
     <div
       ref={ref}
-      className={"fixedWidth tabOptions" + (focused ? " focusedElement" : "")}
+      className="fixedWidth tabOptions"
       style={{
-        padding: "10px",
-        borderRadius: "10px",
+        padding: "5px",
         verticalAlign: "top",
         cursor: "pointer",
       }}
@@ -426,7 +448,7 @@ const FocusableRailGameWrapper = (props: any) => {
     >
       <img
         src={props.game.text_background_image ?? "/img/default_bg.webp"}
-        className="img-fluid rounded coverImg"
+        className={"img-fluid rounded coverImg" + (focused ? " focusedElement" : "")}
         alt={props.game.title ?? "game_" + props.game.oplay_id}
       />
       {props.game.is_free === "true" && props.game.status !== "coming_soon" ? (
@@ -448,8 +470,8 @@ const FocusableRailGameWrapper = (props: any) => {
           <span className="darkredGradient px-2 bottomTag tagText">NOT OPTIMIZED</span>
         </div>
       ) : null}
-      <h5 className="mt-3 mb-1 text-white">{props.game.title}</h5>
-      <p className="textOffWhite">{props.game.genre_mappings.join(", ")}</p>
+      <h5 className="GamesTitle mb-1 text-white single-line-text">{props.game.title}</h5>
+      <p className="textOffWhite single-line-text">{props.game.genre_mappings.join(", ")}</p>
     </div>
   );
 };
@@ -472,6 +494,7 @@ const FocusableHeaderSlider = (props: any) => {
     focusKey: props.focusKeyParam,
     onFocus: () => {
       //scrollToElement(ref.current, 100);
+      props.setCurrentFocusContext(props.focusKeyParam);
       scrollToTop();
     },
     onEnterPress: () => {
@@ -480,7 +503,7 @@ const FocusableHeaderSlider = (props: any) => {
         const currentGame = headerSlider.getElementsByClassName("slick-center");
         for (let index = 0; index < currentGame.length; index++) {
           const ariaHidden = currentGame[index].getAttribute("aria-hidden");
-          console.log("ariaHidden : ", ariaHidden);
+          //console.log("ariaHidden : ", ariaHidden);
           if (ariaHidden != null && ariaHidden === "false") {
             const gId = currentGame[index].querySelector("[data-gameid]")?.getAttribute("data-gameid");
             if (gId) {
@@ -499,7 +522,6 @@ const FocusableHeaderSlider = (props: any) => {
           sliderRef.current.slickNext();
           break;
         case "up":
-          //setFocus("Sidebar");
           setFocus("Sidebar", { pos: getCoords(ref.current) });
           break;
         case "down":

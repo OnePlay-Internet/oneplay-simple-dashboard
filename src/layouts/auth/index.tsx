@@ -6,11 +6,8 @@ import defaultUser from "../../assets/images/user/defaultUser.svg";
 import { logout } from "src/common/services";
 
 import { SESSION_TOKEN_LOCAL_STORAGE } from "src/common/constants";
-import { SessionContext, UserProfileContext } from "src/App";
-import {
-  FocusContext,
-  useFocusable,
-} from "@noriginmedia/norigin-spatial-navigation";
+import { CurrentFocusContext, SessionContext, UserProfileContext } from "src/App";
+import { FocusContext, useFocusable } from "@noriginmedia/norigin-spatial-navigation";
 import { getScrolledCoords } from "src/common/utils";
 import ErrorPopUp from "src/pages/error";
 import { ReactComponent as IconSearch } from "../../assets/images/icon-search.svg";
@@ -22,6 +19,7 @@ export default function AuthLayout({ focusKey: focusKeyParam }: FocusabelCompone
   const navigate = useNavigate();
   const sessionContext = useContext(SessionContext);
   const userContext = useContext(UserProfileContext);
+  const currentFocusContext = useContext(CurrentFocusContext);
   const [hasFocus, setHasFocus] = useState(false);
   const [popUp, setPopUp] = useState<ErrorPopupPorps>({
     show: false,
@@ -140,6 +138,7 @@ export default function AuthLayout({ focusKey: focusKeyParam }: FocusabelCompone
                   <FocusableLink
                     focusKeyParam="sidebar-home"
                     to="/home"
+                    setCurrentFocusContext={currentFocusContext.setFocusKey}
                     /*  onClick={() => {
                       navigate("/home");
                     }} */
@@ -154,6 +153,7 @@ export default function AuthLayout({ focusKey: focusKeyParam }: FocusabelCompone
                   <FocusableLink
                     focusKeyParam="sidebar-search"
                     to="/search"
+                    setCurrentFocusContext={currentFocusContext.setFocusKey}
                     /*  onClick={() => {
                       navigate("/search");
                     }} */
@@ -168,6 +168,7 @@ export default function AuthLayout({ focusKey: focusKeyParam }: FocusabelCompone
                   <FocusableLink
                     focusKeyParam="sidebar-allGames"
                     to="/all-games"
+                    setCurrentFocusContext={currentFocusContext.setFocusKey}
                     /*  onClick={() => {
                       navigate("/all-games");
                     }} */
@@ -182,6 +183,7 @@ export default function AuthLayout({ focusKey: focusKeyParam }: FocusabelCompone
                   <FocusableLink
                     focusKeyParam="sidebar-settings"
                     to="/settings"
+                    setCurrentFocusContext={currentFocusContext.setFocusKey}
                     /*  onClick={() => {
                       navigate("/settings");
                     }} */
@@ -192,7 +194,12 @@ export default function AuthLayout({ focusKey: focusKeyParam }: FocusabelCompone
                   </FocusableLink>
                 </p>
                 <p>
-                  <FocusableLink focusKeyParam="sidebar-logout" onClick={btnLogoutClick} to="/">
+                  <FocusableLink
+                    focusKeyParam="sidebar-logout"
+                    onClick={btnLogoutClick}
+                    to="/"
+                    setCurrentFocusContext={currentFocusContext.setFocusKey}
+                  >
                     {/* <img src={iconLogout} alt="logout-icon" className="sidebar-icon" /> */}
                     <IconLogout className="sidebar-icon" />
                     {hasFocus ? <span className="sidebar-text">Logout</span> : ""}
@@ -232,6 +239,9 @@ const FocusableLink = (props: any) => {
   const { ref, focused, setFocus } = useFocusable({
     focusable: true,
     focusKey: props.focusKeyParam,
+    onFocus: () => {
+      props.setCurrentFocusContext(props.focusKeyParam);
+    },
     onEnterPress: () => {
       if (props.onClick) {
         props.onClick();

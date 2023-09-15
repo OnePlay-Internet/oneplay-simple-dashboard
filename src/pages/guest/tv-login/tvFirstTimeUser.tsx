@@ -5,14 +5,17 @@ import QRCode from "react-qr-code";
 import { FocusContext, useFocusable } from "@noriginmedia/norigin-spatial-navigation";
 import { useContext, useEffect, useState } from "react";
 import ErrorPopUp from "src/pages/error";
+import { CurrentFocusContext } from "src/App";
 
 export default function TvFirstTimeUser({ focusKey: focusKeyParam }: FocusabelComponentProps) {
   const navigate = useNavigate();
+  const currentFocusContext = useContext(CurrentFocusContext);
   const { focusKey, setFocus } = useFocusable({
     focusable: true,
     focusKey: focusKeyParam,
     preferredChildFocusKey: "btn-tv-login",
   });
+
   const [popUp, setPopUp] = useState<ErrorPopupPorps>({
     show: false,
     message: "",
@@ -25,8 +28,12 @@ export default function TvFirstTimeUser({ focusKey: focusKeyParam }: FocusabelCo
 
   const hidePopup = () => {
     setPopUp((prev) => {
-      if (prev.returnFocusTo) {
+      if (currentFocusContext.focusKey) {
+        setFocus(currentFocusContext.focusKey);
+      } else if (prev.returnFocusTo) {
         setFocus(prev.returnFocusTo);
+      } else {
+        setFocus("btn-tv-login");
       }
       return { show: false, message: "", title: "", returnFocusTo: "", buttons: [], focusKeyParam: "modal-popup-confirm-exit", icon: "" };
     });
@@ -102,7 +109,11 @@ export default function TvFirstTimeUser({ focusKey: focusKeyParam }: FocusabelCo
                 Please Login to continue using Onplay Services.
               </p>
               <div className="mt-5">
-                <FocusableButton onClick={goToLoginScreen} focusKeyParam="btn-tv-login">
+                <FocusableButton
+                  onClick={goToLoginScreen}
+                  focusKeyParam="btn-tv-login"
+                  setCurrentFocusContext={currentFocusContext.setFocusKey}
+                >
                   Log in
                 </FocusableButton>
               </div>
@@ -129,6 +140,9 @@ const FocusableButton = (props: any) => {
   const { ref, focused } = useFocusable({
     focusable: true,
     focusKey: props.focusKeyParam,
+    onFocus: () => {
+      props.setCurrentFocusContext(props.focusKeyParam);
+    },
     onEnterPress: () => {
       props.onClick();
     },

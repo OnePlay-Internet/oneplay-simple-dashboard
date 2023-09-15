@@ -6,6 +6,7 @@ const Controller = (function () {
   const CONTROLLER_START_BUTTON = 9; // for shaks = 11 - for xbox = 9
   const CONTROLLER_X_BUTTON = 2; // -for shaks = 3 - for fox xbox = 2
   const CONTROLLER_A_BUTTON = 0;
+  const CONTROLLER_B_BUTTON = 1;
   const JOYSTICK_LEFT_RIGHT = 0;
   const JOYSTICK_UP_DOWN = 1;
 
@@ -43,13 +44,13 @@ const Controller = (function () {
                 $("#btn-keyboard-" + keyboardCurrentIndex).click();
               }
             }
+            if (i === CONTROLLER_B_BUTTON) {
+              gamepadBPressed();
+            }
           } else {
             this.pressedStartTime.set(i, -1);
           }
-          if (
-            newButtons[CONTROLLER_SELECT_BUTTON].pressed &&
-            newButtons[CONTROLLER_X_BUTTON].pressed
-          ) {
+          if (newButtons[CONTROLLER_SELECT_BUTTON].pressed && newButtons[CONTROLLER_X_BUTTON].pressed) {
             toogleSettings();
           }
 

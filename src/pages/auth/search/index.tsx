@@ -18,9 +18,7 @@ import {
 import InfiniteScroll from "react-infinite-scroller";
 import LoaderPopup from "src/pages/loader";
 import ErrorPopUp from "src/pages/error";
-export default function SearchGames({
-  focusKey: focusKeyParam,
-}: FocusabelComponentProps) {
+export default function SearchGames({ focusKey: focusKeyParam }: FocusabelComponentProps) {
   const navigate = useNavigate();
   const sessionContext = useContext(SessionContext);
   const [showLoading, setShowLoading] = useState(false);
@@ -179,6 +177,19 @@ export default function SearchGames({
     });
     setFocus(returnFocusTo);
   };
+  useEffect(() => {
+    const onRemoteReturnClicked = (event: any) => {
+      if (popUp.show) {
+        hidePopup();
+      } else {
+        window.history.go(-1);
+      }
+    };
+    window.addEventListener("RemoteReturnClicked", onRemoteReturnClicked);
+    return () => {
+      window.removeEventListener("RemoteReturnClicked", onRemoteReturnClicked);
+    };
+  }, [popUp, hidePopup]);
   return (
     <FocusContext.Provider value={focusKey}>
       <div className="row mainContainer">
@@ -282,10 +293,7 @@ const FocusableInput = (props: any) => {
     <input
       type={props.type}
       ref={ref}
-      className={
-        "form-control gameSearchInputControl" +
-        (focused ? " focusedSearch" : "")
-      }
+      className={"form-control gameSearchInputControl" + (focused ? " focusedSearch" : "")}
       onChange={props.onChange}
       value={props.value}
       placeholder={props.placeholder}
@@ -357,64 +365,42 @@ const FocusableGameWrapper = (props: any) => {
   });
 
   return (
-    <div
-      ref={ref}
-      className={"col-md-3 mt-3" + (focused ? " focusedElement" : "")}
-      style={{ padding: "10px", borderRadius: "10px", position: "relative" }}
-    >
-      <NavLink
-        to={`/games-detail/${props.game.oplay_id}`}
-        className="text-decoration-none text-initial"
-      >
+    <div ref={ref} className="col-md-3 mt-3" style={{ padding: "5px", position: "relative" }}>
+      <NavLink to={`/games-detail/${props.game.oplay_id}`} className="text-decoration-none text-initial">
         <LazyLoadImage
           alt={props.game.title}
           loading="lazy"
-          src={
-            props.game.text_background_image ?? "/img/placeholder_336x189.svg"
-          } // use normal <img> attributes as props
-          width={336}
-          height={189}
-          className="img-fluid rounded"
+          src={props.game.text_background_image ?? "/img/placeholder_336x189.svg"} // use normal <img> attributes as props
+          className={"img-fluid rounded game-poster" + (focused ? " focusedElement" : "")}
           placeholder={
             <img
               alt={props.game.title}
               src="/img/placeholder_336x189.svg"
-              className="img-fluid rounded"
+              className={"img-fluid rounded game-poster" + (focused ? " focusedElement" : "")}
             />
           }
         />
-        {props.game.is_free === "true" &&
-        props.game.status !== "coming_soon" ? (
+        {props.game.is_free === "true" && props.game.status !== "coming_soon" ? (
           <span className="freeTag px-x free tagText">FREE</span>
         ) : null}
-        {props.game.status === "coming_soon" ? (
-          <span className="redGradient free px-2 tagText">COMING SOON</span>
-        ) : null}
+        {props.game.status === "coming_soon" ? <span className="redGradient free px-2 tagText">COMING SOON</span> : null}
         {props.game.status === "maintenance" ? (
           <div className="text-center" style={{ height: 0 }}>
-            <span className="orangeGradientBg px-2 bottomTag tagText">
-              MAINTENANCE
-            </span>
+            <span className="orangeGradientBg px-2 bottomTag tagText">MAINTENANCE</span>
           </div>
         ) : null}
         {props.game.status === "updating" ? (
           <div className="text-center" style={{ height: 0 }}>
-            <span className="updatingGradient px-2 bottomTag tagText">
-              UPDATING
-            </span>
+            <span className="updatingGradient px-2 bottomTag tagText">UPDATING</span>
           </div>
         ) : null}
         {props.game.status === "not_optimized" ? (
           <div className="text-center" style={{ height: 0 }}>
-            <span className="darkredGradient px-2 bottomTag tagText">
-              NOT OPTIMIZED
-            </span>
+            <span className="darkredGradient px-2 bottomTag tagText">NOT OPTIMIZED</span>
           </div>
         ) : null}
-        <p className="GamesTitle mb-0 mt-3">{props.game.title}</p>
-        <p className="gamesDescription">
-          {props.game.genre_mappings.join(", ")}
-        </p>
+        <p className="GamesTitle mb-0 single-line-text">{props.game.title}</p>
+        <p className="gamesDescription single-line-text">{props.game.genre_mappings.join(", ")}</p>
       </NavLink>
     </div>
   );

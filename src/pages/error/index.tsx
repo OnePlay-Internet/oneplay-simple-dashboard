@@ -7,6 +7,7 @@ import sucessIcon from "../../assets/images/icon-verified.svg";
 import waitQueueIcon from "../../assets/images/icon-waitQueae.svg";
 import groupIcon from "../../assets/images/icon-group.svg";
 import noWifiIcon from "../../assets/images/icon-no-network.svg";
+import logoutIcon from "../../assets/images/setting/Logout.svg";
 import { useEffect } from "react";
 export default function ErrorPopUp({ focusKeyParam, title, icon, message, buttons, returnFocusTo, show }: ErrorPopupPorps) {
   const { setFocus, focusKey, focusSelf } = useFocusable({
@@ -29,6 +30,8 @@ export default function ErrorPopUp({ focusKeyParam, title, icon, message, button
         return groupIcon;
       case "no-wifi":
         return noWifiIcon;
+      case "logout":
+        return logoutIcon;
       case "error":
       default:
         return errorIcon;

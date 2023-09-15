@@ -87,10 +87,10 @@ function handleMessage(msg) {
     // Show a termination snackbar message if the termination was unexpected
     var errorCode = parseInt(msg.replace("streamTerminated: ", ""));
     //if (errorCode !== 0) {
-    snackbarLogLong("Connection terminated");
+    snackbarLogLong("Connection terminated unexpectedly.");
     //}
     stopHeartBeatAPI();
-    goToReact();
+    showStreamTerminatedUndexpectedlyDialog();
     /* api.refreshServerInfo().then(
       function (ret) {
         // Return to app list with new currentgame

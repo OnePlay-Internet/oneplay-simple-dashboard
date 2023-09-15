@@ -8,12 +8,10 @@ import {
   FocusContext,
   useFocusable,
 } from "@noriginmedia/norigin-spatial-navigation";
-import { getScrolledCoords } from "src/common/utils";
+import { getScrolledCoords, scrollToTop } from "src/common/utils";
 
-export default function Settings({
-  focusKey: focusKeyParam,
-}: FocusabelComponentProps) {
-  const [currentSelection, setCurrentSelection] = React.useState("profile");
+export default function Settings({ focusKey: focusKeyParam }: FocusabelComponentProps) {
+  const [currentSelection, setCurrentSelection] = React.useState("general");
   const profileClick = () => setCurrentSelection("profile");
   const subscriptionClick = () => setCurrentSelection("subscriptions");
   const deviceHistoryClick = () => setCurrentSelection("deviceHistory");
@@ -22,19 +20,15 @@ export default function Settings({
     focusable: true,
     focusKey: focusKeyParam,
   });
-  /*  
   useEffect(() => {
-    setFocus("go-to-profile");
-  }, [setFocus]); */
-  useEffect(() => {
-    setFocus("go-to-profile");
+    setFocus("go-to-general");
   }, [focusSelf]);
   //const [settingsFocus, setSettingsFocus] = useState(0);
   const renderSelection = () => {
     switch (currentSelection) {
       case "general":
-        return <General />;
-        
+        return <General focusKey="General" />;
+
       case "profile":
         return <Profile focusKey="Profile" />;
 
@@ -51,19 +45,15 @@ export default function Settings({
         <div className="col-md-2">
           <h1 className="mainHeading">Settings</h1>
           <div className="settingsNavigation mt-4">
-            <FocusableParagraph
-              focusKeyParam="go-to-general"
-              onClick={GeneralClick}
-              currentSelection={currentSelection}
-            >
+            <FocusableParagraph focusKeyParam="go-to-general" onClick={GeneralClick} currentSelection={currentSelection}>
               <NavLink
                 to=""
-                className={"text-decoration-none text-initial setting-menu" + (currentSelection === "General" ? " current" : "")}
+                className={"text-decoration-none text-initial setting-menu" + (currentSelection === "general" ? " current" : "")}
               >
                 General
               </NavLink>
             </FocusableParagraph>
-          
+
             <FocusableParagraph
               focusKeyParam="go-to-profile"
               onClick={profileClick}
@@ -72,10 +62,7 @@ export default function Settings({
             >
               <NavLink
                 to=""
-                className={
-                  "text-decoration-none text-initial setting-menu" +
-                  (currentSelection === "profile" ? " current" : "")
-                }
+                className={"text-decoration-none text-initial setting-menu" + (currentSelection === "profile" ? " current" : "")}
                 onClick={profileClick}
               >
                 Profile
@@ -89,10 +76,7 @@ export default function Settings({
             >
               <NavLink
                 to=""
-                className={
-                  "text-decoration-none text-initial setting-menu" +
-                  (currentSelection === "subscriptions" ? " current" : "")
-                }
+                className={"text-decoration-none text-initial setting-menu" + (currentSelection === "subscriptions" ? " current" : "")}
                 onClick={subscriptionClick}
               >
                 Subscription
@@ -106,10 +90,7 @@ export default function Settings({
             >
               <NavLink
                 to=""
-                className={
-                  "text-decoration-none text-initial setting-menu" +
-                  (currentSelection === "deviceHistory" ? " current" : "")
-                }
+                className={"text-decoration-none text-initial setting-menu" + (currentSelection === "deviceHistory" ? " current" : "")}
                 onClick={deviceHistoryClick}
               >
                 Device History
@@ -127,16 +108,16 @@ const FocusableParagraph = (props: any) => {
   const { ref, focused, setFocus } = useFocusable({
     focusable: true,
     focusKey: props.focusKeyParam,
+    onFocus: () => {
+      scrollToTop();
+    },
     onEnterPress: () => {
       props.onClick();
     },
     onArrowPress: (direction, keyProps, details) => {
-      if (direction === "right") {
-        console.log(
-          "settings arrow : %s, %s",
-          direction,
-          props.currentSelection
-        );
+      if (direction === "down" && props.focusKeyParam === "go-to-device-history") {
+        return false;
+      } else if (direction === "right") {
         switch (props.currentSelection) {
           case "general":
             setFocus("General");
@@ -148,7 +129,6 @@ const FocusableParagraph = (props: any) => {
             setFocus("Subscriptions");
             return false;
           case "deviceHistory":
-            console.log("inside device history");
             setFocus("DeviceHistory");
             return false;
         }
@@ -162,7 +142,7 @@ const FocusableParagraph = (props: any) => {
   return (
     <p
       ref={ref}
-      style={{ borderRadius: "0.5rem", padding: "5px", margin: '10px 0px 10px 0px' }}
+      style={{ borderRadius: "0.5rem", padding: "5px", margin: "10px 0px 10px 0px" }}
       className={focused ? "focusedElement" : ""}
       onClick={props.onClick}
     >

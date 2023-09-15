@@ -147,6 +147,19 @@ export default function DeviceHistory({ focusKey: focusKeyParam }: FocusabelComp
     });
     setFocus(returnFocusTo);
   };
+  useEffect(() => {
+    const onRemoteReturnClicked = (event: any) => {
+      if (popUp.show) {
+        hidePopup();
+      } else {
+        window.history.go(-1);
+      }
+    };
+    window.addEventListener("RemoteReturnClicked", onRemoteReturnClicked);
+    return () => {
+      window.removeEventListener("RemoteReturnClicked", onRemoteReturnClicked);
+    };
+  }, [popUp, hidePopup]);
   return (
     <FocusContext.Provider value={focusKeyParam}>
       <div className="row ps-4">

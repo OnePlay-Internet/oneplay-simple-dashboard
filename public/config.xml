@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <widget xmlns="http://www.w3.org/ns/widgets" xmlns:tizen="http://tizen.org/ns/widgets"
-    id="https://oneplay.in/tizen" version="0.2.1" viewmodes="maximized">
+    id="https://oneplay.in/tizen" version="0.2.5" viewmodes="maximized">
     <access origin="*" subdomains="true"></access>
     <tizen:application id="9xqCvMKehK.OnePlay" package="9xqCvMKehK" required_version="3.0" />
     <name>OnePlay</name>
@@ -10,9 +10,6 @@
     <tizen:metadata key="http://samsung.com/tv/metadata/prelaunch.support" value="true" />
     <tizen:metadata key="http://tizen.org/metadata/app_ui_type/base_screen_resolution"
         value="extensive" />
-    <tizen:metadata key="http://samsung.com/tv/metadata/multiscreen.support" value="false" />
-    <tizen:metadata key="http://samsung.com/tv/metadata/multitasking.support" value="false" />
-    <tizen:metadata key="multiview_support_new" value="false" />
     <tizen:privilege name="http://developer.samsung.com/privilege/network.public" />
     <tizen:privilege name="http://tizen.org/privilege/application.launch" />
     <tizen:privilege name="http://tizen.org/privilege/tv.inputdevice" />

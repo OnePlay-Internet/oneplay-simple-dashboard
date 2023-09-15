@@ -39,12 +39,10 @@ export default function GameLoading(props: any) {
                 <div className="cardBox p-lg-4 p-3 m-lg-5 m-md-3 m-1 fixed-bottom">
                   <div className="row m-lg-1 justify-content-center">
                     <div className="col-md-9 col-sm-9 col-12 borderright pr-md-5">
-                      <p className="header text-white mb-2 mb-lg-3">Loading</p>
+                      <p className="header text-white mb-2 mb-lg-3">{props.message ?? "Loading..."}</p>
                       <div className="row fixedHeight">
                         <div className="col-auto align-self-center">
-                          <p className="countTip mb-0">
-                            {currentTip.index + 1}
-                          </p>
+                          <p className="countTip mb-0">{currentTip.index + 1}</p>
                         </div>
                         <div className="col pl-0 align-self-center">
                           <h3 className="tipText mb-0">{currentTip.tip}</h3>
@@ -54,23 +52,16 @@ export default function GameLoading(props: any) {
                         <div
                           className="innerRange text-right pr-3"
                           style={{
-                            width:
-                              Math.min(Math.max(props.progress, 0), 100) + "%",
+                            width: Math.min(Math.max(props.progress, 0), 100) + "%",
                           }}
                         ></div>
                         <div className="card-img-overlay text-center p-0">
-                          <span className="percenterText text-white">
-                            {props.progress}%
-                          </span>
+                          <span className="percenterText text-white">{props.progress}%</span>
                         </div>
                       </div>
                     </div>
                     <div className="col-md-3 col-sm-3 col-5 text-center align-self-center">
-                      <img
-                        src={brandLogo}
-                        className="img-fluid mt-lg-3 mt-2 mb-0"
-                        alt="logo"
-                      />
+                      <img src={brandLogo} className="img-fluid mt-lg-3 mt-2 mb-0" alt="logo" />
                     </div>
                   </div>
                 </div>

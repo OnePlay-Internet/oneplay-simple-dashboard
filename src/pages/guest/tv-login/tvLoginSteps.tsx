@@ -51,6 +51,17 @@ export default function TvLogin() {
     setShowLoading(false);
     if (qrcode.success && qrcode.code && qrcode.token) {
       setQrData({ code: qrcode.code, token: qrcode.token });
+    } else {
+      setPopUp({
+        show: true,
+        message: qrcode.message ?? "",
+        title: "Error!",
+        returnFocusTo: "btn-login",
+        buttons: [{ text: "Ok", className: "btn gradientBtn btn-lg border-0", focusKey: "btn-ok-popup", onClick: hidePopup }],
+        focusKeyParam: "modal-popup-confirm-exit",
+        icon: "error",
+      });
+      
     }
   };
   const getQRSession = async () => {
@@ -106,6 +117,19 @@ export default function TvLogin() {
     });
     //setFocus(returnFocusTo);
   };
+  useEffect(() => {
+    const onRemoteReturnClicked = (event: any) => {
+      if (popUp.show) {
+        hidePopup();
+      } else {
+        window.history.go(-1);
+      }
+    };
+    window.addEventListener("RemoteReturnClicked", onRemoteReturnClicked);
+    return () => {
+      window.removeEventListener("RemoteReturnClicked", onRemoteReturnClicked);
+    };
+  }, [popUp, hidePopup]);
   return (
     <>
       <div className="container-fluid backgroundBg">

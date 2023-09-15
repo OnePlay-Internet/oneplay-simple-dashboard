@@ -1,26 +1,18 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { useContext, useEffect, useState } from "react";
-import { SessionContext } from "src/App";
-import {
-  customFeedGames,
-  getAllGames,
-  getTopResults,
-} from "../../../common/services";
+import { CurrentFocusContext, SessionContext } from "src/App";
+import { customFeedGames, getAllGames, getTopResults } from "../../../common/services";
 
 import { GAME_FETCH_LIMIT } from "src/common/constants";
-import {
-  FocusContext,
-  useFocusable,
-} from "@noriginmedia/norigin-spatial-navigation";
+import { FocusContext, useFocusable } from "@noriginmedia/norigin-spatial-navigation";
 import InfiniteScroll from "react-infinite-scroller";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import ErrorPopUp from "src/pages/error";
 import LoaderPopup from "src/pages/loader";
-export default function AllGames({
-  focusKey: focusKeyParam,
-}: FocusabelComponentProps) {
+import { getCoords } from "src/common/utils";
+export default function AllGames({ focusKey: focusKeyParam }: FocusabelComponentProps) {
   const sessionContext = useContext(SessionContext);
-
+  const currentFocusContext = useContext(CurrentFocusContext);
   const [allGames, setAllGames] = useState<{ [key: string]: any }[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [haveMoreGames, setHaveMoreGames] = useState(true);
@@ -175,6 +167,7 @@ export default function AllGames({
         game={game}
         key={game.oplay_id}
         focusKeyParam={`game_${game.oplay_id}`}
+        setCurrentFocusContext={currentFocusContext.setFocusKey}
         goToDetail={() => {
           navigate(`/games-detail/${game.oplay_id}`);
         }}
@@ -238,10 +231,12 @@ export default function AllGames({
       focusKeyParam: "modal-popup",
       icon: "",
     });
-    if (returnFocusTo) {
+    if (currentFocusContext.focusKey) {
+      setFocus(currentFocusContext.focusKey);
+    } else if (returnFocusTo) {
       setFocus(returnFocusTo);
     } else {
-      setFocus("Sidebar");
+      setFocusToFirstGame();
     }
   };
   useEffect(() => {
@@ -255,6 +250,19 @@ export default function AllGames({
     setCurrentPage(0);
     setCurrentFilterId(filterId);
   };
+  useEffect(() => {
+    const onRemoteReturnClicked = (event: any) => {
+      if (popUp.show) {
+        hidePopup();
+      } else {
+        window.history.go(-1);
+      }
+    };
+    window.addEventListener("RemoteReturnClicked", onRemoteReturnClicked);
+    return () => {
+      window.removeEventListener("RemoteReturnClicked", onRemoteReturnClicked);
+    };
+  }, [popUp, hidePopup]);
   return (
     <FocusContext.Provider value={focusKey}>
       <InfiniteScroll pageStart={0} hasMore={haveMoreGames} loadMore={loadNextGames}>
@@ -270,6 +278,7 @@ export default function AllGames({
                   currentFilterID={currentFilterId}
                   body={filter.body}
                   onClick={onFilterClicked}
+                  setCurrentFocusContext={currentFocusContext.setFocusKey}
                 />
               ))}
             </div>
@@ -283,6 +292,7 @@ export default function AllGames({
                   currentFilterID={currentFilterId}
                   body={filter.body}
                   onClick={onFilterClicked}
+                  setCurrentFocusContext={currentFocusContext.setFocusKey}
                 />
               ))}
             </div>
@@ -296,6 +306,7 @@ export default function AllGames({
                   currentFilterID={currentFilterId}
                   body={filter.body}
                   onClick={onFilterClicked}
+                  setCurrentFocusContext={currentFocusContext.setFocusKey}
                 />
               ))}
             </div>
@@ -309,6 +320,7 @@ export default function AllGames({
                   currentFilterID={currentFilterId}
                   body={filter.body}
                   onClick={onFilterClicked}
+                  setCurrentFocusContext={currentFocusContext.setFocusKey}
                 />
               ))}
             </div>
@@ -322,6 +334,7 @@ export default function AllGames({
                   currentFilterID={currentFilterId}
                   body={filter.body}
                   onClick={onFilterClicked}
+                  setCurrentFocusContext={currentFocusContext.setFocusKey}
                 />
               ))}
             </div>
@@ -362,75 +375,53 @@ const FocusableGameWrapper = (props: any) => {
         block: "center",
         inline: "nearest",
       });
-    } /* 
-    onArrowPress: (direction, keyProps, detils) => {
+      props.setCurrentFocusContext(props.focusKeyParam);
+    },
+    /*   onArrowPress: (direction, keyProps, detils) => {
       if (direction === "left" && getCoords(ref.current).left < 100) {
         setFocus("sidebar-search");
         return false;
       }
       return true;
-    }, */,
+    }, */
   });
 
   return (
     <div
       ref={ref}
-      className={
-        "col-md-4 col-lg-3 col-sm-6 col-6 mt-3" +
-        (focused ? " focusedElement" : "")
-      }
+      className="col-md-4 col-lg-3 col-sm-6 col-6 mt-3"
       style={{ paddingTop: "10px", borderRadius: "10px", position: "relative" }}
     >
-      <NavLink
-        to={`/games-detail/${props.game.oplay_id}`}
-        className="text-decoration-none text-initial"
-      >
+      <NavLink to={`/games-detail/${props.game.oplay_id}`} className="text-decoration-none text-initial">
         <LazyLoadImage
           alt={props.game.title}
           loading="lazy"
-          src={
-            props.game.text_background_image ?? "/img/placeholder_265x352.svg"
-          } // use normal <img> attributes as props
-          className="rounded w-100"
-          style={{ objectFit: "cover", objectPosition: "top" }}
-          placeholder={
-            <img
-              alt={props.game.title}
-              src="/img/placeholder_265x352.svg"
-              className="img-fluid rounded w-100"
-            />
-          }
+          src={props.game.text_background_image ?? "/img/placeholder_265x352.svg"} // use normal <img> attributes as props
+          className={"rounded w-100 game-poster" + (focused ? " focusedElement" : "")}
+          
+          placeholder={<img alt={props.game.title} src="/img/placeholder_265x352.svg" className="img-fluid rounded w-100 game-poster" />}
         />
-        {props.game.is_free === "true" &&
-        props.game.status !== "coming_soon" ? (
+        {props.game.is_free === "true" && props.game.status !== "coming_soon" ? (
           <span className="freeTag px-x free tagText">FREE</span>
         ) : null}
-        {props.game.status === "coming_soon" ? (
-          <span className="redGradient free px-2 tagText">COMING SOON</span>
-        ) : null}
+        {props.game.status === "coming_soon" ? <span className="redGradient free px-2 tagText">COMING SOON</span> : null}
         {props.game.status === "maintenance" ? (
           <div className="text-center" style={{ height: 0 }}>
-            <span className="orangeGradientBg px-2 bottomTag tagText">
-              MAINTENANCE
-            </span>
+            <span className="orangeGradientBg px-2 bottomTag tagText">MAINTENANCE</span>
           </div>
         ) : null}
         {props.game.status === "updating" ? (
           <div className="text-center" style={{ height: 0 }}>
-            <span className="updatingGradient px-2 bottomTag tagText">
-              UPDATING
-            </span>
+            <span className="updatingGradient px-2 bottomTag tagText">UPDATING</span>
           </div>
         ) : null}
         {props.game.status === "not_optimized" ? (
           <div className="text-center" style={{ height: 0 }}>
-            <span className="darkredGradient px-2 bottomTag tagText">
-              NOT OPTIMIZED
-            </span>
+            <span className="darkredGradient px-2 bottomTag tagText">NOT OPTIMIZED</span>
           </div>
         ) : null}
-        <h5 className="mt-3 mb-1 text-white">{props.game.title}</h5>
-        <p className="textOffWhite">{props.game.genre_mappings.join(", ")}</p>
+        <h5 className="mb-1 text-white single-line-text GamesTitle">{props.game.title}</h5>
+        <p className="textOffWhite single-line-text">{props.game.genre_mappings.join(", ")}</p>
       </NavLink>
     </div>
   );
@@ -442,9 +433,17 @@ const FocusableFilterButton = (props: any) => {
     focusKey: props.focusKeyParam,
     onFocus: () => {
       scrollToElement(ref.current, 300);
+      props.setCurrentFocusContext(props.focusKeyParam);
     },
     onEnterPress: () => {
       props.onClick(props.text, props.focusKeyParam, props.body);
+    },
+    onArrowPress: (direction, keyProps, detils) => {
+      if (direction === "left" && getCoords(ref.current).left < 100) {
+        setFocus("sidebar-search");
+        return false;
+      }
+      return true;
     },
   });
   return (
@@ -462,18 +461,10 @@ const FocusableFilterButton = (props: any) => {
       <a
         href="#"
         className={
-          "card bgColorMuted mutedColor border-0 text-decoration-none" +
-          (props.focusKeyParam === props.currentFilterID ? " activeBG" : "")
+          "card bgColorMuted mutedColor border-0 text-decoration-none" + (props.focusKeyParam === props.currentFilterID ? " activeBG" : "")
         }
       >
-        <div
-          className={
-            "bgColorMuted customPaddign mutedColor" +
-            (props.focusKeyParam === props.currentFilterID
-              ? " activeBGColor"
-              : "")
-          }
-        >
+        <div className={"bgColorMuted customPaddign mutedColor" + (props.focusKeyParam === props.currentFilterID ? " activeBGColor" : "")}>
           {props.text}
         </div>
       </a>
