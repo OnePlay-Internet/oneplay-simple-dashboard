@@ -42,7 +42,7 @@ export default function Settings({ focusKey: focusKeyParam }: FocusabelComponent
   return (
     <FocusContext.Provider value={focusKeyParam}>
       <div className="row mainContainer">
-        <div className="col-md-2">
+        <div className="col-md-3">
           <h1 className="mainHeading">Settings</h1>
           <div className="settingsNavigation mt-4">
             <FocusableParagraph focusKeyParam="go-to-general" onClick={GeneralClick} currentSelection={currentSelection}>
@@ -98,7 +98,7 @@ export default function Settings({ focusKey: focusKeyParam }: FocusabelComponent
             </FocusableParagraph>
           </div>
         </div>
-        <div className="col-md-10 borderLeft">{renderSelection()}</div>
+        <div className="col-md-9 borderLeft">{renderSelection()}</div>
       </div>
     </FocusContext.Provider>
   );

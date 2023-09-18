@@ -3,7 +3,7 @@ import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import "../../assets/css/sidebar.css";
 import brandLogo from "../../assets/images/oneplayLogo.svg";
 import defaultUser from "../../assets/images/user/defaultUser.svg";
-import { logout } from "src/common/services";
+import { GameStatusDTO, getAnyActiveSessionStatus, logout } from "src/common/services";
 
 import { SESSION_TOKEN_LOCAL_STORAGE } from "src/common/constants";
 import { CurrentFocusContext, SessionContext, UserProfileContext } from "src/App";
@@ -15,12 +15,22 @@ import { ReactComponent as IconHome } from "../../assets/images/icon-home.svg";
 import { ReactComponent as IconController } from "../../assets/images/icon-controller.svg";
 import { ReactComponent as IconSettings } from "../../assets/images/icon-settings.svg";
 import { ReactComponent as IconLogout } from "../../assets/images/icon-logout.svg";
+import { ReactComponent as IconGameStatusOff } from "../../assets/images/icon-game-status-off.svg";
+import { ReactComponent as IconGameStatusLive } from "../../assets/images/icon-game-status-live.svg";
 export default function AuthLayout({ focusKey: focusKeyParam }: FocusabelComponentProps) {
   const navigate = useNavigate();
   const sessionContext = useContext(SessionContext);
   const userContext = useContext(UserProfileContext);
   const currentFocusContext = useContext(CurrentFocusContext);
   const [hasFocus, setHasFocus] = useState(false);
+  const [activeGameSessionStatus, setActiveGameSessionStatus] = useState<GameStatusDTO>({
+    is_user_connected: false,
+    is_running: false,
+    game_id: null,
+    game_name: null,
+    session_id: null,
+    success: false,
+  });
   const [popUp, setPopUp] = useState<ErrorPopupPorps>({
     show: false,
     message: "",
@@ -47,9 +57,9 @@ export default function AuthLayout({ focusKey: focusKeyParam }: FocusabelCompone
         } else if (focusDetails.pos.top <= 192) {
           setFocus("sidebar-allGames");
         } else if (focusDetails.pos.top <= 240) {
-          setFocus("sidebar-settings");
+          setFocus("sidebar-game-status");
         } else {
-          setFocus("sidebar-logout");
+          setFocus("sidebar-settings");
         }
       }
     },
@@ -83,17 +93,50 @@ export default function AuthLayout({ focusKey: focusKeyParam }: FocusabelCompone
   };
 
   const hidePopup = () => {
-    const returnFocusTo = popUp.returnFocusTo;
-    setPopUp({
-      show: false,
-      message: "",
-      title: "",
-      returnFocusTo: "",
-      buttons: [],
-      focusKeyParam: "modal-popup",
-      icon: "",
+    setPopUp((prev) => {
+      setFocus(prev.returnFocusTo);
+      return {
+        show: false,
+        message: "",
+        title: "",
+        returnFocusTo: "",
+        buttons: [],
+        focusKeyParam: "modal-popup",
+        icon: "",
+      };
     });
-    setFocus(returnFocusTo);
+  };
+
+  useEffect(() => {
+    const getActiveSessionStatus = async () => {
+      const [userId, sessionId] = atob(sessionContext.sessionToken).split(":");
+      if (userId && sessionId) {
+        const activeSessionStatusResp = await getAnyActiveSessionStatus(userId, sessionId);
+        /* if (!activeSessionStatusResp.success) {
+          
+        } */
+        setActiveGameSessionStatus(activeSessionStatusResp);
+      }
+    };
+    const gameStatusCheckInterval = setInterval(getActiveSessionStatus, 5 * 1000);
+    return () => {
+      clearInterval(gameStatusCheckInterval);
+    };
+  }, [sessionContext.sessionToken]);
+  const onGameStatusClicked = () => {
+    if (activeGameSessionStatus.success && activeGameSessionStatus.game_id) {
+      navigate(`/games-detail/${activeGameSessionStatus.game_id}`);
+    } else {
+      setPopUp({
+        show: true,
+        message: "No game is runnig.",
+        title: "",
+        returnFocusTo: "Sidebar",
+        buttons: [{ text: "Ok", className: "btn gradientBtn btn-lg border-0", focusKey: "btn-ok-popup", onClick: hidePopup }],
+        focusKeyParam: "modal-popup-confirm-exit",
+        icon: "success",
+      });
+    }
   };
   return (
     <>
@@ -110,7 +153,7 @@ export default function AuthLayout({ focusKey: focusKeyParam }: FocusabelCompone
                   width: hasFocus ? "50%" : "120px",
                 }}
               >
-                <p style={{ textAlign: "left", marginBottom: "32px" }}>
+                <p style={{ textAlign: "left" }}>
                   <a href="#">
                     <img
                       className="rounded-circle sidebar-icon"
@@ -122,7 +165,6 @@ export default function AuthLayout({ focusKey: focusKeyParam }: FocusabelCompone
                           : defaultUser
                       }
                       alt={userContext.userProfile ? userContext.userProfile.first_name : ""}
-                      style={{ marginLeft: "-0.5rem", height: "52px" }}
                     />
                     {hasFocus ? (
                       <span className="sidebar-text username-text">
@@ -181,6 +223,22 @@ export default function AuthLayout({ focusKey: focusKeyParam }: FocusabelCompone
 
                 <p>
                   <FocusableLink
+                    focusKeyParam="sidebar-game-status"
+                    onClick={onGameStatusClicked}
+                    to="/"
+                    setCurrentFocusContext={currentFocusContext.setFocusKey}
+                  >
+                    {activeGameSessionStatus.success && activeGameSessionStatus.game_id ? (
+                      <IconGameStatusLive className="sidebar-icon" />
+                    ) : (
+                      <IconGameStatusOff className="sidebar-icon" />
+                    )}
+
+                    {hasFocus ? <span className="sidebar-text">Status</span> : ""}
+                  </FocusableLink>
+                </p>
+                <p>
+                  <FocusableLink
                     focusKeyParam="sidebar-settings"
                     to="/settings"
                     setCurrentFocusContext={currentFocusContext.setFocusKey}
@@ -193,18 +251,18 @@ export default function AuthLayout({ focusKey: focusKeyParam }: FocusabelCompone
                     {hasFocus ? <span className="sidebar-text">Settings</span> : ""}
                   </FocusableLink>
                 </p>
-                <p>
+                {/*    <p>
                   <FocusableLink
                     focusKeyParam="sidebar-logout"
                     onClick={btnLogoutClick}
                     to="/"
                     setCurrentFocusContext={currentFocusContext.setFocusKey}
                   >
-                    {/* <img src={iconLogout} alt="logout-icon" className="sidebar-icon" /> */}
+                 
                     <IconLogout className="sidebar-icon" />
                     {hasFocus ? <span className="sidebar-text">Logout</span> : ""}
                   </FocusableLink>
-                </p>
+                </p> */}
               </div>
             </div>
             {popUp.show && <ErrorPopUp {...popUp} />}
@@ -253,8 +311,13 @@ const FocusableLink = (props: any) => {
       }
     },
     onArrowPress: (direction, keyProps, details) => {
-      if (direction === "right" || (props.focusKeyParam === "sidebar-logout" && direction === "down")) {
-        console.log("sidebar pathname : ", pathname);
+      if (
+        direction === "right" ||
+        direction === "left" ||
+        (props.focusKeyParam === "sidebar-settings" && direction === "down") ||
+        (props.focusKeyParam === "sidebar-home" && direction === "up")
+      ) {
+        console.log("inside on sidebar arrow : ", pathname);
         switch (pathname) {
           case "/home":
             setFocus("Home", { pos: getScrolledCoords(ref.current) });

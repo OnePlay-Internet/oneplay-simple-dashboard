@@ -73,7 +73,7 @@ export default function SearchGames({ focusKey: focusKeyParam }: FocusabelCompon
     debouncedSearchRequest(value);
   };
 
-  const renderSingleGame = (game: any) => {
+  const renderSingleGame = (game: any, isLastColumn: boolean, isLastRow: boolean) => {
     return (
       <FocusableGameWrapper
         game={game}
@@ -82,6 +82,8 @@ export default function SearchGames({ focusKey: focusKeyParam }: FocusabelCompon
         goToDetail={() => {
           navigate(`/games-detail/${game.oplay_id}`);
         }}
+        allowRightArrow={!isLastColumn}
+        allowDownArrow={!isLastRow}
       />
     );
   };
@@ -251,7 +253,15 @@ export default function SearchGames({ focusKey: focusKeyParam }: FocusabelCompon
           <p className="heading">{searchQuery ? `Search Result` : "All Games"}</p>
 
           <InfiniteScroll pageStart={0} hasMore={haveMoreGames} loadMore={loadNextGames}>
-            <div className="row">{searchResult?.map((game) => renderSingleGame(game))}</div>
+            <div className="row">
+              {searchResult?.map((game, index, games) =>
+                renderSingleGame(
+                  game,
+                  (index + 1) % 4 === 0 || index + 1 === games.length,
+                  index >= games.length - (games.length % 4 ? games.length % 4 : 4)
+                )
+              )}
+            </div>
           </InfiniteScroll>
           {searchQuery && !searchResult?.length ? <p className="GamesTitle mb-0 mt-3">No game found for "{searchQuery}"</p> : null}
         </div>
@@ -276,16 +286,20 @@ const FocusableInput = (props: any) => {
       ref.current.blur();
     }, */
     onArrowPress: (direction, keyProps, detils) => {
-      if (direction === "down") {
-        setFocus("search_suggetion_1");
-        return false;
+      switch (direction) {
+        case "down":
+          ref.current.blur();
+          setFocus("search_suggetion_1");
+          return false;
+        case "left":
+        case "up":
+          ref.current.blur();
+          setFocus("Sidebar", getScrolledCoords(ref.current));
+          return false;
+        default:
+          ref.current.blur();
+          return true;
       }
-      if (direction === "left") {
-        setFocus("Sidebar", getScrolledCoords(ref.current));
-        return false;
-      }
-      ref.current.blur();
-      return true;
     },
   });
 
@@ -355,13 +369,17 @@ const FocusableGameWrapper = (props: any) => {
         block: "center",
       });
     },
-    /* onArrowPress: (direction, keyProps, detils) => {
-      if (direction === "left" && getCoords(ref.current).left < 100) {
+    onArrowPress: (direction, keyProps, detils) => {
+      /* if (direction === "left" && getCoords(ref.current).left < 100) {
         setFocus("search");
+        return false;
+      } else */ if (!props.allowRightArrow && direction === "right") {
+        return false;
+      } else if (!props.allowDownArrow && direction === "down") {
         return false;
       }
       return true;
-    }, */
+    },
   });
 
   return (
@@ -372,11 +390,15 @@ const FocusableGameWrapper = (props: any) => {
           loading="lazy"
           src={props.game.text_background_image ?? "/img/placeholder_336x189.svg"} // use normal <img> attributes as props
           className={"img-fluid rounded game-poster" + (focused ? " focusedElement" : "")}
+          width={336}
+          height={189}
           placeholder={
             <img
               alt={props.game.title}
               src="/img/placeholder_336x189.svg"
               className={"img-fluid rounded game-poster" + (focused ? " focusedElement" : "")}
+              width={336}
+              height={189}
             />
           }
         />

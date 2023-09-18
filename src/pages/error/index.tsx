@@ -49,7 +49,7 @@ export default function ErrorPopUp({ focusKeyParam, title, icon, message, button
         <div className="modal-dialog modal-dialog-centered">
           <div className="modal-content" style={{ backgroundColor: "#212123" }}>
             <div className="modal-body text-center p-5">
-              <img src={getIcon()} className="img-fluid" alt="" />
+              <img src={getIcon()} className="img-fluid" alt="" height="72" width="72" />
               <p className="font500 text-white mt-4" style={{ fontSize: "20px" }}>
                 {title}
               </p>

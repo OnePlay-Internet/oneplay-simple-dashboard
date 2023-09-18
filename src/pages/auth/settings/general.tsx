@@ -11,14 +11,14 @@ import { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import { CurrentFocusContext, SessionContext, UserProfileContext } from "src/App";
 import { FocusContext, useFocusable } from "@noriginmedia/norigin-spatial-navigation";
-import { getProfile, logout, setUserSearchPrivacy } from "src/common/services";
+import { deleteAllSessionData, getProfile, logout, setUserSearchPrivacy } from "src/common/services";
 import { SESSION_TOKEN_LOCAL_STORAGE } from "src/common/constants";
 import { useNavigate } from "react-router-dom";
 import ErrorPopUp from "src/pages/error";
-import FAQS from "./faqs";
-import Privacy from './privacy';
-import TermsAndCondition from './termsAndCondition';
-import Support from './support';
+import FAQs from "./faqs";
+import Privacy from "./privacy";
+import TermsAndCondition from "./termsAndCondition";
+import Support from "./support";
 
 export default function General({ focusKey: focusKeyParam }: FocusabelComponentProps) {
   const { focusSelf, focusKey, setFocus } = useFocusable({
@@ -29,7 +29,7 @@ export default function General({ focusKey: focusKeyParam }: FocusabelComponentP
   const currentFocusContext = useContext(CurrentFocusContext);
   const sessionContext = useContext(SessionContext);
   const userContext = useContext(UserProfileContext);
-  const [webViewData, setWebViewData] = useState<{ data: string; show: boolean }>({ data: "", show: false });
+  const [displayPopup, setDisplayPopup] = useState<"FAQ" | "PrivacyPolicy" | "Support" | "TNC" | null>(null);
   const navigate = useNavigate();
   const [popUp, setPopUp] = useState<ErrorPopupPorps>({
     show: false,
@@ -64,43 +64,14 @@ export default function General({ focusKey: focusKeyParam }: FocusabelComponentP
       setFocus("card-faq");
     }
   };
-  const setIframeContent = async (url: string) => {
-    try {
-      let html = (await axios.get(url)).data as string;
-      html = html
-        .replace(/src=".\//g, 'src="https://oneplay.in/')
-        .replace(/href=".\//g, 'href="https://oneplay.in/')
-        .replace(/src="assets\//g, 'src="https://oneplay.in/assets/')
-        .replace(
-          "</body>",
-          "<script type='text/javascript'>document.addEventListener('keydown', function (e) { console.log('iframe : ' + e.keyCode); if (e.keyCode === 10009) { var RemoteReturnClickEvent = new CustomEvent('RemoteReturnClicked'); window.parent.dispatchEvent(RemoteReturnClickEvent) } });</script></body>"
-        );
-      setWebViewData({ data: html, show: true });
-    } catch (error: any) {
-      setPopUp({
-        show: true,
-        message: error?.message ?? "Something went wrong",
-        title: "Error!",
-        returnFocusTo: "card-faq",
-        buttons: [{ text: "Ok", className: "btn gradientBtn btn-lg border-0", focusKey: "btn-ok-popup", onClick: hidePopup }],
-        focusKeyParam: "modal-popup",
-        icon: "error",
-      });
-    }
-  };
-  useEffect(() => {
-    if (webViewData.show) {
-      var s = document.getElementById("general-iframe");
-      //@ts-ignore
-      s?.contentDocument.write(webViewData.data);
-      s?.focus();
-    }
-  }, [webViewData]);
   useEffect(() => {
     const onRemoteReturnClicked = (event: any) => {
       console.log("remote return clicked");
-      if (webViewData.show) {
+      /* if (webViewData.show) {
         setWebViewData({ data: "", show: false });
+      } else */
+      if (displayPopup) {
+        hideOption();
       } else if (popUp.show) {
         hidePopup();
       } else {
@@ -117,14 +88,7 @@ export default function General({ focusKey: focusKeyParam }: FocusabelComponentP
   };
   const doLogout = async () => {
     const logoutResp = await logout(sessionContext.sessionToken);
-    console.log("logout resp : ", logoutResp);
     if (!logoutResp.success) {
-      /* Swal.fire({
-        title: "Error!",
-        text: logoutResp.message,
-        icon: "error",
-        confirmButtonText: "OK",
-      }); */
       setPopUp({
         show: true,
         message: logoutResp.message ?? "",
@@ -145,7 +109,7 @@ export default function General({ focusKey: focusKeyParam }: FocusabelComponentP
   const logoutClick = () => {
     setPopUp({
       show: true,
-      message: "Are you sure, you want to logout?",
+      message: "Do you want to logout?",
       title: "Logout",
       returnFocusTo: "card-logout",
       buttons: [
@@ -172,6 +136,15 @@ export default function General({ focusKey: focusKeyParam }: FocusabelComponentP
         });
       } else {
         userContext.setUserProfile(profileResp.profile);
+        setPopUp({
+          show: true,
+          message: `Successfully turned ${profileResp.profile?.search_privacy ? "on" : "off"} search privacy.`,
+          title: "Success",
+          returnFocusTo: "card-faq",
+          buttons: [{ text: "Ok", className: "btn gradientBtn btn-lg border-0", focusKey: "btn-ok-popup", onClick: hidePopup }],
+          focusKeyParam: "modal-popup-confirm-exit",
+          icon: "success",
+        });
       }
     } else {
       setPopUp({
@@ -185,19 +158,77 @@ export default function General({ focusKey: focusKeyParam }: FocusabelComponentP
       });
     }
   };
+  const hideOption = () => {
+    setDisplayPopup((prev) => {
+      switch (prev) {
+        case "FAQ":
+          setFocus("card-faq");
+          break;
+        case "PrivacyPolicy":
+          setFocus("card-privacy");
+          break;
+        case "TNC":
+          setFocus("card-tnc");
+          break;
+        case "Support":
+          setFocus("card-support");
+          break;
+      }
+      return null;
+    });
+  };
+  const showOption = (option: string) => {
+    switch (option) {
+      case "FAQ":
+        return <FAQs close={hideOption} focusKey="FAQs" />;
+      case "PrivacyPolicy":
+        return <Privacy close={hideOption} focusKey="PrivacyPolicy" />;
+      case "TNC":
+        return <TermsAndCondition close={hideOption} focusKey="TNC" />;
+      case "Support":
+        return <Support close={hideOption} focusKey="Support" />;
+    }
+  };
+  const onClearSessionData = () => {
+    setPopUp({
+      show: true,
+      message: "Do you want to delete all your session data?",
+      title: "Are you sure?",
+      returnFocusTo: "card-session-data",
+      buttons: [
+        { text: "No", className: "btn gradientBtn btn-lg border-0", focusKey: "btn-ok-popup", onClick: hidePopup },
+        { text: "Yes", className: "btn grayGradientBtn btn-lg border-0 mt-3", focusKey: "btn-cancel-popup", onClick: clearSessionData },
+      ],
+      focusKeyParam: "modal-popup-confirm-exit",
+      icon: "error",
+    });
+  };
+  const clearSessionData = async () => {
+    const [userId, sessionId] = atob(sessionContext.sessionToken).split(":");
+    if (userId && sessionId) {
+      const activeSessionStatusResp = await deleteAllSessionData(userId, sessionId);
+      setPopUp({
+        show: true,
+        message: "Successfully deleted all session data.",
+        title: "Success",
+        returnFocusTo: "card-session-data",
+        buttons: [{ text: "Ok", className: "btn gradientBtn btn-lg border-0", focusKey: "btn-ok-popup", onClick: hidePopup }],
+        focusKeyParam: "modal-popup-confirm-exit",
+        icon: "success",
+      });
+    }
+  };
   return (
     <FocusContext.Provider value={focusKeyParam}>
-      <Support />
-      <TermsAndCondition />
-      <Privacy/>
-      <FAQS />
       <div className="row ps-5">
-        <div className="col-lg-10">
+        <div className="col-lg-11">
           <div className="row">
             <FocusableCard
               focusKeyParam="card-faq"
               setCurrentFocusContext={currentFocusContext.setFocusKey}
-              onClick={() => setIframeContent("https://www.oneplay.in/FAQs.html")}
+              onClick={() => {
+                setDisplayPopup("FAQ");
+              }}
             >
               <div className="row height151">
                 <div className="col">
@@ -210,7 +241,9 @@ export default function General({ focusKey: focusKeyParam }: FocusabelComponentP
             <FocusableCard
               focusKeyParam="card-support"
               setCurrentFocusContext={currentFocusContext.setFocusKey}
-              onClick={() => setIframeContent("https://www.oneplay.in/contact.html")}
+              onClick={() => {
+                setDisplayPopup("Support");
+              }}
             >
               <div className="row height151">
                 <div className="col">
@@ -223,7 +256,12 @@ export default function General({ focusKey: focusKeyParam }: FocusabelComponentP
             <FocusableCard
               focusKeyParam="card-tnc"
               setCurrentFocusContext={currentFocusContext.setFocusKey}
-              onClick={() => setIframeContent("https://www.oneplay.in/tnc.html")}
+              onClick={() => {
+                setDisplayPopup("TNC");
+                setTimeout(() => {
+                  setFocus("TNC");
+                }, 150);
+              }}
             >
               <div className="row height151">
                 <div className="col">
@@ -236,7 +274,9 @@ export default function General({ focusKey: focusKeyParam }: FocusabelComponentP
             <FocusableCard
               focusKeyParam="card-privacy"
               setCurrentFocusContext={currentFocusContext.setFocusKey}
-              onClick={() => setIframeContent("https://www.oneplay.in/privacy.html")}
+              onClick={() => {
+                setDisplayPopup("PrivacyPolicy");
+              }}
             >
               <div className="row height151">
                 <div className="col">
@@ -273,9 +313,7 @@ export default function General({ focusKey: focusKeyParam }: FocusabelComponentP
             <FocusableCard
               focusKeyParam="card-session-data"
               setCurrentFocusContext={currentFocusContext.setFocusKey}
-              onClick={() => {
-                console.log("clear session data");
-              }}
+              onClick={onClearSessionData}
             >
               <div className="row height151">
                 <div className="col">
@@ -306,9 +344,15 @@ export default function General({ focusKey: focusKeyParam }: FocusabelComponentP
           </div>
         </div>
       </div>
-      {webViewData.show && (
+      {/* webViewData.show && (
         <div style={{ position: "absolute", top: 0, right: 0, bottom: 0, left: 0, zIndex: "100000", background: "black" }}>
           <iframe className="general-iframe" id="general-iframe" title="IFRAME"></iframe>
+        </div>
+      ) */}
+
+      {displayPopup && (
+        <div style={{ position: "absolute", top: 0, right: 0, bottom: 0, left: 0, zIndex: "100000", background: "black" }}>
+          {showOption(displayPopup)}
         </div>
       )}
       {popUp.show && <ErrorPopUp {...popUp} />}
@@ -337,7 +381,7 @@ const FocusableCard = (props: any) => {
     },
   });
   return (
-    <div className="col-md-4 mt-4" ref={ref}>
+    <div className="col-md-4 mt-4" ref={ref} onClick={props.onClick}>
       <div className={"card border-0 cardBG" + (focused ? " focusedElement" : "")}>
         <div className="card-body p-4">{props.children}</div>
       </div>

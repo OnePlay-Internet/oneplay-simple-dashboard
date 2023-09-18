@@ -429,7 +429,22 @@ export async function logout(sessionToken: string): Promise<LogoutResponseDTO> {
     }
   }
 }
-
+export async function deleteAllSessionData(userId: string, sessionId: string) {
+  try {
+    const formData = new FormData();
+    formData.append("user_id", userId);
+    formData.append("session_token", sessionId);
+    const deleteAllSessionDataResp = await axios.post(`${API_CLIENT_URL}/services/v2/delete_user_data`, formData);
+    if (deleteAllSessionDataResp.status !== 200) {
+      return handleNon200Response(deleteAllSessionDataResp.data.msg);
+    }
+    return {
+      success: true,
+    };
+  } catch (error: any) {
+    return handleError(error, " delete session data");
+  }
+}
 export async function getAnyActiveSessionStatus(
   userId: string,
   sessionId: string

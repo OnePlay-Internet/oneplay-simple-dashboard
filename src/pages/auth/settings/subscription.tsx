@@ -32,7 +32,11 @@ export default function SubscriptionComponent({ focusKey: focusKeyParam }: Focus
   });
   useEffect(() => {
     if (subscriptions.length) {
-      setFocus("sub_0");
+      if (subscriptions.at(0).subscription_status === "active") {
+        setFocus(`current-sub-${subscriptions.at(0).id}`);
+      } else {
+        setFocus("sub_0");
+      }
     } else {
       setFocus("go-to-subscription");
     }

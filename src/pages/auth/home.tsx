@@ -114,10 +114,12 @@ export default function Home({ focusKey: focusKeyParam }: FocusabelComponentProp
   };
   const renderRails = () => {
     if (personalizedFeeds) {
-      return personalizedFeeds.filter((feed) => feed.type === "rail").map((feed) => renderSingleRail(feed));
+      return personalizedFeeds
+        .filter((feed) => feed.type === "rail")
+        .map((feed, index, feeds) => renderSingleRail(feed, feeds.length - 1 === index));
     }
   };
-  const renderSingeGameForRail = (game: any, feedId: string, isFirst: boolean, isLast: boolean) => {
+  const renderSingeGameForRail = (game: any, feedId: string, isFirst: boolean, isLast: boolean, isLastFeed: boolean) => {
     return (
       <FocusableRailGameWrapper
         key={`rail_${feedId}_${game.oplay_id}`}
@@ -127,17 +129,18 @@ export default function Home({ focusKey: focusKeyParam }: FocusabelComponentProp
         setCurrentFocusContext={currentFocusContext.setFocusKey}
         isFirst={isFirst}
         isLast={isLast}
+        allowDownArrow={!isLastFeed}
       />
     );
   };
-  const renderSingleRail = (feed: any) => {
+  const renderSingleRail = (feed: any, isLastFeed: boolean) => {
     return (
       <div className="col-12" key={`feed_${feed.feed_id}`}>
         <p className="rail-heading">{feed.title}</p>
 
         <div className="scrolltab">
           {feed.results.map((game: any, index: number) =>
-            renderSingeGameForRail(game, feed.feed_id, index === 0, index === feed.results.length - 1)
+            renderSingeGameForRail(game, feed.feed_id, index === 0, index === feed.results.length - 1, isLastFeed)
           )}
         </div>
       </div>
@@ -150,7 +153,13 @@ export default function Home({ focusKey: focusKeyParam }: FocusabelComponentProp
 
         <div className="scrolltab">
           {wishlistGames.map((game: any, index: number) =>
-            renderSingeGameForRail(game, "feed_wishlist", index === 0, index === wishlistGames.length - 1)
+            renderSingeGameForRail(
+              game,
+              "feed_wishlist",
+              index === 0,
+              index === wishlistGames.length - 1,
+              currentTab === "For You" ? false : true
+            )
           )}
         </div>
       </div>
@@ -335,7 +344,7 @@ export default function Home({ focusKey: focusKeyParam }: FocusabelComponentProp
         <p className="rail-heading">{currentTab}</p>
         <div className="scrolltab">
           {customGames.map((game: any, index: number) =>
-            renderSingeGameForRail(game, `current_tab_${currentTab}`, index === 0, index === customGames.length - 1)
+            renderSingeGameForRail(game, `current_tab_${currentTab}`, index === 0, index === customGames.length - 1, false)
           )}
         </div>
       </div>
@@ -429,6 +438,8 @@ const FocusableRailGameWrapper = (props: any) => {
       } else if (direction === "right" && props.isLast) {
         console.log("last game in rail");
         return false;
+      } else if (!props.allowDownArrow && direction === "down") {
+        return false;
       }
       return true;
     },
@@ -438,7 +449,7 @@ const FocusableRailGameWrapper = (props: any) => {
       ref={ref}
       className="fixedWidth tabOptions"
       style={{
-        padding: "5px",
+        padding: "7px",
         verticalAlign: "top",
         cursor: "pointer",
       }}

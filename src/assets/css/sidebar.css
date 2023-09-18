@@ -1,10 +1,10 @@
 .sidebar a {
   color: #858585;
-  height: 46px;
+  height: 78px;
   display: block;
   font-size: 20px;
   padding-left: 1.2rem;
-  padding-top: 8px;
+  padding-top: 12px;
 }
 
 .sidebar a:focus,
@@ -17,7 +17,6 @@
 
 .sidebar.collapsed a {
   color: #858585;
-  width: 40px;
 }
 
 .sidebar.collapsed a.active {
@@ -48,8 +47,9 @@
 }
 .sidebar-text {
   float: left;
-  margin-left: 12px;
-  line-height: 22px;
+  margin-left: 24px;
+  line-height: 48px;
+  font-size: 24px;
 }
 .focused-sidebar-item {
   background: linear-gradient(270deg, rgba(168, 58, 254, 0) 0%, #6e59fe 100%);
@@ -57,7 +57,6 @@
 }
 
 .sidebar-text.username-text {
-  padding-top: 12px;
   max-width: 300px;
   color: rgb(255, 255, 255);
   white-space: nowrap;

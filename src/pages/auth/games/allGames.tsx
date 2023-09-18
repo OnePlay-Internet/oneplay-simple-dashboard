@@ -9,7 +9,7 @@ import InfiniteScroll from "react-infinite-scroller";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import ErrorPopUp from "src/pages/error";
 import LoaderPopup from "src/pages/loader";
-import { getCoords } from "src/common/utils";
+import { getCoords, getScrolledCoords } from "src/common/utils";
 export default function AllGames({ focusKey: focusKeyParam }: FocusabelComponentProps) {
   const sessionContext = useContext(SessionContext);
   const currentFocusContext = useContext(CurrentFocusContext);
@@ -161,7 +161,7 @@ export default function AllGames({ focusKey: focusKeyParam }: FocusabelComponent
       }, 50);
     }
   };
-  const renderSingleGame = (game: any) => {
+  const renderSingleGame = (game: any, isFirstRow: boolean, isLastColumn: boolean, isLastRow: boolean) => {
     return (
       <FocusableGameWrapper
         game={game}
@@ -171,6 +171,9 @@ export default function AllGames({ focusKey: focusKeyParam }: FocusabelComponent
         goToDetail={() => {
           navigate(`/games-detail/${game.oplay_id}`);
         }}
+        allowUpArrow={!isFirstRow}
+        allowRightArrow={!isLastColumn}
+        allowDownArrow={!isLastRow}
       />
     );
   };
@@ -341,7 +344,16 @@ export default function AllGames({ focusKey: focusKeyParam }: FocusabelComponent
           </div>
           <div className="col-md-9">
             <h3 className="heading">{currentFilterTitle}</h3>
-            <div className="row">{allGames?.map((game) => renderSingleGame(game))}</div>
+            <div className="row">
+              {allGames?.map((game, index, games) =>
+                renderSingleGame(
+                  game,
+                  index < 4,
+                  (index + 1) % 4 === 0 || index + 1 === games.length,
+                  index >= games.length - (games.length % 4 ? games.length % 4 : 4)
+                )
+              )}
+            </div>
           </div>
         </div>
       </InfiniteScroll>
@@ -377,13 +389,20 @@ const FocusableGameWrapper = (props: any) => {
       });
       props.setCurrentFocusContext(props.focusKeyParam);
     },
-    /*   onArrowPress: (direction, keyProps, detils) => {
-      if (direction === "left" && getCoords(ref.current).left < 100) {
+    onArrowPress: (direction, keyProps, detils) => {
+      /* if (direction === "left" && getCoords(ref.current).left < 100) {
         setFocus("sidebar-search");
+        return false;
+      } */
+      if (!props.allowUpArrow && direction === "up") {
+        return false;
+      } else if (!props.allowRightArrow && direction === "right") {
+        return false;
+      } else if (!props.allowDownArrow && direction === "down") {
         return false;
       }
       return true;
-    }, */
+    },
   });
 
   return (
@@ -398,7 +417,6 @@ const FocusableGameWrapper = (props: any) => {
           loading="lazy"
           src={props.game.text_background_image ?? "/img/placeholder_265x352.svg"} // use normal <img> attributes as props
           className={"rounded w-100 game-poster" + (focused ? " focusedElement" : "")}
-          
           placeholder={<img alt={props.game.title} src="/img/placeholder_265x352.svg" className="img-fluid rounded w-100 game-poster" />}
         />
         {props.game.is_free === "true" && props.game.status !== "coming_soon" ? (
@@ -439,16 +457,16 @@ const FocusableFilterButton = (props: any) => {
       props.onClick(props.text, props.focusKeyParam, props.body);
     },
     onArrowPress: (direction, keyProps, detils) => {
-      if (direction === "left" && getCoords(ref.current).left < 100) {
-        setFocus("sidebar-search");
+      if (( direction === "up" && getCoords(ref.current).top < 150 ) || (direction === "left" && getCoords(ref.current).left < 100)) {
+        setFocus("Sidebar", getScrolledCoords(ref.current));
         return false;
-      }
+      } 
       return true;
     },
   });
   return (
     <div
-      className={"col-auto pr-0 mt-2" + (focused ? " focusedElement" : "")}
+      className={"col-auto pr-0 mt-2 filter-btn" + (focused ? " focusedElement" : "")}
       style={{
         borderRadius: "60px",
         paddingRight: "0",

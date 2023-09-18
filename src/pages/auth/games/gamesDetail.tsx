@@ -268,7 +268,13 @@ export default function GamesDetail({ focusKey: focusKeyParam }: FocusabelCompon
 
         <div className="scrolltab">
           {similarGames.map((game: any, index: number) =>
-            renderSingeGameForRail(game, "similar_games", index === 0, index === similarGames.length - 1)
+            renderSingeGameForRail(
+              game,
+              "similar_games",
+              index === 0,
+              index === similarGames.length - 1,
+              genreGames.length === 0 && developerGames.length === 0
+            )
           )}
         </div>
       </div>
@@ -281,7 +287,7 @@ export default function GamesDetail({ focusKey: focusKeyParam }: FocusabelCompon
 
         <div className="scrolltab">
           {developerGames.map((game: any, index: number) =>
-            renderSingeGameForRail(game, "from_developer", index === 0, index === developerGames.length - 1)
+            renderSingeGameForRail(game, "from_developer", index === 0, index === developerGames.length - 1, true)
           )}
         </div>
       </div>
@@ -294,13 +300,13 @@ export default function GamesDetail({ focusKey: focusKeyParam }: FocusabelCompon
 
         <div className="scrolltab">
           {genreGames.map((game: any, index: number) =>
-            renderSingeGameForRail(game, "from_genre", index === 0, index === genreGames.length - 1)
+            renderSingeGameForRail(game, "from_genre", index === 0, index === genreGames.length - 1, developerGames.length === 0)
           )}
         </div>
       </div>
     ) : null;
   };
-  const renderSingeGameForRail = (game: any, feedId: string, isFirst: boolean, isLast: boolean) => {
+  const renderSingeGameForRail = (game: any, feedId: string, isFirst: boolean, isLast: boolean, isLastRow: boolean) => {
     return (
       <FocusableRailGameWrapper
         key={`rail_${feedId}_${game.oplay_id}`}
@@ -309,6 +315,7 @@ export default function GamesDetail({ focusKey: focusKeyParam }: FocusabelCompon
         focusKeyParam={`rail_${feedId}_${game.oplay_id}`}
         isFirst={isFirst}
         isLast={isLast}
+        allowDownArrow={!isLastRow}
       />
     );
   };
@@ -391,6 +398,8 @@ export default function GamesDetail({ focusKey: focusKeyParam }: FocusabelCompon
             focusKeyParam="play-now"
             onClick={doNothing}
             className="btn blackColor borderRadius90 px-lg-4 border-0 text-white GradientBtnPadding position-relative fullWidthBtn font600"
+            allowDownArrow={true}
+            allowRightArrow={false}
           >
             {gameDetails.status === "coming_soon" ? "Coming Soon" : ""}
             {gameDetails.status === "maintenance" ? "Under Maintenance" : ""}
@@ -410,10 +419,17 @@ export default function GamesDetail({ focusKey: focusKeyParam }: FocusabelCompon
                 //setStartGameSession(activeSessionStatus.session_id);
                 onResumeNowClicked();
             }}
+            allowDownArrow={true}
+            allowRightArrow={true}
           >
             {playNowButtonText}
           </FocusableButton>
-          <FocusableButton className="btn btnGradient px-4 m-1" onClick={() => onTerminateGame(activeSessionStatus.session_id ?? null)}>
+          <FocusableButton
+            className="btn btnGradient px-4 m-1"
+            onClick={() => onTerminateGame(activeSessionStatus.session_id ?? null)}
+            allowDownArrow={true}
+            allowRightArrow={false}
+          >
             Terminate
           </FocusableButton>
           ;
@@ -421,13 +437,25 @@ export default function GamesDetail({ focusKey: focusKeyParam }: FocusabelCompon
       );
     } else if (activeSessionStatus.success) {
       return (
-        <FocusableButton className="btn btnGradient px-4 m-1" onClick={startGameRequest} focusKeyParam="play-now">
+        <FocusableButton
+          className="btn btnGradient px-4 m-1"
+          onClick={startGameRequest}
+          focusKeyParam="play-now"
+          allowDownArrow={true}
+          allowRightArrow={false}
+        >
           {playNowButtonText}
         </FocusableButton>
       );
     } else {
       return (
-        <FocusableButton className="btn btnGradient px-4 m-1" focusKeyParam="play-now" onClick={doNothing}>
+        <FocusableButton
+          className="btn btnGradient px-4 m-1"
+          focusKeyParam="play-now"
+          onClick={doNothing}
+          allowDownArrow={true}
+          allowRightArrow={false}
+        >
           Loading...
         </FocusableButton>
       );
@@ -751,7 +779,13 @@ export default function GamesDetail({ focusKey: focusKeyParam }: FocusabelCompon
             <h3 className="text-white">About Game</h3>
             <p className="textOffWhite font500" id="game-details-info">
               {getShortDescription()}
-              <FocusableButton focusKeyParam="btn-read-more" onClick={toogleReadMore} className="read-more-button">
+              <FocusableButton
+                focusKeyParam="btn-read-more"
+                onClick={toogleReadMore}
+                className="read-more-button"
+                allowDownArrow={similarGames.length > 0 || genreGames.length > 0 || developerGames.length > 0}
+                allowRightArrow={gameDetails.stores_mappings.length > 0}
+              >
                 {readMore ? "...Read More" : "Read Less"}
               </FocusableButton>
             </p>
@@ -851,8 +885,15 @@ const FocusableButton = (props: any) => {
       props.onClick();
     },
     onArrowPress: (direction, keyProps, detils) => {
-      console.log(direction);
-      if ((direction === "left" || direction === "up") && getCoords(ref.current).left < 130) {
+      if ((direction === "right" && !props.allowRightArrow) || (direction === "down" && !props.allowDownArrow)) {
+        return false;
+      } else if (props.focusKeyParam === "play-now" && direction === "down") {
+        setFocus("btn-read-more");
+        return false;
+      } else if (
+        (props.focusKeyParam === "play-now" && (direction === "left" || direction === "up")) ||
+        (props.focusKeyParam === "btn-read-more" && direction === "left")
+      ) {
         setFocus("Sidebar", getScrolledCoords(ref.current));
         return false;
       }
@@ -912,8 +953,7 @@ const FocusableRailGameWrapper = (props: any) => {
       if (direction === "left" && props.isFirst) {
         setFocus("Sidebar", { pos: getScrolledCoords(ref.current) });
         return false;
-      } else if (direction === "right" && props.isLast) {
-        console.log("last game in rail");
+      } else if ((direction === "right" && props.isLast) || (direction === "down" && !props.allowDownArrow)) {
         return false;
       }
       return true;

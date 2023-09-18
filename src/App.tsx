@@ -118,7 +118,7 @@ function App() {
       } catch (error) {
         setNetworkStatus(false);
       }
-    }, 6 * 1000);
+    }, 10 * 1000);
     return () => {
       clearInterval(onlineStatusCheckInterval);
     };

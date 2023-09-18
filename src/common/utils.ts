@@ -60,12 +60,12 @@ export function railScrollTo(el: any) {
 
   // check if right side of the element is not in view
   if (elRight > elParentRight + el.parentNode.scrollLeft) {
-    el.parentNode.scrollLeft = elRight - elParentRight + 10;
+    el.parentNode.scrollLeft = elRight - elParentRight + 8;
   }
 
   // check if left side of the element is not in view
   else if (elLeft < elParentLeft + el.parentNode.scrollLeft) {
-    el.parentNode.scrollLeft = elLeft - elParentLeft - 10;
+    el.parentNode.scrollLeft = elLeft - elParentLeft - 8;
   }
 }
 
