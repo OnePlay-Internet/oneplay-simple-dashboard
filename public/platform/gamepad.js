@@ -38,17 +38,21 @@ const Controller = (function () {
             this.pressedStartTime.set(i, Date.now());
             if (i === CONTROLLER_A_BUTTON) {
               if (settingsMode) {
+                console.log("settings item clicked");
                 $("#btn-settings-" + settingsCurrentIndex).click();
               } else if (keyboardMode) {
                 console.log("fire keyboard click");
                 $("#btn-keyboard-" + keyboardCurrentIndex).click();
               } else if (document.getElementById("quitAppDialog").open) {
                 if (quitAppDialogCurrentIndex === "cancelQuitApp") {
+                  console.log("click cancel quit");
                   $("#cancelQuitApp").click();
                 } else if (quitAppDialogCurrentIndex === "continueQuitApp") {
+                  console.log("click continue quit");
                   $("#continueQuitApp").click();
                 }
               } else if (document.getElementById("streamTerminatedDialog").open) {
+                console.log("click streamTerminatedDialogBtn");
                 $("#streamTerminatedDialogBtn").click();
               }
             } else if (i === CONTROLLER_B_BUTTON) {
