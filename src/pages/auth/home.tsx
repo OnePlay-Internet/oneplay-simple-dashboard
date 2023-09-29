@@ -12,6 +12,7 @@ import { getCoords, getScrolledCoords, railScrollTo, scrollToElement, scrollToTo
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import { StatusPopupContext } from "src/layouts/auth";
 export default function Home({ focusKey: focusKeyParam }: FocusabelComponentProps) {
   const [personalizedFeeds, setPersonalizedFeeds] = useState<any[]>([]);
   const [customGames, setCustomGames] = useState<any[]>([]);
@@ -19,8 +20,10 @@ export default function Home({ focusKey: focusKeyParam }: FocusabelComponentProp
   const [wishlistGames, setWishlistGames] = useState<any[]>([]);
   const sessionContext = useContext(SessionContext);
   const currentFocusContext = useContext(CurrentFocusContext);
+  const statusPopupContext = useContext(StatusPopupContext);
   const navigate = useNavigate();
   const [currentTab, setCurrentTab] = useState("For You");
+
   const [popUp, setPopUp] = useState<ErrorPopupPorps>({
     show: false,
     message: "",
@@ -219,6 +222,8 @@ export default function Home({ focusKey: focusKeyParam }: FocusabelComponentProp
   }, [sessionContext.sessionToken]);
   useEffect(() => {
     const onRemoteReturnClicked = (event: any) => {
+      console.log("home on remote return clicked ");
+      if (statusPopupContext) return;
       if (popUp.show) {
         hidePopup();
       } else {
@@ -254,7 +259,7 @@ export default function Home({ focusKey: focusKeyParam }: FocusabelComponentProp
     return () => {
       window.removeEventListener("RemoteReturnClicked", onRemoteReturnClicked);
     };
-  }, [popUp, hidePopup]);
+  }, [popUp, hidePopup, statusPopupContext]);
   useEffect(() => {
     if (sessionContext.sessionToken) {
       (async () => {

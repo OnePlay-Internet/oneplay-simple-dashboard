@@ -13,6 +13,7 @@ const Controller = (function () {
   const CONTROLLER_START_BUTTON = 9; // for shaks = 11 - for xbox = 9
   const CONTROLLER_X_BUTTON = 2; // -for shaks = 3 - for fox xbox = 2
   const CONTROLLER_A_BUTTON = 0;
+  const CONTROLLER_B_BUTTON = 1;
   const JOYSTICK_LEFT_RIGHT = 0;
   const JOYSTICK_UP_DOWN = 1;
   class Gamepad {
@@ -33,9 +34,9 @@ const Controller = (function () {
 
           if (newButtons[i].pressed) {
             if (i === CONTROLLER_A_BUTTON) {
-              window.dispatchEvent(
-                new KeyboardEvent("keydown", { keyCode: "13" })
-              );
+              window.dispatchEvent(new KeyboardEvent("keydown", { keyCode: "13" }));
+            } else if (i === CONTROLLER_B_BUTTON) {
+              document.dispatchEvent(new KeyboardEvent("keydown", { keyCode: "10009" }));
             }
           }
           window.dispatchEvent(
@@ -58,29 +59,21 @@ const Controller = (function () {
             if (axis.toFixed(2) == 1.0) {
               //console.log("down : 40");
               //down 40
-              window.dispatchEvent(
-                new KeyboardEvent("keydown", { keyCode: "40" })
-              );
+              window.dispatchEvent(new KeyboardEvent("keydown", { keyCode: "40" }));
             } else if (axis.toFixed(2) == -1.0) {
               //console.log("up : 38");
               //up 38
-              window.dispatchEvent(
-                new KeyboardEvent("keydown", { keyCode: "38" })
-              );
+              window.dispatchEvent(new KeyboardEvent("keydown", { keyCode: "38" }));
             }
           } else if (i === JOYSTICK_LEFT_RIGHT) {
             if (axis.toFixed(2) == 1.0) {
               //console.log("right : 39 ");
               //rigth 39
-              window.dispatchEvent(
-                new KeyboardEvent("keydown", { keyCode: "39" })
-              );
+              window.dispatchEvent(new KeyboardEvent("keydown", { keyCode: "39" }));
             } else if (axis.toFixed(2) == -1.0) {
               // console.log("left : 37");
               //left 37
-              window.dispatchEvent(
-                new KeyboardEvent("keydown", { keyCode: "37" })
-              );
+              window.dispatchEvent(new KeyboardEvent("keydown", { keyCode: "37" }));
             }
           }
         }

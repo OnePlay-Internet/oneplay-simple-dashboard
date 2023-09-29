@@ -18,6 +18,7 @@ import {
 import InfiniteScroll from "react-infinite-scroller";
 import LoaderPopup from "src/pages/loader";
 import ErrorPopUp from "src/pages/error";
+import { StatusPopupContext } from "src/layouts/auth";
 export default function SearchGames({ focusKey: focusKeyParam }: FocusabelComponentProps) {
   const navigate = useNavigate();
   const sessionContext = useContext(SessionContext);
@@ -26,6 +27,7 @@ export default function SearchGames({ focusKey: focusKeyParam }: FocusabelCompon
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
   const [haveMoreGames, setHaveMoreGames] = useState(true);
+  const statusPopupContext = useContext(StatusPopupContext);
   const [popUp, setPopUp] = useState<ErrorPopupPorps>({
     show: false,
     message: "",
@@ -181,6 +183,7 @@ export default function SearchGames({ focusKey: focusKeyParam }: FocusabelCompon
   };
   useEffect(() => {
     const onRemoteReturnClicked = (event: any) => {
+      if (statusPopupContext) return;
       if (popUp.show) {
         hidePopup();
       } else {
@@ -191,7 +194,7 @@ export default function SearchGames({ focusKey: focusKeyParam }: FocusabelCompon
     return () => {
       window.removeEventListener("RemoteReturnClicked", onRemoteReturnClicked);
     };
-  }, [popUp, hidePopup]);
+  }, [popUp, hidePopup, statusPopupContext]);
   return (
     <FocusContext.Provider value={focusKey}>
       <div className="row mainContainer">

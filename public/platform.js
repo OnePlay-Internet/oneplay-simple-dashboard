@@ -125,9 +125,9 @@ function platformOnLoad(handler) {
     KEY_PAUSE: 19,
     KEY_PLAYPAUSE: 10252,
     KEY_STOP: 413,
-    // KEY_VOLUME_UP: 447,
-    // KEY_VOLUME_DOWN: 448,
-    // KEY_VOLUME_MUTE: 449,
+    KEY_VOLUME_UP: 447,
+    KEY_VOLUME_DOWN: 448,
+    KEY_VOLUME_MUTE: 449,
     KEY_CHANNEL_UP: 427,
     KEY_CHANNEL_DOWN: 428,
     KEY_CHANNEL_LIST: 10073,
@@ -167,30 +167,20 @@ function initHeartBeatData() {
     user_id: urlParams.get("user_id").toString(),
     token: urlParams.get("client_token").toString(),
     device: {
-      vendor:
-        "SAMSUNG_" +
-        tizen.systeminfo.getCapability("http://tizen.org/system/model_name"),
-      os: tizen.systeminfo.getCapability(
-        "http://tizen.org/feature/platform.version"
-      ),
+      vendor: "SAMSUNG_" + tizen.systeminfo.getCapability("http://tizen.org/system/model_name"),
+      os: tizen.systeminfo.getCapability("http://tizen.org/feature/platform.version"),
       client_version: "",
-      client_type: tizen.systeminfo.getCapability(
-        "http://tizen.org/system/platform.name"
-      ),
+      client_type: tizen.systeminfo.getCapability("http://tizen.org/system/platform.name"),
     },
     game_id: urlParams.get("game_id").toString(),
     vm_ip: urlParams.get("server_ip").toString(),
     last_input_received_at: 0,
     ram: {
       total: parseInt(tizen.systeminfo.getTotalMemory() / (1024 * 1024)),
-      available: parseInt(
-        tizen.systeminfo.getAvailableMemory() / (1024 * 1024)
-      ),
+      available: parseInt(tizen.systeminfo.getAvailableMemory() / (1024 * 1024)),
     },
     cpu: {
-      vendor: tizen.systeminfo.getCapability(
-        "http://tizen.org/system/platform.processor"
-      ),
+      vendor: tizen.systeminfo.getCapability("http://tizen.org/system/platform.processor"),
       usage: cpuLoad,
     },
     network: {
@@ -221,16 +211,9 @@ tizen.systeminfo.addPropertyValueChangeListener("CPU", onCPULoadChange);
 function callHeartBeatAPI() {
   sendMessage("streamStats", []).then(
     function (vidStats) {
-      console.info(
-        "%c[platform.js, streamStats]",
-        "color: green;",
-        "streamStats:",
-        vidStats
-      );
+      console.info("%c[platform.js, streamStats]", "color: green;", "streamStats:", vidStats);
       heartBeatData.cpu.usage = cpuLoad;
-      heartBeatData.ram.available = parseInt(
-        tizen.systeminfo.getAvailableMemory() / (1024 * 1024)
-      );
+      heartBeatData.ram.available = parseInt(tizen.systeminfo.getAvailableMemory() / (1024 * 1024));
 
       //heartBeatData.last_input_received_at =   parseInt(vidStats.last_input_received_at)
       heartBeatData.stats.decoder = vidStats.decoder;
@@ -242,27 +225,17 @@ function callHeartBeatAPI() {
       heartBeatData.stats.variance = parseInt(vidStats.variance);
       heartBeatData.stats.decode_time = parseInt(vidStats.decode_time);
       //console.log("heart beat data :", heartBeatData);
-      const statString = ` VM: ${urlParams.get("server_ip")}<br /> OS: ${
-        heartBeatData.device.os
-      }<br /> Network: ${
+      const statString = ` VM: ${urlParams.get("server_ip")}<br /> OS: ${heartBeatData.device.os}<br /> Network: ${
         heartBeatData.network.connection_type
-      }<br /> Bit Rate: ${heartBeatData.network.bitrate}<br /> Resolution: ${
-        heartBeatData.stats.resolution
-      }<br /> Last Input: ${
+      }<br /> Bit Rate: ${heartBeatData.network.bitrate}<br /> Resolution: ${heartBeatData.stats.resolution}<br /> Last Input: ${
         heartBeatData.last_input_received_at
-      }<br /> Total FPS: ${
-        heartBeatData.stats.total_fps
-      }<br /> CPU Load: ${cpuLoad} %<br /> RAM(available/total):${
+      }<br /> Total FPS: ${heartBeatData.stats.total_fps}<br /> CPU Load: ${cpuLoad} %<br /> RAM(available/total):${
         heartBeatData.ram.available
-      }/${heartBeatData.ram.total} MB<br /> Decoder: ${
-        vidStats.decoder
-      }<br /> Received FPS: ${
+      }/${heartBeatData.ram.total} MB<br /> Decoder: ${vidStats.decoder}<br /> Received FPS: ${
         heartBeatData.stats.received_fps
-      }<br /> Rendered FPS: ${vidStats.rendered_fps}<br /> Net Drops: ${
-        vidStats.net_drops
-      }<br /> Net Latency : ${vidStats.net_latency}<br /> Variance: ${
-        vidStats.variance
-      }<br /> Decode Time: ${vidStats.decode_time}`;
+      }<br /> Rendered FPS: ${vidStats.rendered_fps}<br /> Net Drops: ${vidStats.net_drops}<br /> Net Latency : ${
+        vidStats.net_latency
+      }<br /> Variance: ${vidStats.variance}<br /> Decode Time: ${vidStats.decode_time}`;
       $("#heart_beat_stats").html(statString);
       $.ajax({
         // url: "https://client-apis.oneream.com/client/v2/heart_beat",
@@ -277,12 +250,7 @@ function callHeartBeatAPI() {
       });
     },
     function (faildStats) {
-      console.error(
-        "%c[platform.js, streamStats]",
-        "color: green;",
-        "Failed to get streamStats: \n",
-        faildStats
-      );
+      console.error("%c[platform.js, streamStats]", "color: green;", "Failed to get streamStats: \n", faildStats);
     }
   );
 }
@@ -375,19 +343,18 @@ function toggleMouse() {
       console.log("Toogle mouse result : ", ret);
       mouseMode = !mouseMode;
       if (mouseMode) {
-        $("#controller-mode").display("none");
-        $("#mouse-mode").display("inline-block");
+        $("#controller-mode").css({ display: "none" });
+        $("#mouse-mode").css({ display: "inline-block" });
         snackbarLogLong("The controller is switched to mouse mode.");
       } else {
-        $("#controller-mode").display("inline-block");
-        $("#mouse-mode").display("none");
+        $("#controller-mode").css({ display: "inline-block" });
+        $("#mouse-mode").css({ display: "none" });
         snackbarLogLong("The controller is switched to normal mode.");
       }
       //snackbarLog("Toogle mouse result : ", ret);
     },
     function (error) {
       console.log("Toogle mouse failed : " + error);
-
       //snackbarLog("Toogle mouse failed : " + error);
     }
   );
@@ -405,6 +372,7 @@ function toggleControllerShortcuts() {
   controllerShortcutMode = !controllerShortcutMode;
 }
 function gamepadBPressed() {
+  console.log();
   if (settingsMode) {
     toogleSettings();
   }

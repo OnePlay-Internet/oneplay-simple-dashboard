@@ -10,6 +10,7 @@ import {
 } from "@noriginmedia/norigin-spatial-navigation";
 import LoaderPopup from "src/pages/loader";
 import ErrorPopUp from "src/pages/error";
+import { StatusPopupContext } from "src/layouts/auth";
 
 export default function Profile({ focusKey: focusKeyParam }: FocusabelComponentProps) {
   const navigate = useNavigate();
@@ -19,6 +20,7 @@ export default function Profile({ focusKey: focusKeyParam }: FocusabelComponentP
   const [username, setUsername] = useState("");
   const [fullName, setFullName] = useState("");
   const [bio, setBio] = useState("");
+  const statusPopupContext = useContext(StatusPopupContext);
   const [popUp, setPopUp] = useState<ErrorPopupPorps>({
     show: false,
     message: "",
@@ -79,6 +81,7 @@ export default function Profile({ focusKey: focusKeyParam }: FocusabelComponentP
   };
   useEffect(() => {
     const onRemoteReturnClicked = (event: any) => {
+      if (statusPopupContext) return;
       if (popUp.show) {
         hidePopup();
       } else {
@@ -89,7 +92,7 @@ export default function Profile({ focusKey: focusKeyParam }: FocusabelComponentP
     return () => {
       window.removeEventListener("RemoteReturnClicked", onRemoteReturnClicked);
     };
-  }, [popUp, hidePopup]);
+  }, [popUp, hidePopup, statusPopupContext]);
   const updateUserProfile = async () => {
     if (!username.length || !fullName.length) {
       /* Swal.fire({

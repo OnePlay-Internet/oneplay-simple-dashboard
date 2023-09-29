@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import "../../assets/css/sidebar.css";
 import brandLogo from "../../assets/images/oneplayLogo.svg";
@@ -17,6 +17,9 @@ import { ReactComponent as IconSettings } from "../../assets/images/icon-setting
 import { ReactComponent as IconLogout } from "../../assets/images/icon-logout.svg";
 import { ReactComponent as IconGameStatusOff } from "../../assets/images/icon-game-status-off.svg";
 import { ReactComponent as IconGameStatusLive } from "../../assets/images/icon-game-status-live.svg";
+
+export const StatusPopupContext = createContext<boolean>(false);
+
 export default function AuthLayout({ focusKey: focusKeyParam }: FocusabelComponentProps) {
   const navigate = useNavigate();
   const sessionContext = useContext(SessionContext);
@@ -64,16 +67,11 @@ export default function AuthLayout({ focusKey: focusKeyParam }: FocusabelCompone
       }
     },
   });
-  const btnLogoutClick = async () => {
+  /* const btnLogoutClick = async () => {
     const logoutResp = await logout(sessionContext.sessionToken);
     console.log("logout resp : ", logoutResp);
     if (!logoutResp.success) {
-      /* Swal.fire({
-        title: "Error!",
-        text: logoutResp.message,
-        icon: "error",
-        confirmButtonText: "OK",
-      }); */
+    
       setPopUp({
         show: true,
         message: logoutResp.message ?? "",
@@ -90,7 +88,7 @@ export default function AuthLayout({ focusKey: focusKeyParam }: FocusabelCompone
     userContext.setUserProfile(null);
     sessionContext.setSessionToken(null);
     navigate("/");
-  };
+  }; */
 
   const hidePopup = () => {
     setPopUp((prev) => {
@@ -129,7 +127,7 @@ export default function AuthLayout({ focusKey: focusKeyParam }: FocusabelCompone
     } else {
       setPopUp({
         show: true,
-        message: "No game is runnig.",
+        message: "No game is running.",
         title: "",
         returnFocusTo: "Sidebar",
         buttons: [{ text: "Ok", className: "btn gradientBtn btn-lg border-0", focusKey: "btn-ok-popup", onClick: hidePopup }],
@@ -138,6 +136,20 @@ export default function AuthLayout({ focusKey: focusKeyParam }: FocusabelCompone
       });
     }
   };
+  useEffect(() => {
+    const onRemoteReturnClicked = (event: any) => {
+      console.log("auth index check if status popup is visible : ", popUp.show);
+      if (popUp.show) {
+        event.stopPropagation();
+        hidePopup();
+      }
+    };
+    window.addEventListener("RemoteReturnClicked", onRemoteReturnClicked);
+    return () => {
+      window.removeEventListener("RemoteReturnClicked", onRemoteReturnClicked);
+    };
+  }, [popUp, hidePopup]);
+
   return (
     <>
       <div className="container-fluid p-0">
@@ -271,7 +283,9 @@ export default function AuthLayout({ focusKey: focusKeyParam }: FocusabelCompone
             <div className="text-end px-3 pt-3 fixed-top" style={{ backgroundColor: "#151617" }}>
               <img src={brandLogo} className="img-fluid" alt="" />
             </div>
-            <Outlet />
+            <StatusPopupContext.Provider value={popUp.show}>
+              <Outlet />
+            </StatusPopupContext.Provider>
           </div>
         </div>
       </div>

@@ -7,15 +7,15 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { SessionContext } from "src/App";
 import { SESSION_TOKEN_LOCAL_STORAGE } from "src/common/constants";
 import { getUsersSessions, sessionLogout } from "src/common/services";
-
-
 import { scrollToElement, scrollToTop, timeAgo } from "src/common/utils";
+import { StatusPopupContext } from "src/layouts/auth";
 import ErrorPopUp from "src/pages/error";
 
 export default function DeviceHistory({ focusKey: focusKeyParam }: FocusabelComponentProps) {
   const navigate = useNavigate();
   const sessionContext = useContext(SessionContext);
   const [sessions, setSessions] = useState<any[]>([]);
+  const statusPopupContext = useContext(StatusPopupContext);
   const [popUp, setPopUp] = useState<ErrorPopupPorps>({
     show: false,
     message: "",
@@ -149,6 +149,7 @@ export default function DeviceHistory({ focusKey: focusKeyParam }: FocusabelComp
   };
   useEffect(() => {
     const onRemoteReturnClicked = (event: any) => {
+      if (statusPopupContext) return;
       if (popUp.show) {
         hidePopup();
       } else {
@@ -159,7 +160,7 @@ export default function DeviceHistory({ focusKey: focusKeyParam }: FocusabelComp
     return () => {
       window.removeEventListener("RemoteReturnClicked", onRemoteReturnClicked);
     };
-  }, [popUp, hidePopup]);
+  }, [popUp, hidePopup, statusPopupContext]);
   return (
     <FocusContext.Provider value={focusKeyParam}>
       <div className="row ps-4">

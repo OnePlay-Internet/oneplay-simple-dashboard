@@ -42,9 +42,16 @@ const Controller = (function () {
               } else if (keyboardMode) {
                 console.log("fire keyboard click");
                 $("#btn-keyboard-" + keyboardCurrentIndex).click();
+              } else if (document.getElementById("quitAppDialog").open) {
+                if (quitAppDialogCurrentIndex === "cancelQuitApp") {
+                  $("#cancelQuitApp").click();
+                } else if (quitAppDialogCurrentIndex === "continueQuitApp") {
+                  $("#continueQuitApp").click();
+                }
+              } else if (document.getElementById("streamTerminatedDialog").open) {
+                $("#streamTerminatedDialogBtn").click();
               }
-            }
-            if (i === CONTROLLER_B_BUTTON) {
+            } else if (i === CONTROLLER_B_BUTTON) {
               gamepadBPressed();
             }
           } else {
@@ -52,6 +59,8 @@ const Controller = (function () {
           }
           if (newButtons[CONTROLLER_SELECT_BUTTON].pressed && newButtons[CONTROLLER_X_BUTTON].pressed) {
             toogleSettings();
+          } else if (newButtons[CONTROLLER_SELECT_BUTTON].pressed && newButtons[CONTROLLER_A_BUTTON].pressed) {
+            toogleKeyboardOverlay();
           }
 
           window.dispatchEvent(
@@ -66,7 +75,7 @@ const Controller = (function () {
           const pressedStartTime = this.pressedStartTime.get(i);
           if (pressedStartTime >= 0 && Date.now() - pressedStartTime >= 2000) {
             this.pressedStartTime.set(i, -1);
-            // console.log(i, " pressed for 3 seconds ");
+            //wwconsole.log(i, " pressed for 3 seconds ");
             if (i === CONTROLLER_START_BUTTON) {
               toggleMouse();
             }
@@ -84,12 +93,16 @@ const Controller = (function () {
 
               if (keyboardMode) {
                 keyboardFocusDownLine();
+              } else if (document.getElementById("quitAppDialog").open) {
+                cahngeQuitAppButtonFocus();
               }
             } else if (axis.toFixed(2) == -1.0) {
               //up 38
 
               if (keyboardMode) {
                 keyboardFocusUpLine();
+              } else if (document.getElementById("quitAppDialog").open) {
+                cahngeQuitAppButtonFocus();
               }
             }
           } else if (i === JOYSTICK_LEFT_RIGHT) {
@@ -100,6 +113,8 @@ const Controller = (function () {
                 settingsFocusNext();
               } else if (keyboardMode) {
                 keyboardFocusNext();
+              } else if (document.getElementById("quitAppDialog").open) {
+                cahngeQuitAppButtonFocus();
               }
             } else if (axis.toFixed(2) == -1.0) {
               // left 37
@@ -108,6 +123,8 @@ const Controller = (function () {
                 settingsFocusPrevious();
               } else if (keyboardMode) {
                 keyboardFocusPrevious();
+              } else if (document.getElementById("quitAppDialog").open) {
+                cahngeQuitAppButtonFocus();
               }
             }
           }
@@ -136,11 +153,7 @@ const Controller = (function () {
   }
 
   function pollGamepads() {
-    const gamepads = navigator.getGamepads
-      ? navigator.getGamepads()
-      : navigator.webkitGetGamepads
-      ? navigator.webkitGetGamepads
-      : [];
+    const gamepads = navigator.getGamepads ? navigator.getGamepads() : navigator.webkitGetGamepads ? navigator.webkitGetGamepads : [];
     for (const gamepad of gamepads) {
       if (gamepad) {
         analyzeGamepad(gamepad);
@@ -152,11 +165,7 @@ const Controller = (function () {
     if (!pollingInterval) {
       window.addEventListener("gamepadconnected", function (e) {
         gamepadConnected(e.gamepad);
-        console.log(
-          "%c[gamepad.js, gamepadconnected] gamepad connected: " +
-            JSON.stringify(e.gamepad),
-          e.gamepad
-        );
+        console.log("%c[gamepad.js, gamepadconnected] gamepad connected: " + JSON.stringify(e.gamepad), e.gamepad);
       });
       window.addEventListener("gamepaddisconnected", function (e) {
         gamepadDisconnected(e.gamepad);

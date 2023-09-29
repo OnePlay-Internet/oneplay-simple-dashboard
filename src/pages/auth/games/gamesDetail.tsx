@@ -20,6 +20,7 @@ import { getCoords, getScrolledCoords, railScrollTo, scrollToElement, scrollToTo
 import ErrorPopUp from "src/pages/error";
 import LoaderPopup from "src/pages/loader";
 import GameLoading from "./loading";
+import { StatusPopupContext } from "src/layouts/auth";
 
 export default function GamesDetail({ focusKey: focusKeyParam }: FocusabelComponentProps) {
   const sessionContext = useContext(SessionContext);
@@ -57,6 +58,7 @@ export default function GamesDetail({ focusKey: focusKeyParam }: FocusabelCompon
   const queueRunning = useRef<boolean>(false);
   const queueTimeout = useRef<NodeJS.Timer | null>(null);
   const [readMore, setReadMore] = useState<boolean>(true);
+  const statusPopupContext = useContext(StatusPopupContext);
   const [popUp, setPopUp] = useState<ErrorPopupPorps>({
     show: false,
     message: "",
@@ -366,6 +368,7 @@ export default function GamesDetail({ focusKey: focusKeyParam }: FocusabelCompon
 
     return (
       <FocusableStore
+        focusKeyParam={`store-${index}`}
         key={store.name}
         store={store}
         isSelected={isSelected}
@@ -682,6 +685,10 @@ export default function GamesDetail({ focusKey: focusKeyParam }: FocusabelCompon
         setPlayNowButtonText("Play Now");
         startQueueTimeout();
       } else if (startGameResp.data?.api_action === "call_session") {
+        if (queueRunning.current) {
+          stopQueueTimeout();
+          hidePopup();
+        }
         if (startGameResp.data.session?.id) {
           setShowGameLoading(true);
           setStartGameSession(startGameResp.data.session.id);
@@ -739,6 +746,7 @@ export default function GamesDetail({ focusKey: focusKeyParam }: FocusabelCompon
   };
   useEffect(() => {
     const onRemoteReturnClicked = (event: any) => {
+      if (statusPopupContext) return;
       if (popUp.show) {
         hidePopup();
         stopQueueTimeout();
@@ -750,7 +758,7 @@ export default function GamesDetail({ focusKey: focusKeyParam }: FocusabelCompon
     return () => {
       window.removeEventListener("RemoteReturnClicked", onRemoteReturnClicked);
     };
-  }, [popUp, hidePopup]);
+  }, [popUp, hidePopup, statusPopupContext]);
   return gameDetails ? (
     <FocusContext.Provider value={focusKey}>
       <div className="mainContainer">
@@ -896,6 +904,9 @@ const FocusableButton = (props: any) => {
       ) {
         setFocus("Sidebar", getScrolledCoords(ref.current));
         return false;
+      } else if (direction === "right" && props.focusKeyParam === "btn-read-more" && props.allowRightArrow) {
+        setFocus("store-0");
+        return false;
       }
       return true;
     },
@@ -909,6 +920,7 @@ const FocusableButton = (props: any) => {
 
 const FocusableStore = (props: any) => {
   const { ref, focused } = useFocusable({
+    focusKey: props.focusKeyParam,
     focusable: true,
     onFocus: () => {
       // scrollToElement(ref.current, 100);

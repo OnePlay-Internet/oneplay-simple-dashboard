@@ -20,8 +20,8 @@ function attachListeners() {
   $("#framePacingSwitch").on("click", saveFramePacing);
   $("#audioSyncSwitch").on("click", saveAudioSync); */
   //$("#addHostCell").on("click", addHost);
-  $("#backIcon").on("click", showHostsAndSettingsMode);
-  $("#quitCurrentApp").on("click", stopGameWithConfirmation);
+  // $("#backIcon").on("click", showHostsAndSettingsMode);
+  // $("#quitCurrentApp").on("click", stopGameWithConfirmation);
 
   /*   const registerMenu = (elementId, view) => {
     $(`#${elementId}`).on("click", () => {
@@ -124,10 +124,7 @@ function stopPollingHosts() {
 
 function restoreUiAfterNaClLoad() {
   $("#main-navigation").children().not("#quitCurrentApp").show();
-  $("#main-content")
-    .children()
-    .not("#listener, #naclSpinner, #game-grid")
-    .show();
+  $("#main-content").children().not("#listener, #naclSpinner, #game-grid").show();
   $("#naclSpinner").hide();
   $("#loadingSpinner").css("display", "none");
   //Navigation.push(Views.Hosts);
@@ -147,11 +144,8 @@ function restoreUiAfterNaClLoad() {
 
             if (hosts[returneMdnsDiscoveredHost.serverUid] != null) {
               // if we're seeing a host we've already seen before, update it for the current local IP.
-              hosts[returneMdnsDiscoveredHost.serverUid].address =
-                returneMdnsDiscoveredHost.address;
-              hosts[
-                returneMdnsDiscoveredHost.serverUid
-              ].updateExternalAddressIP4();
+              hosts[returneMdnsDiscoveredHost.serverUid].address = returneMdnsDiscoveredHost.address;
+              hosts[returneMdnsDiscoveredHost.serverUid].updateExternalAddressIP4();
             } else {
               // Host must be in the grid before starting background polling
               //addHostToGrid(returneMdnsDiscoveredHost, true);
@@ -254,11 +248,7 @@ function pairTo(nvhttpHost, hostSessionKey, onSuccess, onFailure) {
   if (!pairingCert) {
     console.log("paririgCert is null");
     snackbarLog("ERROR: cert has not been generated yet. Is NaCl initialized?");
-    console.warn(
-      "%c[index.js]",
-      "color: green;",
-      "User wants to pair, and we still have no cert. Problem = very yes."
-    );
+    console.warn("%c[index.js]", "color: green;", "User wants to pair, and we still have no cert. Problem = very yes.");
     onFailure();
     return;
   }
@@ -266,18 +256,8 @@ function pairTo(nvhttpHost, hostSessionKey, onSuccess, onFailure) {
   nvhttpHost.pollServer(function (ret) {
     console.log("inside pollServer : ", nvhttpHost);
     if (!nvhttpHost.online) {
-      snackbarLog(
-        "pollServer Failed to connect to " +
-          nvhttpHost.hostname +
-          "! Ensure that GameStream is enabled in GeForce Experience."
-      );
-      console.error(
-        "%c[index.js]",
-        "color: green;",
-        "Host declared as offline:",
-        nvhttpHost,
-        nvhttpHost.toString()
-      ); //Logging both the object and the toString version for text logs
+      snackbarLog("pollServer Failed to connect to " + nvhttpHost.hostname + "! Ensure that GameStream is enabled in GeForce Experience.");
+      console.error("%c[index.js]", "color: green;", "Host declared as offline:", nvhttpHost, nvhttpHost.toString()); //Logging both the object and the toString version for text logs
       onFailure();
       return;
     }
@@ -324,23 +304,11 @@ function pairTo(nvhttpHost, hostSessionKey, onSuccess, onFailure) {
       function (failedPairing) {
         snackbarLog("Failed pairing to: " + nvhttpHost.hostname);
         if (nvhttpHost.currentGame != 0) {
-          $("#pairingDialogText").html(
-            "Error: " +
-              nvhttpHost.hostname +
-              " is busy.  Stop streaming to pair."
-          );
+          $("#pairingDialogText").html("Error: " + nvhttpHost.hostname + " is busy.  Stop streaming to pair.");
         } else {
-          $("#pairingDialogText").html(
-            "Error: failed to pair with " + nvhttpHost.hostname + "."
-          );
+          $("#pairingDialogText").html("Error: failed to pair with " + nvhttpHost.hostname + ".");
         }
-        console.log(
-          "%c[index.js]",
-          "color: green;",
-          "Failed API object:",
-          nvhttpHost,
-          nvhttpHost.toString()
-        ); //Logging both the object and the toString version for text logs
+        console.log("%c[index.js]", "color: green;", "Failed API object:", nvhttpHost, nvhttpHost.toString()); //Logging both the object and the toString version for text logs
         onFailure();
       }
     );
@@ -377,16 +345,7 @@ function hostChosen(host) {
   }
 }
 
-function connectToOneplayStreaming(
-  serverIp,
-  httpPort,
-  httpsPort,
-  hostSessionKey,
-  rtspPort,
-  controlPort,
-  audioPort,
-  videoPort
-) {
+function connectToOneplayStreaming(serverIp, httpPort, httpsPort, hostSessionKey, rtspPort, controlPort, audioPort, videoPort) {
   console.log("connecting to streaming server : ", serverIp);
   var _nvhttpHost = new NvHTTP(
     serverIp,
@@ -408,8 +367,7 @@ function connectToOneplayStreaming(
       if (hosts[_nvhttpHost.serverUid] != null) {
         // Update the addresses
         hosts[_nvhttpHost.serverUid].address = _nvhttpHost.address;
-        hosts[_nvhttpHost.serverUid].userEnteredAddress =
-          _nvhttpHost.userEnteredAddress;
+        hosts[_nvhttpHost.serverUid].userEnteredAddress = _nvhttpHost.userEnteredAddress;
         // Use the host in the array directly to ensure the PPK propagates after pairing
         pairTo(hosts[_nvhttpHost.serverUid], hostSessionKey, function () {
           saveHosts();
@@ -618,20 +576,10 @@ function sortTitles(list, sortOrder) {
 function showApps(host) {
   if (!host || !host.paired) {
     // safety checking. shouldn't happen.
-    console.log(
-      "%c[index.js, showApps]",
-      "color: green;",
-      "Moved into showApps, but `host` did not initialize properly! Failing."
-    );
+    console.log("%c[index.js, showApps]", "color: green;", "Moved into showApps, but `host` did not initialize properly! Failing.");
     return;
   }
-  console.log(
-    "%c[index.js, showApps]",
-    "color: green;",
-    "Current host object:",
-    host,
-    host.toString()
-  ); //Logging both object (for console) and toString-ed object (for text logs)
+  console.log("%c[index.js, showApps]", "color: green;", "Current host object:", host, host.toString()); //Logging both object (for console) and toString-ed object (for text logs)
   $("#quitCurrentApp").show();
   $("#gameList .game-container").remove();
 
@@ -747,18 +695,11 @@ function showApps(host) {
 
 // set the layout to the initial mode you see when you open moonlight
 function showHostsAndSettingsMode() {
-  console.log(
-    "%c[index.js]",
-    "color: green;",
-    'Entering "Show apps and hosts" mode'
-  );
+  console.log("%c[index.js]", "color: green;", 'Entering "Show apps and hosts" mode');
   $("#main-navigation").show();
   $(".nav-menu-parent").show();
   $("#externalAudioBtn").show();
-  $("#main-content")
-    .children()
-    .not("#listener, #loadingSpinner, #naclSpinner")
-    .show();
+  $("#main-content").children().not("#listener, #loadingSpinner, #naclSpinner").show();
   //$("#game-grid").hide();
   $("#backIcon").hide();
   $("#quitCurrentApp").hide();
@@ -774,10 +715,7 @@ function showAppsMode() {
   console.log("%c[index.js]", "color: green;", 'Entering "Show apps" mode');
   $("#backIcon").show();
   $("#main-navigation").show();
-  $("#main-content")
-    .children()
-    .not("#listener, #loadingSpinner, #naclSpinner")
-    .show();
+  $("#main-content").children().not("#listener, #loadingSpinner, #naclSpinner").show();
   $("#streamSettings").hide();
   $(".nav-menu-parent").hide();
   $("#externalAudioBtn").hide();
@@ -1058,7 +996,7 @@ function fullscreenNaclModule() {
   module.dispatchEvent(new Event("mousedown"));
 }
 
-function stopGameWithConfirmation() {
+/* function stopGameWithConfirmation() {
   if (api.currentGame === 0) {
     snackbarLog("Nothing was running");
   } else {
@@ -1067,23 +1005,23 @@ function stopGameWithConfirmation() {
       document.getElementById("quitAppDialogText").innerHTML =
         " Are you sure you would like to quit " + currentGame.title + "?  Unsaved progress will be lost.";
       quitAppDialog.showModal();
-      Navigation.push(Views.CloseAppDialog);
+      //Navigation.push(Views.CloseAppDialog);
       $("#cancelQuitApp").off("click");
       $("#cancelQuitApp").on("click", function () {
         console.log("%c[index.js, stopGameWithConfirmation]", "color:green;", "Closing app dialog, and returning");
         quitAppDialog.close();
-        Navigation.pop();
+        //Navigation.pop();
       });
       $("#continueQuitApp").off("click");
       $("#continueQuitApp").on("click", function () {
         console.log("%c[index.js, stopGameWithConfirmation]", "color:green;", "Stopping game, and closing app dialog, and returning");
         stopGame(api);
         quitAppDialog.close();
-        Navigation.pop();
+        // Navigation.pop();
       });
     });
   }
-}
+} */
 
 function stopGame(host, callbackFunction) {
   isInGame = false;
@@ -1444,26 +1382,10 @@ function initSamsungKeys() {
   console.log("initializing keys");
 
   var handler = {
-    initRemoteController: true,
-    buttonsToRegister: [
-      // https://developer.samsung.com/tv/develop/guides/user-interaction/keyboardime
-      "ColorF0Red", // F1
-      "ColorF1Green", // F2
-      "ColorF2Yellow", // F3
-      "ColorF3Blue", // F4
-      // Not working...
-      //'SmartHub',      // F5
-      "Source", // F6
-      "ChannelList", // F7
-      //"VolumeMute", // F8
-      //"VolumeDown", // F9
-      //"VolumeUp", // F10
-      "ChannelDown", // F11
-      "ChannelUp", // F12
-    ],
+    initRemoteController: false,
+    buttonsToRegister: [],
     onKeydownListener: remoteControllerHandler,
   };
-
   console.log("Initializing SamsungTV platform");
   platformOnLoad(handler);
 }

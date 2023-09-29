@@ -10,6 +10,7 @@ import { LazyLoadImage } from "react-lazy-load-image-component";
 import ErrorPopUp from "src/pages/error";
 import LoaderPopup from "src/pages/loader";
 import { getCoords, getScrolledCoords } from "src/common/utils";
+import { StatusPopupContext } from "src/layouts/auth";
 export default function AllGames({ focusKey: focusKeyParam }: FocusabelComponentProps) {
   const sessionContext = useContext(SessionContext);
   const currentFocusContext = useContext(CurrentFocusContext);
@@ -18,6 +19,7 @@ export default function AllGames({ focusKey: focusKeyParam }: FocusabelComponent
   const [haveMoreGames, setHaveMoreGames] = useState(true);
   const [showLoading, setShowLoading] = useState(false);
   const navigate = useNavigate();
+  const statusPopupContext = useContext(StatusPopupContext);
   const [popUp, setPopUp] = useState<ErrorPopupPorps>({
     show: false,
     message: "",
@@ -255,6 +257,7 @@ export default function AllGames({ focusKey: focusKeyParam }: FocusabelComponent
   };
   useEffect(() => {
     const onRemoteReturnClicked = (event: any) => {
+      if (statusPopupContext) return;
       if (popUp.show) {
         hidePopup();
       } else {
@@ -265,7 +268,7 @@ export default function AllGames({ focusKey: focusKeyParam }: FocusabelComponent
     return () => {
       window.removeEventListener("RemoteReturnClicked", onRemoteReturnClicked);
     };
-  }, [popUp, hidePopup]);
+  }, [popUp, hidePopup, statusPopupContext]);
   return (
     <FocusContext.Provider value={focusKey}>
       <InfiniteScroll pageStart={0} hasMore={haveMoreGames} loadMore={loadNextGames}>

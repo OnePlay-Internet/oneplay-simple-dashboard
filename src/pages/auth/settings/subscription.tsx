@@ -11,6 +11,7 @@ import {
 } from "@noriginmedia/norigin-spatial-navigation";
 import ErrorPopUp from "src/pages/error";
 import { scrollToElement } from "src/common/utils";
+import { StatusPopupContext } from "src/layouts/auth";
 
 export default function SubscriptionComponent({ focusKey: focusKeyParam }: FocusabelComponentProps) {
   const navigate = useNavigate();
@@ -21,6 +22,7 @@ export default function SubscriptionComponent({ focusKey: focusKeyParam }: Focus
     trackChildren: true,
     focusKey: focusKeyParam,
   });
+  const statusPopupContext = useContext(StatusPopupContext);
   const [popUp, setPopUp] = useState<ErrorPopupPorps>({
     show: false,
     message: "",
@@ -95,7 +97,7 @@ export default function SubscriptionComponent({ focusKey: focusKeyParam }: Focus
           <p className="mb-1">{subscription.subscriptionPackage.plan_name}</p>
           <p className="mb-0 gamesDescription">{subscription.subscriptionPackage.plan_description}</p>
         </td>
-        <td> ₹ {parseFloat(subscription.brought_price).toFixed(2)}</td>
+        <td> ₹ {parseFloat(subscription.amount).toFixed(2)}</td>
         <td className="gradientText" style={{ textTransform: "capitalize" }}>
           {subscription.subscription_status}
         </td>
@@ -119,6 +121,7 @@ export default function SubscriptionComponent({ focusKey: focusKeyParam }: Focus
   };
   useEffect(() => {
     const onRemoteReturnClicked = (event: any) => {
+      if (statusPopupContext) return;
       if (popUp.show) {
         hidePopup();
       } else {
@@ -129,7 +132,7 @@ export default function SubscriptionComponent({ focusKey: focusKeyParam }: Focus
     return () => {
       window.removeEventListener("RemoteReturnClicked", onRemoteReturnClicked);
     };
-  }, [popUp, hidePopup]);
+  }, [popUp, hidePopup, statusPopupContext]);
   return (
     <FocusContext.Provider value={focusKey}>
       <div className="row">

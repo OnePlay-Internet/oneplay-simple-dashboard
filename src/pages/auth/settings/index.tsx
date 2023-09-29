@@ -3,11 +3,8 @@ import Profile from "./profile";
 import Subscription from "./subscription";
 import DeviceHistory from "./deviceHistory";
 import General from "./general";
-import React, { useContext, useEffect, useState } from "react";
-import {
-  FocusContext,
-  useFocusable,
-} from "@noriginmedia/norigin-spatial-navigation";
+import React, { useEffect, useState } from "react";
+import { FocusContext, useFocusable } from "@noriginmedia/norigin-spatial-navigation";
 import { getScrolledCoords, scrollToTop } from "src/common/utils";
 
 export default function Settings({ focusKey: focusKeyParam }: FocusabelComponentProps) {
@@ -16,6 +13,7 @@ export default function Settings({ focusKey: focusKeyParam }: FocusabelComponent
   const subscriptionClick = () => setCurrentSelection("subscriptions");
   const deviceHistoryClick = () => setCurrentSelection("deviceHistory");
   const GeneralClick = () => setCurrentSelection("general");
+
   const { focusKey, setFocus, focusSelf } = useFocusable({
     focusable: true,
     focusKey: focusKeyParam,

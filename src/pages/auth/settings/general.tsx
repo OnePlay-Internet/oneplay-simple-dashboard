@@ -19,6 +19,7 @@ import FAQs from "./faqs";
 import Privacy from "./privacy";
 import TermsAndCondition from "./termsAndCondition";
 import Support from "./support";
+import { StatusPopupContext } from "src/layouts/auth";
 
 export default function General({ focusKey: focusKeyParam }: FocusabelComponentProps) {
   const { focusSelf, focusKey, setFocus } = useFocusable({
@@ -29,6 +30,7 @@ export default function General({ focusKey: focusKeyParam }: FocusabelComponentP
   const currentFocusContext = useContext(CurrentFocusContext);
   const sessionContext = useContext(SessionContext);
   const userContext = useContext(UserProfileContext);
+  const statusPopupContext = useContext(StatusPopupContext);
   const [displayPopup, setDisplayPopup] = useState<"FAQ" | "PrivacyPolicy" | "Support" | "TNC" | null>(null);
   const navigate = useNavigate();
   const [popUp, setPopUp] = useState<ErrorPopupPorps>({
@@ -70,6 +72,7 @@ export default function General({ focusKey: focusKeyParam }: FocusabelComponentP
       /* if (webViewData.show) {
         setWebViewData({ data: "", show: false });
       } else */
+      if (statusPopupContext) return;
       if (displayPopup) {
         hideOption();
       } else if (popUp.show) {
@@ -82,7 +85,7 @@ export default function General({ focusKey: focusKeyParam }: FocusabelComponentP
     return () => {
       window.removeEventListener("RemoteReturnClicked", onRemoteReturnClicked);
     };
-  }, [popUp, hidePopup]);
+  }, [popUp, hidePopup, statusPopupContext]);
   const onPrivacyChanged = (event: any) => {
     console.log("onPrivacyChanged : ", event);
   };
@@ -332,12 +335,9 @@ export default function General({ focusKey: focusKeyParam }: FocusabelComponentP
           </div>
           <div className="row mt-5">
             <div className="col-md-7 mt-5">
-              <div className="row gamesDescription Customborder">
+              <div className="row gamesDescription">
                 <div className="col">
                   Visit <span className="gradientText">www.oneplay.in</span> for more information.
-                </div>
-                <div className="col-auto">
-                  <img src={arrow} className="img-fluid" alt="" />
                 </div>
               </div>
             </div>
