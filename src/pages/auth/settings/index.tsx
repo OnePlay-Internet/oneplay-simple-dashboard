@@ -3,12 +3,31 @@ import Profile from "./profile";
 import Subscription from "./subscription";
 import DeviceHistory from "./deviceHistory";
 import General from "./general";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { FocusContext, useFocusable } from "@noriginmedia/norigin-spatial-navigation";
 import { getScrolledCoords, scrollToTop } from "src/common/utils";
+import { COUNTLY_PARTNER_NAME, COUNTLY_PLATFORM } from "src/common/constants";
+import { endSettingsViewEvent, startSettingsViewEvent } from "src/common/countly.service";
 
 export default function Settings({ focusKey: focusKeyParam }: FocusabelComponentProps) {
   const [currentSelection, setCurrentSelection] = React.useState("general");
+  const settingsEvents = useRef({
+    key: "settingsView",
+    count: 1,
+    segmentation: {
+      turnOffPrivacyEnabled: "no",
+      turnOffPrivacyDisabled: "no",
+      deleteSessionDataClicked: "no",
+      deleteSessionDataConfirmClicked: "no",
+      logOutClicked: "no",
+      logOutConfirmClicked: "no",
+      subscriptionViewed: "no",
+      deviceHistoryViewed: "no",
+      logoutFromAllClicked: "no",
+      channel: COUNTLY_PLATFORM,
+      partner: COUNTLY_PARTNER_NAME,
+    },
+  });
   const profileClick = () => setCurrentSelection("profile");
   const subscriptionClick = () => setCurrentSelection("subscriptions");
   const deviceHistoryClick = () => setCurrentSelection("deviceHistory");
@@ -19,24 +38,70 @@ export default function Settings({ focusKey: focusKeyParam }: FocusabelComponent
     focusKey: focusKeyParam,
   });
   useEffect(() => {
+    startSettingsViewEvent();
+    return () => {
+      endSettingsViewEvent(settingsEvents.current);
+    };
+  }, []);
+  useEffect(() => {
+    switch (currentSelection) {
+      case "subscriptions":
+        settingsEvents.current.segmentation.subscriptionViewed = "yes";
+        break;
+      case "deviceHistory":
+        settingsEvents.current.segmentation.deviceHistoryViewed = "yes";
+        break;
+    }
+  }, [currentSelection]);
+  useEffect(() => {
     setFocus("go-to-general");
   }, [focusSelf]);
   //const [settingsFocus, setSettingsFocus] = useState(0);
+
+  const logCountlyEvent = (action: string) => {
+    console.log("action : ", action);
+    switch (action) {
+      case "logout_click":
+        settingsEvents.current.segmentation.logOutClicked = "yes";
+        break;
+      case "logout_confirm_click":
+        settingsEvents.current.segmentation.logOutConfirmClicked = "yes";
+        break;
+      case "delete_session_data_clicked":
+        settingsEvents.current.segmentation.deleteSessionDataClicked = "yes";
+        break;
+      case "delete_session_data_confirm_clicked":
+        settingsEvents.current.segmentation.deleteSessionDataConfirmClicked = "yes";
+        break;
+      case "turn_on_search_privacy":
+        settingsEvents.current.segmentation.turnOffPrivacyEnabled = "yes";
+        break;
+      case "turn_off_search_privacy":
+        settingsEvents.current.segmentation.turnOffPrivacyDisabled = "yes";
+        break;
+      case "logout_from_all_clicked":
+        settingsEvents.current.segmentation.logoutFromAllClicked = "yes";
+        break;
+      default:
+        break;
+    }
+  };
   const renderSelection = () => {
     switch (currentSelection) {
       case "general":
-        return <General focusKey="General" />;
+        return <General focusKey="General" logCountlyEvent={logCountlyEvent} />;
 
       case "profile":
-        return <Profile focusKey="Profile" />;
+        return <Profile focusKey="Profile" logCountlyEvent={logCountlyEvent} />;
 
       case "subscriptions":
-        return <Subscription focusKey="Subscriptions" />;
+        return <Subscription focusKey="Subscriptions" logCountlyEvent={logCountlyEvent} />;
 
       case "deviceHistory":
-        return <DeviceHistory focusKey="DeviceHistory" />;
+        return <DeviceHistory focusKey="DeviceHistory" logCountlyEvent={logCountlyEvent} />;
     }
   };
+
   return (
     <FocusContext.Provider value={focusKeyParam}>
       <div className="row mainContainer">

@@ -347,7 +347,7 @@ body {
 }
 
 .height50vh {
-  height: 50vh;
+  /* height: 50vh; */
   object-fit: cover;
 }
 
@@ -355,9 +355,11 @@ body {
   max-width: 300px;
   max-height: 160px;
   margin-bottom: 24px;
-
+  
   @media (max-width: 480px) {
-    width: 100%;
+    width: 180px;
+    max-height: 100px;
+    margin-bottom: 14px;
   }
 }
 
@@ -1073,7 +1075,7 @@ body {
 
 
 .slick-slide {
-   width: 40vw;
+   width: 35vw;
   height: auto !important;
 }
 @media only screen and (max-width: 1024px) {
@@ -1094,8 +1096,29 @@ body {
   width: 1056px !important;
  
 }
+.banner {
+  height: 650px;
+}
 }
 
+@media only screen and (min-width: 2500px) {
+.slick-slide {
+  width: 1256px !important;
+ 
+}
+.banner {
+  height: 55vh;
+  
+}
+
+}
+
+@media only screen and (min-width: 3000px) {
+.slick-slide {
+  width: 1400px !important;
+}
+
+} 
 
 .formLoader{
   background-image: url(./assets/images/form-gif.gif);
@@ -1104,4 +1127,144 @@ body {
     width: 240px;
     height: 240px;
     border-radius: 50%;
+}
+
+.fake-select-options{
+  position: absolute;
+    background: rgb(33, 33, 35);
+    z-index: 10;
+    width: 100%;
+    border: 1px solid #dcdcdc;
+}
+
+.fake-select-options ul{
+  list-style: none;
+  margin-left: 0;
+  margin-bottom: 0;
+  padding-left: 0;
+}
+.fake-select-options ul li{
+  text-align: left;
+  line-height: 32px;
+  padding-left: 6px;
+}
+.fake-select-options ul li.is-selected{
+  background-color: #5f44f2;
+  color: white;
+}
+
+.inputBorder{
+  border: 2px solid #3E4246;
+    border-radius: 10px;
+    background-color: transparent;
+    height: 52px;
+}
+.font18{
+  font-size: 18px!important;
+    line-height: 24px;
+}
+.offWhiteText{
+  color: #dcdcdc;
+}
+.fullWidth{
+  width: 100%;
+}
+
+.rangeSlidecontainer {
+    align-items: center;
+  width: 100%;
+  padding: 0px 10px;
+  
+}
+.rangeSlider{
+  /* removing default appearance */
+  -webkit-appearance: none;
+  appearance: none; 
+  /* creating a custom design */
+  width: 100%;
+  cursor: pointer;
+  outline: none;
+  /*  slider progress trick  */
+  overflow: hidden;
+  border-radius: 16px;
+}
+
+.rangeSlider::-webkit-slider-thumb {
+  /* removing default appearance */
+  -webkit-appearance: none;
+  appearance: none; 
+  /* creating a custom design */
+  height: 18px;
+  width: 18px;
+  background-color: #fff;
+  border-radius: 50%;
+  border: 4px solid #6e59fe ;
+  /*  slider progress trick  */
+  box-shadow: -407px 0 0 400px #6e59fe ;
+}
+
+.rangeSlider::-webkit-slider-runnable-track {
+   height: 18px;
+  background: #111;
+  border-radius: 16px;
+  box-shadow: inset 0 0 5px #000;
+}
+.rangeSlider.focusedSliderThumb::-webkit-slider-thumb {
+  border: 3px solid #fff;
+  background-color: #ff0cf5;
+  
+}
+.warningWrapper{
+  background-color: #e31c34;
+  color: white;
+  border-radius: 10px;
+}
+
+select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background: transparent;
+  background-image: url("data:image/svg+xml;utf8,<svg fill='white' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>");
+  background-repeat: no-repeat;
+  background-position-x: 98%;
+  background-position-y: 10px;
+  border: 1px solid #dfdfdf;
+  
+  padding: 0 10px;
+}
+
+.custom-input-checkbox
+{
+  position: absolute;
+    left: 0;
+    z-index: -1;
+    width: 1.25rem;
+    height: 1.375rem;
+    opacity: 0;
+}
+.custom-input-checkbox-label > span {
+  padding-left: 10px;
+}
+.focusedCheckbox::before{
+  box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 1);
+}
+
+.custom-input-checkbox-label::before,.custom-input-checkbox-label::after
+{
+   position: absolute;
+    top: 0.125rem;
+    left: 5px;
+ width: 1.25rem;
+    height: 1.25rem;
+    background-color: #363636;
+    content: "";
+    border-radius: 0.25rem;
+    border: 1px solid white;
+    background: no-repeat 50%/50% 50%;
+
+}
+.custom-input-checkbox:checked ~ .custom-input-checkbox-label::after
+{
+  background-image: url(https://www.oneplay.in/dashboard/Tick.b25cf3537733bfb1.svg)!important;
+  background-color: white;
 }

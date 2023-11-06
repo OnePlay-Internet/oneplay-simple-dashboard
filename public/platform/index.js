@@ -104,7 +104,7 @@ function onBoundsChanged() {
 }
 
 function changeUiModeForNaClLoad() {
-  $("#main-navigation").children().hide();
+  //$("#main-navigation").children().hide();
   $("#main-content").children().not("#listener, #naclSpinner").hide();
   $("#naclSpinnerMessage").text("Loading game...");
   $("#naclSpinner").css("display", "inline-block");
@@ -123,7 +123,7 @@ function stopPollingHosts() {
 } */
 
 function restoreUiAfterNaClLoad() {
-  $("#main-navigation").children().not("#quitCurrentApp").show();
+  //  $("#main-navigation").children().not("#quitCurrentApp").show();
   $("#main-content").children().not("#listener, #naclSpinner, #game-grid").show();
   $("#naclSpinner").hide();
   $("#loadingSpinner").css("display", "none");
@@ -696,7 +696,7 @@ function showApps(host) {
 // set the layout to the initial mode you see when you open moonlight
 function showHostsAndSettingsMode() {
   console.log("%c[index.js]", "color: green;", 'Entering "Show apps and hosts" mode');
-  $("#main-navigation").show();
+  //$("#main-navigation").show();
   $(".nav-menu-parent").show();
   $("#externalAudioBtn").show();
   $("#main-content").children().not("#listener, #loadingSpinner, #naclSpinner").show();
@@ -705,8 +705,8 @@ function showHostsAndSettingsMode() {
   $("#quitCurrentApp").hide();
   $("#main-content").removeClass("fullscreen");
   $("#listener").removeClass("fullscreen");
-  Navigation.start();
-  Navigation.pop();
+  // Navigation.start();
+  // Navigation.pop();
 
   //startPollingHosts();
 }
@@ -714,7 +714,7 @@ function showHostsAndSettingsMode() {
 function showAppsMode() {
   console.log("%c[index.js]", "color: green;", 'Entering "Show apps" mode');
   $("#backIcon").show();
-  $("#main-navigation").show();
+  // $("#main-navigation").show();
   $("#main-content").children().not("#listener, #loadingSpinner, #naclSpinner").show();
   $("#streamSettings").hide();
   $(".nav-menu-parent").hide();
@@ -738,7 +738,7 @@ function showAppsMode() {
   // because it slows down box art loading and we don't update the UI live
   // anyway.
   //stopPollingHosts();
-  Navigation.start();
+  // Navigation.start();
 }
 
 // start the given appID.  if another app is running, offer to quit it.
@@ -963,7 +963,7 @@ function playGameMode() {
   console.log("%c[index.js, playGameMode]", "color:green;", "Entering play game mode");
   isInGame = true;
 
-  $("#main-navigation").hide();
+  // $("#main-navigation").hide();
   $("#main-content").children().not("#listener, #loadingSpinner").hide();
   $("#main-content").addClass("fullscreen");
   $("#listener").addClass("fullscreen");
@@ -973,7 +973,7 @@ function playGameMode() {
   }
   fullscreenNaclModule();
   $("#loadingSpinner").css("display", "inline-block");
-  Navigation.stop();
+  //Navigation.stop();
 }
 
 // Maximize the size of the nacl module by scaling and resizing appropriately

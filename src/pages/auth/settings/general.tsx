@@ -12,7 +12,7 @@ import axios from "axios";
 import { CurrentFocusContext, SessionContext, UserProfileContext } from "src/App";
 import { FocusContext, useFocusable } from "@noriginmedia/norigin-spatial-navigation";
 import { deleteAllSessionData, getProfile, logout, setUserSearchPrivacy } from "src/common/services";
-import { SESSION_TOKEN_LOCAL_STORAGE } from "src/common/constants";
+import { SESSION_TOKEN_LOCAL_STORAGE, SHOW_GAME_SETTINGS_CHECKED } from "src/common/constants";
 import { useNavigate } from "react-router-dom";
 import ErrorPopUp from "src/pages/error";
 import FAQs from "./faqs";
@@ -21,7 +21,7 @@ import TermsAndCondition from "./termsAndCondition";
 import Support from "./support";
 import { StatusPopupContext } from "src/layouts/auth";
 
-export default function General({ focusKey: focusKeyParam }: FocusabelComponentProps) {
+export default function General({ focusKey: focusKeyParam, logCountlyEvent }: FocusabelComponentProps) {
   const { focusSelf, focusKey, setFocus } = useFocusable({
     focusable: true,
     trackChildren: true,
@@ -90,6 +90,7 @@ export default function General({ focusKey: focusKeyParam }: FocusabelComponentP
     console.log("onPrivacyChanged : ", event);
   };
   const doLogout = async () => {
+    logCountlyEvent("logout_confirm_click");
     const logoutResp = await logout(sessionContext.sessionToken);
     if (!logoutResp.success) {
       setPopUp({
@@ -105,11 +106,13 @@ export default function General({ focusKey: focusKeyParam }: FocusabelComponentP
     }
 
     localStorage.removeItem(SESSION_TOKEN_LOCAL_STORAGE);
+    localStorage.removeItem(SHOW_GAME_SETTINGS_CHECKED);
     userContext.setUserProfile(null);
     sessionContext.setSessionToken(null);
     navigate("/");
   };
   const logoutClick = () => {
+    logCountlyEvent("logout_click");
     setPopUp({
       show: true,
       message: "Do you want to logout?",
@@ -124,6 +127,7 @@ export default function General({ focusKey: focusKeyParam }: FocusabelComponentP
     });
   };
   const toggleUserSearchPrivacy = async () => {
+    logCountlyEvent(userContext.userProfile.search_privacy ? "turn_off_search_privacy" : "turn_on_search_privacy");
     const resp = await setUserSearchPrivacy(sessionContext.sessionToken, !userContext.userProfile.search_privacy);
     if (resp.success) {
       const profileResp = await getProfile(sessionContext.sessionToken);
@@ -193,6 +197,7 @@ export default function General({ focusKey: focusKeyParam }: FocusabelComponentP
     }
   };
   const onClearSessionData = () => {
+    logCountlyEvent("delete_session_data_clicked");
     setPopUp({
       show: true,
       message: "Do you want to delete all your session data?",
@@ -207,6 +212,7 @@ export default function General({ focusKey: focusKeyParam }: FocusabelComponentP
     });
   };
   const clearSessionData = async () => {
+    logCountlyEvent("delete_session_data_confirm_clicked");
     const [userId, sessionId] = atob(sessionContext.sessionToken).split(":");
     if (userId && sessionId) {
       const activeSessionStatusResp = await deleteAllSessionData(userId, sessionId);

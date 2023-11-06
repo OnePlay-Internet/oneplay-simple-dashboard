@@ -17,6 +17,7 @@ import { ReactComponent as IconSettings } from "../../assets/images/icon-setting
 import { ReactComponent as IconLogout } from "../../assets/images/icon-logout.svg";
 import { ReactComponent as IconGameStatusOff } from "../../assets/images/icon-game-status-off.svg";
 import { ReactComponent as IconGameStatusLive } from "../../assets/images/icon-game-status-live.svg";
+import { addMenuClickedEvent } from "src/common/countly.service";
 
 export const StatusPopupContext = createContext<boolean>(false);
 
@@ -26,6 +27,7 @@ export default function AuthLayout({ focusKey: focusKeyParam }: FocusabelCompone
   const userContext = useContext(UserProfileContext);
   const currentFocusContext = useContext(CurrentFocusContext);
   const [hasFocus, setHasFocus] = useState(false);
+  const { pathname } = useLocation();
   const [activeGameSessionStatus, setActiveGameSessionStatus] = useState<GameStatusDTO>({
     is_user_connected: false,
     is_running: false,
@@ -123,7 +125,21 @@ export default function AuthLayout({ focusKey: focusKeyParam }: FocusabelCompone
   }, [sessionContext.sessionToken]);
   const onGameStatusClicked = () => {
     if (activeGameSessionStatus.success && activeGameSessionStatus.game_id) {
-      navigate(`/games-detail/${activeGameSessionStatus.game_id}`);
+      let source = "homePage";
+      switch (pathname) {
+        case "/all-games":
+          source = "gamesPage";
+          break;
+        case "/search":
+          source = "searchPage";
+          break;
+        case "/settings":
+          source = "settingsPage";
+          break;
+        default:
+          break;
+      }
+      navigate(`/games-detail/${activeGameSessionStatus.game_id}?source=${source}&trigger=gameStatus`);
     } else {
       setPopUp({
         show: true,
@@ -315,6 +331,23 @@ const FocusableLink = (props: any) => {
       props.setCurrentFocusContext(props.focusKeyParam);
     },
     onEnterPress: () => {
+      switch (props.focusKeyParam) {
+        case "sidebar-home":
+          addMenuClickedEvent("home");
+          break;
+        case "sidebar-search":
+          addMenuClickedEvent("search");
+          break;
+        case "sidebar-allGames":
+          addMenuClickedEvent("games");
+          break;
+        case "sidebar-game-status":
+          addMenuClickedEvent("status");
+          break;
+        case "sidebar-settings":
+          addMenuClickedEvent("settings");
+          break;
+      }
       if (props.onClick) {
         props.onClick();
         return;

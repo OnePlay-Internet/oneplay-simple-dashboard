@@ -1,5 +1,5 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { useContext, useEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { SessionContext } from "src/App";
 import {
   GameStatusDTO,
@@ -13,6 +13,7 @@ import {
   customFeedGames,
   getSimilarGames,
   getGameConfig,
+  getTokensUsage,
 } from "../../../common/services";
 import moment from "moment";
 import { FocusContext, useFocusable } from "@noriginmedia/norigin-spatial-navigation";
@@ -21,7 +22,17 @@ import ErrorPopUp from "src/pages/error";
 import LoaderPopup from "src/pages/loader";
 import GameLoading from "./loading";
 import { StatusPopupContext } from "src/layouts/auth";
-
+import {
+  addGameTerminateEvent,
+  endGameLandingViewEvent,
+  endGamePlaySettingsEvent,
+  endGamePlayStartEvent,
+  startGameLandingViewEvent,
+  startGamePlayStartEvent,
+} from "src/common/countly.service";
+import GameSettingsPopup from "./gameSettings";
+import { SHOW_GAME_SETTINGS_CHECKED } from "src/common/constants";
+import { useSearchParams } from "react-router-dom";
 export default function GamesDetail({ focusKey: focusKeyParam }: FocusabelComponentProps) {
   const sessionContext = useContext(SessionContext);
   let { id } = useParams();
@@ -68,6 +79,27 @@ export default function GamesDetail({ focusKey: focusKeyParam }: FocusabelCompon
     focusKeyParam: "modal-popup",
     icon: "",
   });
+  const [showGamesettingsChecked, setShowGamesettingsChecked] = useState(true);
+  const [showGameSettings, setShowGameSettings] = useState<boolean>(false);
+  const gameSettingsValue = useRef({ resolution: "1280x720", vSync: true, fps: 60, bitRate: 10 });
+  const [searchParams] = useSearchParams();
+  useEffect(() => {
+    setShowGamesettingsChecked(localStorage.getItem(SHOW_GAME_SETTINGS_CHECKED) === "true");
+  }, []);
+  useEffect(() => {
+    localStorage.setItem(SHOW_GAME_SETTINGS_CHECKED, String(showGamesettingsChecked));
+  }, [showGamesettingsChecked]);
+  useEffect(() => {
+    if (gameDetails) {
+      startGameLandingViewEvent();
+    }
+    return () => {
+      if (gameDetails) {
+        endGameLandingViewEvent(gameDetails, searchParams.get("source") ?? "gamesPage", searchParams.get("trigger") ?? "card");
+      }
+    };
+  }, [gameDetails]);
+
   useEffect(() => {
     setFocus("play-now");
   }, [activeSessionStatus]);
@@ -378,6 +410,14 @@ export default function GamesDetail({ focusKey: focusKeyParam }: FocusabelCompon
     );
   };
   const onResumeNowClicked = () => {
+    if (showGameSettings) {
+      console.log(gameSettingsValue.current);
+      setShowGameSettings(false);
+      //      return;
+    } else if (showGamesettingsChecked) {
+      setShowGameSettings(true);
+      return;
+    }
     if (activeSessionStatus?.session_id) {
       setshowLoading(true);
       setPlayNowButtonText("Initializing...");
@@ -420,7 +460,8 @@ export default function GamesDetail({ focusKey: focusKeyParam }: FocusabelCompon
             onClick={() => {
               activeSessionStatus?.session_id &&
                 //setStartGameSession(activeSessionStatus.session_id);
-                onResumeNowClicked();
+                startGamePlayStartEvent();
+              onResumeNowClicked();
             }}
             allowDownArrow={true}
             allowRightArrow={true}
@@ -435,20 +476,31 @@ export default function GamesDetail({ focusKey: focusKeyParam }: FocusabelCompon
           >
             Terminate
           </FocusableButton>
-          ;
+          <FocusableCheckbox
+            focusKeyParam="checkbox-show-settings"
+            onChange={setShowGamesettingsChecked}
+            checked={showGamesettingsChecked}
+          />
         </>
       );
     } else if (activeSessionStatus.success) {
       return (
-        <FocusableButton
-          className="btn btnGradient px-4 m-1"
-          onClick={startGameRequest}
-          focusKeyParam="play-now"
-          allowDownArrow={true}
-          allowRightArrow={false}
-        >
-          {playNowButtonText}
-        </FocusableButton>
+        <>
+          <FocusableButton
+            className="btn btnGradient px-4 m-1"
+            onClick={startGameRequest}
+            focusKeyParam="play-now"
+            allowDownArrow={true}
+            allowRightArrow={false}
+          >
+            {playNowButtonText}
+          </FocusableButton>
+          <FocusableCheckbox
+            focusKeyParam="checkbox-show-settings"
+            onChange={setShowGamesettingsChecked}
+            checked={showGamesettingsChecked}
+          />
+        </>
       );
     } else {
       return (
@@ -563,7 +615,23 @@ export default function GamesDetail({ focusKey: focusKeyParam }: FocusabelCompon
     const [userId, sessionToken] = atob(sessionContext.sessionToken)?.split(":");
     if (userId && sessionToken && sessionId) {
       setshowLoading(true);
-      const terminateGameResp = await terminateGame(userId, sessionToken, sessionId);
+      const terminateGameResp: any = await terminateGame(userId, sessionToken, sessionId);
+
+      if (terminateGameResp.data) {
+        console.log('terminate resp : ');
+        console.log(terminateGameResp.data)
+        addGameTerminateEvent({
+          gameSessionId: sessionId,
+          gameId: gameDetails.oplay_id,
+          gameTitle: gameDetails.title,
+          gameGenre: gameDetails.genre_mappings.join(", "),
+          store: selectedStore,
+          terminationType: terminateGameResp.data.termination_type,
+          sessionDuration: terminateGameResp.data.session_duration,
+          playDuration: terminateGameResp.data.play_duration,
+          idleDuration: terminateGameResp.data.idle_duration,
+        });
+      }
       setshowLoading(false);
       if (!terminateGameResp.success) {
         /*  Swal.fire({
@@ -611,10 +679,56 @@ export default function GamesDetail({ focusKey: focusKeyParam }: FocusabelCompon
     setFocus("play-now");
   }, [activeSessionStatus, setFocus]);
 
+  const startQueueTimeout = () => {
+    if (queueRunning.current) {
+      queueTimeout.current = setTimeout(startGameRequest, 3 * 1000);
+    }
+  };
+
   const startGameRequest = async () => {
+    startGamePlayStartEvent();
+    if (showGameSettings) {
+      console.log(gameSettingsValue.current);
+      setShowGameSettings(false);
+    } else if (showGamesettingsChecked) {
+      setShowGameSettings(true);
+      return;
+    }
     if (!id) {
       return;
     }
+    const remainingTokens = await getTokensUsage(sessionContext.sessionToken);
+    if (!remainingTokens.success) {
+      return;
+    }
+    let errorMessage: string = "";
+    if (remainingTokens.data?.total_tokens === 0) {
+      errorMessage = `Looks like your gaming subscription has expired, use OnePlay app or website to buy/renew subscription.`;
+    } else if (remainingTokens.data && remainingTokens.data?.total_tokens > 0 && remainingTokens.data?.remaining_tokens < 10) {
+      errorMessage = `Minimum 10 mins required for gameplay, use OnePlay app or website to renew subscription.`;
+    }
+    //show error message.
+    if (errorMessage) {
+      endGamePlayStartEvent(gameDetails, selectedStore, "", showGamesettingsChecked, "failure");
+      setPopUp({
+        show: true,
+        message: errorMessage,
+        title: "Wait!",
+        returnFocusTo: "play-now",
+        buttons: [
+          {
+            text: "Okay",
+            className: "btn gradientBtn btn-lg border-0",
+            focusKey: "btn-ok-popup",
+            onClick: hidePopup,
+          },
+        ],
+        focusKeyParam: "modal-popup",
+        icon: "recharge",
+      });
+      return;
+    }
+
     const [userId, sessionId] = atob(sessionContext.sessionToken)?.split(":");
     if (gameDetails && userId && sessionId) {
       setClientTokenStartTime(null);
@@ -631,65 +745,71 @@ export default function GamesDetail({ focusKey: focusKeyParam }: FocusabelCompon
       setDebugInfo("");
       setPlayNowButtonText("Initializing...");
       queueRunning.current = true;
-      const startGameResp = await startGame(userId, sessionId, id, "1920x1080", true, 60, 20, sStore);
+      const startGameResp = await startGame(
+        userId,
+        sessionId,
+        id,
+        gameSettingsValue.current.resolution,
+        gameSettingsValue.current.vSync,
+        gameSettingsValue.current.fps,
+        gameSettingsValue.current.bitRate,
+        sStore
+      );
       if (!startGameResp.success) {
-        /*  Swal.fire({
-            title: "Error!",
-            text: startGameResp.message,
-            icon: "error",
-            confirmButtonText: "OK",
-          }); */
         setPlayNowButtonText("Play Now");
         setshowLoading(false);
-        setPopUp({
-          show: true,
-          message: startGameResp.message ?? "",
-          title: "Error!",
-          returnFocusTo: "play-now",
-          buttons: [
-            {
-              text: "Ok",
-              className: "btn gradientBtn btn-lg border-0",
-              focusKey: "btn-ok-popup",
-              onClick: hidePopup,
-            },
-          ],
-          focusKeyParam: "modal-popup",
-          icon: "error",
-        });
-        return;
-      }
-      if (startGameResp.code === 801 && startGameResp.message) {
-        const [queueCount, message1, message2] = startGameResp.message?.split(";");
-        setPopUp({
-          show: true,
-          message: message1 + "<br />" + message2,
-          title: queueCount,
-          returnFocusTo: "play-now",
-          buttons: [
-            {
-              text: "Cancel",
-              className: "btn gradientBtn btn-lg border-0",
-              focusKey: "btn-ok-popup",
-              onClick: () => {
-                stopQueueTimeout();
-                hidePopup();
-                setFocus("play-now");
+        if (startGameResp.code === 801 && startGameResp.message) {
+          endGamePlayStartEvent(gameDetails, selectedStore, "", showGamesettingsChecked, "wait");
+          const [queueCount, message1, message2] = startGameResp.message?.split(";");
+          setPopUp({
+            show: true,
+            message: message1 + "<br />" + message2,
+            title: queueCount,
+            returnFocusTo: "play-now",
+            buttons: [
+              {
+                text: "Cancel",
+                className: "btn gradientBtn btn-lg border-0",
+                focusKey: "btn-ok-popup",
+                onClick: () => {
+                  stopQueueTimeout();
+                  hidePopup();
+                  setFocus("play-now");
+                },
               },
-            },
-          ],
-          focusKeyParam: "modal-popup-game-queue",
-          icon: "queue",
-        });
-        setshowLoading(false);
-        setPlayNowButtonText("Play Now");
-        startQueueTimeout();
+            ],
+            focusKeyParam: "modal-popup-game-queue",
+            icon: "queue",
+          });
+
+          startQueueTimeout();
+        } else {
+          endGamePlayStartEvent(gameDetails, selectedStore, "", showGamesettingsChecked, "failure");
+          setPopUp({
+            show: true,
+            message: startGameResp.message ?? "Something went wront!",
+            title: "Alert!",
+            returnFocusTo: "play-now",
+            buttons: [
+              {
+                text: "Okay",
+                className: "btn gradientBtn btn-lg border-0",
+                focusKey: "btn-ok-popup",
+                onClick: hidePopup,
+              },
+            ],
+            focusKeyParam: "modal-popup",
+            icon: startGameResp.code === 601 ? "time-limit" : "gaming-issue",
+          });
+        }
+        return;
       } else if (startGameResp.data?.api_action === "call_session") {
         if (queueRunning.current) {
           stopQueueTimeout();
           hidePopup();
         }
         if (startGameResp.data.session?.id) {
+          endGamePlayStartEvent(gameDetails, selectedStore, startGameResp.data.session?.id, showGamesettingsChecked, "success");
           setShowGameLoading(true);
           setStartGameSession(startGameResp.data.session.id);
         } else {
@@ -697,23 +817,13 @@ export default function GamesDetail({ focusKey: focusKeyParam }: FocusabelCompon
         }
         setshowLoading(false);
       } else if (startGameResp.data?.api_action === "call_terminate") {
+        endGamePlayStartEvent(gameDetails, selectedStore, "", showGamesettingsChecked, "failure");
         await onTerminateGame(startGameResp.data.session?.id ?? null);
       } else {
         setPlayNowButtonText("Play Now");
         //   this.stopLoading();
         setshowLoading(false);
-        /*   Swal.fire({
-            title: "No server available!",
-            text: "Please try again in sometime, thank you for your patience!",
-            imageUrl: "../img/error/Group.svg",
-            showCancelButton: true,
-            confirmButtonText: "Try Again",
-            cancelButtonText: "Close",
-          }).then((result) => {
-            if (result.isConfirmed) {
-              onPlayNowClicked();
-            }
-          }); */
+        endGamePlayStartEvent(gameDetails, selectedStore, "", showGamesettingsChecked, "failure");
         setPopUp({
           show: true,
           message: "Please try again in sometime, thank you for your patience!",
@@ -726,11 +836,7 @@ export default function GamesDetail({ focusKey: focusKeyParam }: FocusabelCompon
       }
     }
   };
-  const startQueueTimeout = () => {
-    if (queueRunning.current) {
-      queueTimeout.current = setTimeout(startGameRequest, 3 * 1000);
-    }
-  };
+
   const stopQueueTimeout = () => {
     queueRunning.current = false;
     if (queueTimeout.current) {
@@ -747,6 +853,11 @@ export default function GamesDetail({ focusKey: focusKeyParam }: FocusabelCompon
   useEffect(() => {
     const onRemoteReturnClicked = (event: any) => {
       if (statusPopupContext) return;
+      if (showGameSettings) {
+        setShowGameSettings(false);
+        setFocus("play-now");
+        return;
+      }
       if (popUp.show) {
         hidePopup();
         stopQueueTimeout();
@@ -871,6 +982,16 @@ export default function GamesDetail({ focusKey: focusKeyParam }: FocusabelCompon
       {showGameLoading ? (
         <GameLoading bg={gameDetails.background_image} tips={gameTips} progress={gameLoadProgress} message={gameLoadMessage} />
       ) : null}
+      {showGameSettings ? (
+        <GameSettingsPopup
+          focusKey="game-settings-popup"
+          startGameRequest={startGameRequest}
+          gameSettingsValue={gameSettingsValue}
+          sStore={selectedStore}
+          close={() => setShowGameSettings(false)}
+          gameDetails={gameDetails}
+        />
+      ) : null}
     </FocusContext.Provider>
   ) : (
     <LoaderPopup focusKeyParam="Loader" />
@@ -895,9 +1016,11 @@ const FocusableButton = (props: any) => {
     onArrowPress: (direction, keyProps, detils) => {
       if ((direction === "right" && !props.allowRightArrow) || (direction === "down" && !props.allowDownArrow)) {
         return false;
-      } else if (props.focusKeyParam === "play-now" && direction === "down") {
-        setFocus("btn-read-more");
+        /*  } else if (props.focusKeyParam === "play-now" && direction === "down") {
+        setFocus("checkbox-show-settings");
+        //setFocus("btn-read-more");
         return false;
+      } */
       } else if (
         (props.focusKeyParam === "play-now" && (direction === "left" || direction === "up")) ||
         (props.focusKeyParam === "btn-read-more" && direction === "left")
@@ -1011,6 +1134,48 @@ const FocusableRailGameWrapper = (props: any) => {
       ) : null}
       <h5 className="mb-1 text-white single-line-text GamesTitle">{props.game.title}</h5>
       <p className="textOffWhite single-line-text">{props.game.genre_mappings.join(", ")}</p>
+    </div>
+  );
+};
+
+const FocusableCheckbox = (props: any) => {
+  const { ref, focused, setFocus } = useFocusable({
+    focusKey: props.focusKeyParam,
+    focusable: true,
+    onFocus: () => {
+      // scrollToElement(ref.current, 100);
+      scrollToTop();
+    },
+    onEnterPress: () => {
+      props.onChange(!props.checked);
+    },
+    onArrowPress: (direction, keyProps, detils) => {
+      if (direction === "left") {
+        setFocus("Sidebar", getScrolledCoords(ref.current));
+        return false;
+      } else if (direction === "right") {
+        setFocus("store-0");
+        return false;
+      }
+      return true;
+    },
+  });
+  return (
+    <div className="mt-3" style={{ paddingLeft: "1rem", position: "relative" }} ref={ref}>
+      <input
+        type="checkbox"
+        id="checkbox-show-settings"
+        className="custom-input-checkbox"
+        checked={props.checked}
+        onChange={(e) => props.onChange(e.target.checked)}
+      ></input>
+      <label
+        htmlFor="checkbox-show-settings"
+        className={"custom-input-checkbox-label font16 font500 text-white" + (focused ? " focusedCheckbox" : "")}
+        style={{ paddingLeft: "10px" }}
+      >
+        <span className="marginLeftNegative">Show gameplay settings before launch</span>
+      </label>
     </div>
   );
 };

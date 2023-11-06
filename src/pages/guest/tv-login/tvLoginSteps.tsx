@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import brandLogo from "../../../assets/images/oneplayLogo.svg";
 import { getProfile, getQRCode, getQrSession } from "src/common/services";
 import { SessionContext, UserProfileContext } from "src/App";
-import { QR_URL, SESSION_TOKEN_LOCAL_STORAGE } from "src/common/constants";
+import { QR_URL, SESSION_TOKEN_LOCAL_STORAGE, SHOW_GAME_SETTINGS_CHECKED } from "src/common/constants";
 import ErrorPopUp from "src/pages/error";
 import QRCode from "react-qr-code";
 import LoaderPopup from "src/pages/loader";
@@ -61,7 +61,6 @@ export default function TvLogin() {
         focusKeyParam: "modal-popup-confirm-exit",
         icon: "error",
       });
-      
     }
   };
   const getQRSession = async () => {
@@ -100,6 +99,7 @@ export default function TvLogin() {
         userContext.setUserProfile(profileResp.profile);
       }
       localStorage.setItem(SESSION_TOKEN_LOCAL_STORAGE, qrSessionResponse.sessionToken);
+      localStorage.setItem(SHOW_GAME_SETTINGS_CHECKED, "true");
       sessionContext.setSessionToken(qrSessionResponse.sessionToken);
     }
   };

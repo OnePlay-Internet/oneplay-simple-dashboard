@@ -7,12 +7,13 @@ import React, {
 import "./App.css";
 import Routes from "./routes";
 import { getProfile } from "./common/services";
-import { API_BASE_URL, NETWORK_CHECK_URL, SESSION_TOKEN_LOCAL_STORAGE } from "./common/constants";
+import { API_BASE_URL, NETWORK_CHECK_URL, SESSION_TOKEN_LOCAL_STORAGE, SHOW_GAME_SETTINGS_CHECKED } from "./common/constants";
 import { init, setKeyMap, useFocusable } from "@noriginmedia/norigin-spatial-navigation";
 import { useLocation, useNavigate } from "react-router-dom";
 import LoaderPopup from "./pages/loader";
 import { HttpStatusCode } from "axios";
 import ErrorPopUp from "./pages/error";
+import { initCountly, initCountlyUser } from "./common/countly.service";
 export const SessionContext = createContext<{
   sessionToken: string;
   setSessionToken: any;
@@ -86,6 +87,7 @@ function App() {
         if (!profileResp.success) {
           setShowLoading(false);
           localStorage.removeItem(SESSION_TOKEN_LOCAL_STORAGE);
+          localStorage.removeItem(SHOW_GAME_SETTINGS_CHECKED);
         } else {
           setUserProfile(profileResp.profile);
           setSessionToken(savedToken);
@@ -261,7 +263,9 @@ function App() {
       } else {
         navigate("/home");
       }
-    } /* else {
+    }
+
+    /* else {
       console.log("app useEffect sessionToken navigate to /");
       navigate("/");
     } */
@@ -293,6 +297,14 @@ function App() {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
   }, [pathname]);
 
+  useEffect(() => {
+    if (userProfile) {
+      initCountly();
+      initCountlyUser(userProfile);
+    }
+
+    return () => {};
+  }, [userProfile]);
   return (
     <SessionContext.Provider value={sessionContextValue}>
       <UserProfileContext.Provider value={userProfileContextValue}>

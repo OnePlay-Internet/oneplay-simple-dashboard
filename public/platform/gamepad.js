@@ -33,8 +33,8 @@ const Controller = (function () {
 
       for (let i = 0; i < newButtons.length; ++i) {
         if (this.buttons[i].pressed !== newButtons[i].pressed) {
-          //   console.log(i + " pressed : " + newButtons[i].pressed);
           if (newButtons[i].pressed) {
+            //console.log(i + " pressed : " + newButtons[i].pressed);
             this.pressedStartTime.set(i, Date.now());
             if (i === CONTROLLER_A_BUTTON) {
               if (settingsMode) {

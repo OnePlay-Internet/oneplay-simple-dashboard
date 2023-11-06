@@ -19,6 +19,7 @@ import InfiniteScroll from "react-infinite-scroller";
 import LoaderPopup from "src/pages/loader";
 import ErrorPopUp from "src/pages/error";
 import { StatusPopupContext } from "src/layouts/auth";
+import { addSearchResultClickedEvent } from "src/common/countly.service";
 export default function SearchGames({ focusKey: focusKeyParam }: FocusabelComponentProps) {
   const navigate = useNavigate();
   const sessionContext = useContext(SessionContext);
@@ -82,7 +83,8 @@ export default function SearchGames({ focusKey: focusKeyParam }: FocusabelCompon
         key={game.oplay_id}
         focusKeyParam={`search_game_${game.oplay_id}`}
         goToDetail={() => {
-          navigate(`/games-detail/${game.oplay_id}`);
+          addSearchResultClickedEvent(searchQuery, true);
+          navigate(`/games-detail/${game.oplay_id}?source=searchPage&trigger=card`);
         }}
         allowRightArrow={!isLastColumn}
         allowDownArrow={!isLastRow}
@@ -387,14 +389,12 @@ const FocusableGameWrapper = (props: any) => {
 
   return (
     <div ref={ref} className="col-md-3 mt-3" style={{ padding: "5px", position: "relative" }}>
-      <NavLink to={`/games-detail/${props.game.oplay_id}`} className="text-decoration-none text-initial">
+      <NavLink to={`/games-detail/${props.game.oplay_id}?source=searchPage&trigger=card`} className="text-decoration-none text-initial">
         <LazyLoadImage
           alt={props.game.title}
           loading="lazy"
           src={props.game.text_background_image ?? "/img/placeholder_336x189.svg"} // use normal <img> attributes as props
           className={"img-fluid rounded game-poster" + (focused ? " focusedElement" : "")}
-          width={336}
-          height={189}
           placeholder={
             <img
               alt={props.game.title}

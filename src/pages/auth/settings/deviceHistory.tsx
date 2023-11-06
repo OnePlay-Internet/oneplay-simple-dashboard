@@ -5,13 +5,13 @@ import {
 import { useContext, useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { SessionContext } from "src/App";
-import { SESSION_TOKEN_LOCAL_STORAGE } from "src/common/constants";
+import { SESSION_TOKEN_LOCAL_STORAGE, SHOW_GAME_SETTINGS_CHECKED } from "src/common/constants";
 import { getUsersSessions, sessionLogout } from "src/common/services";
 import { scrollToElement, scrollToTop, timeAgo } from "src/common/utils";
 import { StatusPopupContext } from "src/layouts/auth";
 import ErrorPopUp from "src/pages/error";
 
-export default function DeviceHistory({ focusKey: focusKeyParam }: FocusabelComponentProps) {
+export default function DeviceHistory({ focusKey: focusKeyParam, logCountlyEvent }: FocusabelComponentProps) {
   const navigate = useNavigate();
   const sessionContext = useContext(SessionContext);
   const [sessions, setSessions] = useState<any[]>([]);
@@ -58,7 +58,9 @@ export default function DeviceHistory({ focusKey: focusKeyParam }: FocusabelComp
           confirmButtonText: "OK",
         }); */
         localStorage.removeItem(SESSION_TOKEN_LOCAL_STORAGE);
+        localStorage.removeItem(SHOW_GAME_SETTINGS_CHECKED);
         sessionContext.setSessionToken(null);
+
         navigate("/");
         return;
       }
@@ -100,6 +102,7 @@ export default function DeviceHistory({ focusKey: focusKeyParam }: FocusabelComp
     );
   };
   const onLogoutFromAllDevice = async () => {
+    logCountlyEvent("logout_from_all_clicked");
     const [userid, token] = atob(sessionContext.sessionToken).split(":");
     for await (const session of sessions) {
       const isActive = session.key === `user:${userid}:session:${token}`;
@@ -109,6 +112,7 @@ export default function DeviceHistory({ focusKey: focusKeyParam }: FocusabelComp
     }
     await sessionLogout(`user:${userid}:session:${token}`, sessionContext.sessionToken);
     localStorage.removeItem(SESSION_TOKEN_LOCAL_STORAGE);
+    localStorage.removeItem(SHOW_GAME_SETTINGS_CHECKED);
     sessionContext.setSessionToken(null);
     navigate("/");
   };

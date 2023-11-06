@@ -8,6 +8,9 @@ import waitQueueIcon from "../../assets/images/icon-waitQueae.svg";
 import groupIcon from "../../assets/images/icon-group.svg";
 import noWifiIcon from "../../assets/images/icon-no-network.svg";
 import logoutIcon from "../../assets/images/setting/Logout.svg";
+import rechargeIcon from "../../assets/images/icon-recharge-subscription.svg";
+import gamingIssueIcon from "../../assets/images/icon-gaming-issue.svg";
+import timeLimitIcon from "../../assets/images/icon-time-limit.svg";
 import { useEffect } from "react";
 export default function ErrorPopUp({ focusKeyParam, title, icon, message, buttons, returnFocusTo, show }: ErrorPopupPorps) {
   const { setFocus, focusKey, focusSelf } = useFocusable({
@@ -32,6 +35,12 @@ export default function ErrorPopUp({ focusKeyParam, title, icon, message, button
         return noWifiIcon;
       case "logout":
         return logoutIcon;
+      case "recharge":
+        return rechargeIcon;
+      case "time-limit":
+        return timeLimitIcon;
+      case "gaming-issue":
+        return gamingIssueIcon;
       case "error":
       default:
         return errorIcon;
@@ -49,7 +58,7 @@ export default function ErrorPopUp({ focusKeyParam, title, icon, message, button
         <div className="modal-dialog modal-dialog-centered">
           <div className="modal-content" style={{ backgroundColor: "#212123" }}>
             <div className="modal-body text-center p-5">
-              <img src={getIcon()} className="img-fluid" alt="" height="72" width="72" />
+              <img src={getIcon()} className="img-fluid" alt="" height="96" width="96" />
               <p className="font500 text-white mt-4" style={{ fontSize: "20px" }}>
                 {title}
               </p>

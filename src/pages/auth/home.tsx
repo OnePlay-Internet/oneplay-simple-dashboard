@@ -97,7 +97,8 @@ export default function Home({ focusKey: focusKeyParam }: FocusabelComponentProp
       setFocus("home_header_slider");
       // setFocus("tab-for-you");
     } else {
-      focusSelf();
+      setFocus("tab-for-you");
+      //focusSelf();
     }
   }, [firstHeaderFocusKey]);
   const renderHeaderSlider = () => {
@@ -287,11 +288,16 @@ export default function Home({ focusKey: focusKeyParam }: FocusabelComponentProp
           setPersonalizedFeeds(personlizedFeesResp.feeds ?? []);
 
           const headerIndex = personlizedFeesResp.feeds?.findIndex((feed: any) => feed.type === "header") ?? -1;
+          console.log("heder index : ", headerIndex);
           if (headerIndex >= 0) {
             const headerFeed: any = personlizedFeesResp.feeds?.at(headerIndex);
-            const k = headerFeed?.results?.[0].oplay_id ?? "";
-            //console.log("k : ", k);
-            setFirstHeaderFocusKey(`header_game_${k}`);
+            if (headerFeed?.results.length) {
+              const k = headerFeed?.results?.[0].oplay_id ?? "";
+              console.log("k : ", k);
+              setFirstHeaderFocusKey(`header_game_${k}`);
+            } else {
+              setFocus("tab-for-you");
+            }
           }
         } else {
           const body: any = {};
@@ -433,7 +439,7 @@ const FocusableRailGameWrapper = (props: any) => {
       railScrollTo(ref.current);
     },
     onEnterPress: () => {
-      props.goToDetail(`/games-detail/${props.game.oplay_id}`);
+      props.goToDetail(`/games-detail/${props.game.oplay_id}?source=homePage&trigger=card`);
     },
     onArrowPress: (direction, keyProps, detils) => {
       //if (direction === "left" && getCoords(ref.current).left + ref.current.offsetLeft < 220) {
@@ -459,7 +465,7 @@ const FocusableRailGameWrapper = (props: any) => {
         cursor: "pointer",
       }}
       onClick={() => {
-        props.goToDetail(`/games-detail/${props.game.oplay_id}`);
+        props.goToDetail(`/games-detail/${props.game.oplay_id}?source=homePage&trigger=card`);
       }}
     >
       <img
@@ -523,7 +529,7 @@ const FocusableHeaderSlider = (props: any) => {
           if (ariaHidden != null && ariaHidden === "false") {
             const gId = currentGame[index].querySelector("[data-gameid]")?.getAttribute("data-gameid");
             if (gId) {
-              props.goToDetail(`/games-detail/${gId}`);
+              props.goToDetail(`/games-detail/${gId}?source=homePage&trigger=banner`);
             }
           }
         }
@@ -555,7 +561,7 @@ const FocusableHeaderSlider = (props: any) => {
         style={{ borderRadius: "6px" }}
         data-gameid={game.oplay_id}
         onClick={() => {
-          props.goToDetail(`/games-detail/${game.oplay_id}`);
+          props.goToDetail(`/games-detail/${game.oplay_id}?source=homePage&trigger=banner`);
         }}
       >
         <div className="card border-0 transparentBg">
@@ -572,14 +578,14 @@ const FocusableHeaderSlider = (props: any) => {
               </div>
             </div>
           </div>
-          <div className="card-img-overlay header-game-playnow-overlay">
+          {/*   <div className="card-img-overlay header-game-playnow-overlay">
             <div className="row height45vh align-items-end">
               <div className="col-auto width20"></div>
               <div className="col-auto width70 ps-4">
                 <button className="btn text-white gradientBtn border-0 br90 px-4 btn-md fw400">Play Now</button>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     );

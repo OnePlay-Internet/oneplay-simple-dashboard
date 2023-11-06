@@ -171,7 +171,7 @@ export default function AllGames({ focusKey: focusKeyParam }: FocusabelComponent
         focusKeyParam={`game_${game.oplay_id}`}
         setCurrentFocusContext={currentFocusContext.setFocusKey}
         goToDetail={() => {
-          navigate(`/games-detail/${game.oplay_id}`);
+          navigate(`/games-detail/${game.oplay_id}?source=gamesPage&trigger=card`);
         }}
         allowUpArrow={!isFirstRow}
         allowRightArrow={!isLastColumn}
@@ -414,7 +414,7 @@ const FocusableGameWrapper = (props: any) => {
       className="col-md-4 col-lg-3 col-sm-6 col-6 mt-3"
       style={{ paddingTop: "10px", borderRadius: "10px", position: "relative" }}
     >
-      <NavLink to={`/games-detail/${props.game.oplay_id}`} className="text-decoration-none text-initial">
+      <NavLink to={`/games-detail/${props.game.oplay_id}?source=gamesPage&trigger=card`} className="text-decoration-none text-initial">
         <LazyLoadImage
           alt={props.game.title}
           loading="lazy"
