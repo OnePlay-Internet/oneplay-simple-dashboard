@@ -69,6 +69,9 @@ export default function AuthLayout({ focusKey: focusKeyParam }: FocusabelCompone
       }
     },
   });
+  useEffect(() => {
+    console.log("path : ", pathname);
+  }, [pathname]);
   /* const btnLogoutClick = async () => {
     const logoutResp = await logout(sessionContext.sessionToken);
     console.log("logout resp : ", logoutResp);
@@ -170,116 +173,120 @@ export default function AuthLayout({ focusKey: focusKeyParam }: FocusabelCompone
     <>
       <div className="container-fluid p-0">
         <div className="row">
-          <FocusContext.Provider value={focusKey}>
-            <div
-              className={hasFocus ? "mt-4 sidebar focused text-center" : "mt-4 sidebar collapsed text-center"}
-              /* style={{ width: hasFocus ? "120px" : "80px" }} */
-            >
-              <div
-                className="sidebar-items-wrapper"
-                style={{
-                  width: hasFocus ? "50%" : "120px",
-                }}
-              >
-                <p style={{ textAlign: "left" }}>
-                  <a href="#">
-                    <img
-                      className="rounded-circle sidebar-icon"
-                      width="48"
-                      height="48"
-                      src={
-                        userContext.userProfile && userContext.userProfile.profile_image
-                          ? userContext.userProfile.profile_image
-                          : defaultUser
-                      }
-                      alt={userContext.userProfile ? userContext.userProfile.first_name : ""}
-                    />
-                    {hasFocus ? (
-                      <span className="sidebar-text username-text">
-                        {userContext.userProfile ? userContext.userProfile.first_name + " " + userContext.userProfile.last_name : ""}
-                      </span>
-                    ) : (
-                      ""
-                    )}
-                  </a>
-                </p>
-
-                <p>
-                  <FocusableLink
-                    focusKeyParam="sidebar-home"
-                    to="/home"
-                    setCurrentFocusContext={currentFocusContext.setFocusKey}
-                    /*  onClick={() => {
-                      navigate("/home");
-                    }} */
+          {pathname.startsWith("/game-play") ? (
+            <Outlet />
+          ) : (
+            <>
+              <FocusContext.Provider value={focusKey}>
+                <div
+                  className={hasFocus ? "mt-4 sidebar focused text-center" : "mt-4 sidebar collapsed text-center"}
+                  /* style={{ width: hasFocus ? "120px" : "80px" }} */
+                >
+                  <div
+                    className="sidebar-items-wrapper"
+                    style={{
+                      width: hasFocus ? "50%" : "120px",
+                    }}
                   >
-                    {/* <img src={iconHome} className="sidebar-icon" alt="home-icon" /> */}
-                    <IconHome className="sidebar-icon" />
-                    {hasFocus ? <span className="sidebar-text">Home</span> : ""}
-                  </FocusableLink>
-                </p>
+                    <p style={{ textAlign: "left" }}>
+                      <a href="#">
+                        <img
+                          className="rounded-circle sidebar-icon"
+                          width="48"
+                          height="48"
+                          src={
+                            userContext.userProfile && userContext.userProfile.profile_image
+                              ? userContext.userProfile.profile_image
+                              : defaultUser
+                          }
+                          alt={userContext.userProfile ? userContext.userProfile.first_name : ""}
+                        />
+                        {hasFocus ? (
+                          <span className="sidebar-text username-text">
+                            {userContext.userProfile ? userContext.userProfile.first_name + " " + userContext.userProfile.last_name : ""}
+                          </span>
+                        ) : (
+                          ""
+                        )}
+                      </a>
+                    </p>
 
-                <p>
-                  <FocusableLink
-                    focusKeyParam="sidebar-search"
-                    to="/search"
-                    setCurrentFocusContext={currentFocusContext.setFocusKey}
-                    /*  onClick={() => {
-                      navigate("/search");
-                    }} */
-                  >
-                    {/* <img src={iconSearch} className="sidebar-icon" alt="search-icon" /> */}
-                    <IconSearch className="sidebar-icon" />
-                    {hasFocus ? <span className="sidebar-text">Search</span> : ""}
-                  </FocusableLink>
-                </p>
+                    <p>
+                      <FocusableLink
+                        focusKeyParam="sidebar-home"
+                        to="/home"
+                        setCurrentFocusContext={currentFocusContext.setFocusKey}
+                        /*  onClick={() => {
+                        navigate("/home");
+                      }} */
+                      >
+                        {/* <img src={iconHome} className="sidebar-icon" alt="home-icon" /> */}
+                        <IconHome className="sidebar-icon" />
+                        {hasFocus ? <span className="sidebar-text">Home</span> : ""}
+                      </FocusableLink>
+                    </p>
 
-                <p>
-                  <FocusableLink
-                    focusKeyParam="sidebar-allGames"
-                    to="/all-games"
-                    setCurrentFocusContext={currentFocusContext.setFocusKey}
-                    /*  onClick={() => {
-                      navigate("/all-games");
-                    }} */
-                  >
-                    {/*     <img src={iconController} className="sidebar-icon" alt="controller-icon" /> */}
-                    <IconController className="sidebar-icon" />
-                    {hasFocus ? <span className="sidebar-text">Games</span> : ""}
-                  </FocusableLink>
-                </p>
+                    <p>
+                      <FocusableLink
+                        focusKeyParam="sidebar-search"
+                        to="/search"
+                        setCurrentFocusContext={currentFocusContext.setFocusKey}
+                        /*  onClick={() => {
+                        navigate("/search");
+                      }} */
+                      >
+                        {/* <img src={iconSearch} className="sidebar-icon" alt="search-icon" /> */}
+                        <IconSearch className="sidebar-icon" />
+                        {hasFocus ? <span className="sidebar-text">Search</span> : ""}
+                      </FocusableLink>
+                    </p>
 
-                <p>
-                  <FocusableLink
-                    focusKeyParam="sidebar-game-status"
-                    onClick={onGameStatusClicked}
-                    to="/"
-                    setCurrentFocusContext={currentFocusContext.setFocusKey}
-                  >
-                    {activeGameSessionStatus.success && activeGameSessionStatus.game_id ? (
-                      <IconGameStatusLive className="sidebar-icon" />
-                    ) : (
-                      <IconGameStatusOff className="sidebar-icon" />
-                    )}
+                    <p>
+                      <FocusableLink
+                        focusKeyParam="sidebar-allGames"
+                        to="/all-games"
+                        setCurrentFocusContext={currentFocusContext.setFocusKey}
+                        /*  onClick={() => {
+                        navigate("/all-games");
+                      }} */
+                      >
+                        {/*     <img src={iconController} className="sidebar-icon" alt="controller-icon" /> */}
+                        <IconController className="sidebar-icon" />
+                        {hasFocus ? <span className="sidebar-text">Games</span> : ""}
+                      </FocusableLink>
+                    </p>
 
-                    {hasFocus ? <span className="sidebar-text">Status</span> : ""}
-                  </FocusableLink>
-                </p>
-                <p>
-                  <FocusableLink
-                    focusKeyParam="sidebar-settings"
-                    to="/settings"
-                    setCurrentFocusContext={currentFocusContext.setFocusKey}
-                    /*  onClick={() => {
-                      navigate("/settings");
-                    }} */
-                  >
-                    {/* <img src={iconSettings} className="sidebar-icon" alt="settings-icon" /> */}
-                    <IconSettings className="sidebar-icon" />
-                    {hasFocus ? <span className="sidebar-text">Settings</span> : ""}
-                  </FocusableLink>
-                </p>
-                {/*    <p>
+                    <p>
+                      <FocusableLink
+                        focusKeyParam="sidebar-game-status"
+                        onClick={onGameStatusClicked}
+                        to="/"
+                        setCurrentFocusContext={currentFocusContext.setFocusKey}
+                      >
+                        {activeGameSessionStatus.success && activeGameSessionStatus.game_id ? (
+                          <IconGameStatusLive className="sidebar-icon" />
+                        ) : (
+                          <IconGameStatusOff className="sidebar-icon" />
+                        )}
+
+                        {hasFocus ? <span className="sidebar-text">Status</span> : ""}
+                      </FocusableLink>
+                    </p>
+                    <p>
+                      <FocusableLink
+                        focusKeyParam="sidebar-settings"
+                        to="/settings"
+                        setCurrentFocusContext={currentFocusContext.setFocusKey}
+                        /*  onClick={() => {
+                        navigate("/settings");
+                      }} */
+                      >
+                        {/* <img src={iconSettings} className="sidebar-icon" alt="settings-icon" /> */}
+                        <IconSettings className="sidebar-icon" />
+                        {hasFocus ? <span className="sidebar-text">Settings</span> : ""}
+                      </FocusableLink>
+                    </p>
+                    {/*    <p>
                   <FocusableLink
                     focusKeyParam="sidebar-logout"
                     onClick={btnLogoutClick}
@@ -291,18 +298,20 @@ export default function AuthLayout({ focusKey: focusKeyParam }: FocusabelCompone
                     {hasFocus ? <span className="sidebar-text">Logout</span> : ""}
                   </FocusableLink>
                 </p> */}
+                  </div>
+                </div>
+                {popUp.show && <ErrorPopUp {...popUp} />}
+              </FocusContext.Provider>
+              <div className="col">
+                <div className="text-end px-3 pt-3 fixed-top" style={{ backgroundColor: "#151617" }}>
+                  <img src={brandLogo} className="img-fluid" alt="" />
+                </div>
+                <StatusPopupContext.Provider value={popUp.show}>
+                  <Outlet />
+                </StatusPopupContext.Provider>
               </div>
-            </div>
-            {popUp.show && <ErrorPopUp {...popUp} />}
-          </FocusContext.Provider>
-          <div className="col">
-            <div className="text-end px-3 pt-3 fixed-top" style={{ backgroundColor: "#151617" }}>
-              <img src={brandLogo} className="img-fluid" alt="" />
-            </div>
-            <StatusPopupContext.Provider value={popUp.show}>
-              <Outlet />
-            </StatusPopupContext.Provider>
-          </div>
+            </>
+          )}
         </div>
       </div>
     </>

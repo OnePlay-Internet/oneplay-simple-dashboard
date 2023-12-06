@@ -187,9 +187,13 @@ export default function GamesDetail({ focusKey: focusKeyParam }: FocusabelCompon
   }, [gameClientToken]);
   const goToMoonLight = async (streamInfo: any) => {
     await setPin(streamInfo.server_details.server_ip, streamInfo.server_details.port_details.pin_port, streamInfo.host_session_key);
+    navigate(
+      `/game-play?host_session_key=${streamInfo.host_session_key}&bitrate_kbps=${streamInfo.other_details.bitrate_kbps}&game_fps=${streamInfo.other_details.game_fps}&resolution=${streamInfo.other_details.resolution}&server_ip=${streamInfo.server_details.server_ip}&audio_port=${streamInfo.server_details.port_details.audio_port}&control_port=${streamInfo.server_details.port_details.control_port}&http_port=${streamInfo.server_details.port_details.http_port}&https_port=${streamInfo.server_details.port_details.https_port}&pin_port=${streamInfo.server_details.port_details.pin_port}&rtsp_port=${streamInfo.server_details.port_details.rtsp_port}&video_port=${streamInfo.server_details.port_details.video_port}&user_id=${streamInfo.user_details.user_id}&game_id=${id}&client_token=${gameClientToken}`
+    );
+    /* await setPin(streamInfo.server_details.server_ip, streamInfo.server_details.port_details.pin_port, streamInfo.host_session_key);
     window.location.replace(
       `/moonlight.html?host_session_key=${streamInfo.host_session_key}&bitrate_kbps=${streamInfo.other_details.bitrate_kbps}&game_fps=${streamInfo.other_details.game_fps}&resolution=${streamInfo.other_details.resolution}&server_ip=${streamInfo.server_details.server_ip}&audio_port=${streamInfo.server_details.port_details.audio_port}&control_port=${streamInfo.server_details.port_details.control_port}&http_port=${streamInfo.server_details.port_details.http_port}&https_port=${streamInfo.server_details.port_details.https_port}&pin_port=${streamInfo.server_details.port_details.pin_port}&rtsp_port=${streamInfo.server_details.port_details.rtsp_port}&video_port=${streamInfo.server_details.port_details.video_port}&user_id=${streamInfo.user_details.user_id}&game_id=${id}&client_token=${gameClientToken}`
-    );
+    ); */
   };
   const getActiveSessionStatus = async () => {
     const [userId, sessionId] = atob(sessionContext.sessionToken).split(":");
@@ -618,8 +622,8 @@ export default function GamesDetail({ focusKey: focusKeyParam }: FocusabelCompon
       const terminateGameResp: any = await terminateGame(userId, sessionToken, sessionId);
 
       if (terminateGameResp.data) {
-        console.log('terminate resp : ');
-        console.log(terminateGameResp.data)
+        console.log("terminate resp : ");
+        console.log(terminateGameResp.data);
         addGameTerminateEvent({
           gameSessionId: sessionId,
           gameId: gameDetails.oplay_id,

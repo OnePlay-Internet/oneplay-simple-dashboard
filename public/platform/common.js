@@ -29,7 +29,7 @@ var common = (function () {
 
     const script = document.createElement("script");
     document.body.appendChild(script);
-    script.src = "moonlight-wasm.js";
+    script.src = "/moonlight-wasm.js";
   }
 
   /**
@@ -143,7 +143,18 @@ var common = (function () {
 
 // Listen for the DOM content to be loaded. This event is fired when parsing of
 // the page's document has finished.
-document.addEventListener("DOMContentLoaded", function () {
+/* document.addEventListener("DOMContentLoaded", function () {
+  console.log("DOMContentLoaded.....");
   common.domContentLoaded();
-});
+}); */
+if (document.readyState !== "loading") {
+  // console.log("document is already ready, just execute code here");
+  common.domContentLoaded();
+} else {
+  document.addEventListener("DOMContentLoaded", function () {
+    // console.log("document was not ready, place code here");
+    common.domContentLoaded();
+  });
+}
+
 

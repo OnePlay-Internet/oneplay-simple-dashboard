@@ -1,3 +1,5 @@
+/* eslint-disable no-undef */
+
 function runningOnChrome() {
   try {
     if (chrome) {
@@ -78,11 +80,7 @@ function getConnectedGamepadMask() {
     }
   }
 
-  console.log(
-    "%c[utils.js, getConnectedGamepadMask]",
-    "color:gray;",
-    "Detected " + count + " gamepads"
-  );
+  console.log("%c[utils.js, getConnectedGamepadMask]", "color:gray;", "Detected " + count + " gamepads");
   return mask;
 }
 
@@ -162,11 +160,7 @@ NvHTTP.prototype = {
     console.log("refresh sever info : ");
     if (this.ppkstr == null) {
       console.log("no ppkstr trying http");
-      return sendMessage("openUrl", [
-        this._baseUrlHttp + "/serverinfo?" + this._buildUidStr(),
-        this.ppkstr,
-        false,
-      ]).then(
+      return sendMessage("openUrl", [this._baseUrlHttp + "/serverinfo?" + this._buildUidStr(), this.ppkstr, false]).then(
         function (retHttp) {
           this._parseServerInfo(retHttp);
         }.bind(this)
@@ -175,20 +169,12 @@ NvHTTP.prototype = {
 
     // try HTTPS first
     console.log("trying https");
-    return sendMessage("openUrl", [
-      this._baseUrlHttps + "/serverinfo?" + this._buildUidStr(),
-      this.ppkstr,
-      false,
-    ]).then(
+    return sendMessage("openUrl", [this._baseUrlHttps + "/serverinfo?" + this._buildUidStr(), this.ppkstr, false]).then(
       function (ret) {
         if (!this._parseServerInfo(ret)) {
           // if that fails
           // try HTTP as a failover.  Useful to clients who aren't paired yet
-          return sendMessage("openUrl", [
-            this._baseUrlHttp + "/serverinfo?" + this._buildUidStr(),
-            this.ppkstr,
-            false,
-          ]).then(
+          return sendMessage("openUrl", [this._baseUrlHttp + "/serverinfo?" + this._buildUidStr(), this.ppkstr, false]).then(
             function (retHttp) {
               this._parseServerInfo(retHttp);
             }.bind(this)
@@ -199,17 +185,8 @@ NvHTTP.prototype = {
         if (error == -100) {
           // GS_CERT_MISMATCH
           // Retry over HTTP
-          console.warn(
-            "%c[utils.js, utils.js, refreshServerInfo]",
-            "color: gray;",
-            "Certificate mismatch. Retrying over HTTP",
-            this
-          );
-          return sendMessage("openUrl", [
-            this._baseUrlHttp + "/serverinfo?" + this._buildUidStr(),
-            this.ppkstr,
-            false,
-          ]).then(
+          console.warn("%c[utils.js, utils.js, refreshServerInfo]", "color: gray;", "Certificate mismatch. Retrying over HTTP", this);
+          return sendMessage("openUrl", [this._baseUrlHttp + "/serverinfo?" + this._buildUidStr(), this.ppkstr, false]).then(
             function (retHttp) {
               this._parseServerInfo(retHttp);
             }.bind(this)
@@ -224,12 +201,7 @@ NvHTTP.prototype = {
     if (this.ppkstr == null) {
       // Use HTTP if we have no pinned cert
       return sendMessage("openUrl", [
-        "http://" +
-          givenAddress +
-          ":" +
-          this.httpPort +
-          "/serverinfo?" +
-          this._buildUidStr(),
+        "http://" + givenAddress + ":" + this.httpPort + "/serverinfo?" + this._buildUidStr(),
         this.ppkstr,
         false,
       ]).then(
@@ -241,12 +213,7 @@ NvHTTP.prototype = {
 
     // try HTTPS first
     return sendMessage("openUrl", [
-      "https://" +
-        givenAddress +
-        ":" +
-        this.httpsPort +
-        "/serverinfo?" +
-        this._buildUidStr(),
+      "https://" + givenAddress + ":" + this.httpsPort + "/serverinfo?" + this._buildUidStr(),
       this.ppkstr,
       false,
     ]).then(
@@ -260,12 +227,7 @@ NvHTTP.prototype = {
           );
           // try HTTP as a failover.  Useful to clients who aren't paired yet
           return sendMessage("openUrl", [
-            "http://" +
-              givenAddress +
-              ":" +
-              this.httpPort +
-              "/serverinfo?" +
-              this._buildUidStr(),
+            "http://" + givenAddress + ":" + this.httpPort + "/serverinfo?" + this._buildUidStr(),
             this.ppkstr,
             false,
           ]).then(
@@ -286,12 +248,7 @@ NvHTTP.prototype = {
             this
           );
           return sendMessage("openUrl", [
-            "http://" +
-              givenAddress +
-              ":" +
-              this.httpPort +
-              "/serverinfo?" +
-              this._buildUidStr(),
+            "http://" + givenAddress + ":" + this.httpPort + "/serverinfo?" + this._buildUidStr(),
             this.ppkstr,
             false,
           ]).then(
@@ -320,8 +277,7 @@ NvHTTP.prototype = {
       function (successfulAddress) {
         // Successfully determined server address. Update base URL.
         this.address = successfulAddress;
-        this._baseUrlHttps =
-          "https://" + successfulAddress + ":" + this.httpsPort;
+        this._baseUrlHttps = "https://" + successfulAddress + ":" + this.httpsPort;
         this._baseUrlHttp = "http://" + successfulAddress + ":" + this.httpPort;
 
         // Poll for the app list every 10 successful serverinfo polls.
@@ -407,12 +363,7 @@ NvHTTP.prototype = {
     string += "number of apps: " + this.numofapps + "\r\n";
     string += "supported display modes: " + "\r\n";
     for (var displayMode in this.supportedDisplayModes) {
-      string +=
-        "\t" +
-        displayMode +
-        ": " +
-        this.supportedDisplayModes[displayMode] +
-        "\r\n";
+      string += "\t" + displayMode + ": " + this.supportedDisplayModes[displayMode] + "\r\n";
     }
     string += "http Port: " + this.httpPort + "\r\n";
     string += "https Port: " + this.httpsPort + "\r\n";
@@ -426,25 +377,14 @@ NvHTTP.prototype = {
     if ($root.attr("status_code") != 200) {
       return false;
     }
-    console.log(
-      "server info uniqueid : ",
-      $root.find("uniqueid").text().trim()
-    );
+    console.log("server info uniqueid : ", $root.find("uniqueid").text().trim());
 
-    if (
-      this.serverUid != $root.find("uniqueid").text().trim() &&
-      this.serverUid != ""
-    ) {
+    if (this.serverUid != $root.find("uniqueid").text().trim() && this.serverUid != "") {
       // if we received a UID that isn't the one we expected, fail.
       return false;
     }
 
-    console.log(
-      "%c[utils.js, _parseServerInfo]",
-      "color:gray;",
-      "Parsing server info:",
-      $root
-    );
+    console.log("%c[utils.js, _parseServerInfo]", "color:gray;", "Parsing server info:", $root);
 
     this.paired = $root.find("PairStatus").text().trim() == 1;
     this.currentGame = parseInt($root.find("currentgame").text().trim(), 10);
@@ -529,11 +469,7 @@ NvHTTP.prototype = {
   },
 
   getAppListWithCacheFlush: function () {
-    return sendMessage("openUrl", [
-      this._baseUrlHttps + "/applist?" + this._buildUidStr(),
-      this.ppkstr,
-      false,
-    ]).then(
+    return sendMessage("openUrl", [this._baseUrlHttps + "/applist?" + this._buildUidStr(), this.ppkstr, false]).then(
       function (ret) {
         $xml = this._parseXML(ret);
         $root = $xml.find("root");
@@ -555,13 +491,8 @@ NvHTTP.prototype = {
 
         for (var i = 0, len = appElements.length; i < len; i++) {
           appList.push({
-            title: appElements[i]
-              .getElementsByTagName("AppTitle")[0]
-              .innerHTML.trim(),
-            id: parseInt(
-              appElements[i].getElementsByTagName("ID")[0].innerHTML.trim(),
-              10
-            ),
+            title: appElements[i].getElementsByTagName("AppTitle")[0].innerHTML.trim(),
+            id: parseInt(appElements[i].getElementsByTagName("ID")[0].innerHTML.trim(), 10),
           });
         }
 
@@ -576,11 +507,7 @@ NvHTTP.prototype = {
     if (this._memCachedApplist) {
       return new Promise(
         function (resolve, reject) {
-          console.log(
-            "%c[utils.js, utils.js]",
-            "color: gray;",
-            "Returning memory-cached apps list"
-          );
+          console.log("%c[utils.js, utils.js]", "color: gray;", "Returning memory-cached apps list");
           resolve(this._memCachedApplist);
           return;
         }.bind(this)
@@ -606,24 +533,14 @@ NvHTTP.prototype = {
                 Object.keys(storageData).length !== 0 &&
                 storageData["boxart-" + appId].constructor !== Object
               ) {
-                console.log(
-                  "%c[utils.js, getBoxArt]",
-                  "color: gray;",
-                  "Returning storage-cached box art for app: ",
-                  appId
-                );
+                console.log("%c[utils.js, getBoxArt]", "color: gray;", "Returning storage-cached box art for app: ", appId);
                 resolve(storageData["boxart-" + appId]);
                 return;
               }
 
               // otherwise, put it in our cache, then return it
               sendMessage("openUrl", [
-                this._baseUrlHttps +
-                  "/appasset?" +
-                  this._buildUidStr() +
-                  "&appid=" +
-                  appId +
-                  "&AssetType=2&AssetIdx=0",
+                this._baseUrlHttps + "/appasset?" + this._buildUidStr() + "&appid=" + appId + "&AssetType=2&AssetIdx=0",
                 this.ppkstr,
                 true,
               ]).then(
@@ -633,11 +550,7 @@ NvHTTP.prototype = {
                     var obj = {};
                     obj["boxart-" + appId] = this.result;
                     chrome.storage.local.set(obj, function (onSuccess) {});
-                    console.log(
-                      "%c[utils.js, utils.js,  getBoxArt]",
-                      "color: gray;",
-                      "Returning network-fetched box art"
-                    );
+                    console.log("%c[utils.js, utils.js,  getBoxArt]", "color: gray;", "Returning network-fetched box art");
                     resolve(this.result);
                   };
                   reader.readAsDataURL(
@@ -647,12 +560,7 @@ NvHTTP.prototype = {
                   );
                 }.bind(this),
                 function (error) {
-                  console.error(
-                    "%c[utils.js, utils.js,  getBoxArt]",
-                    "color: gray;",
-                    "Box-art request failed!",
-                    error
-                  );
+                  console.error("%c[utils.js, utils.js,  getBoxArt]", "color: gray;", "Box-art request failed!", error);
                   reject(error);
                   return;
                 }.bind(this)
@@ -663,19 +571,10 @@ NvHTTP.prototype = {
       );
     } else {
       // shouldn't run because we always have chrome.storage, but I'm not going to antagonize other browsers
-      console.warn(
-        "%c[utils.js, utils.js,  getBoxArt]",
-        "color: gray;",
-        "chrome.storage not detected! Box art will not be saved!"
-      );
+      console.warn("%c[utils.js, utils.js,  getBoxArt]", "color: gray;", "chrome.storage not detected! Box art will not be saved!");
       return new Promise((resolve, reject) => {
         sendMessage("openUrl", [
-          this._baseUrlHttps +
-            "/appasset?" +
-            this._buildUidStr() +
-            "&appid=" +
-            appId +
-            "&AssetType=2&AssetIdx=0",
+          this._baseUrlHttps + "/appasset?" + this._buildUidStr() + "&appid=" + appId + "&AssetType=2&AssetIdx=0",
           this.ppkstr,
           true,
         ]).then(
@@ -684,11 +583,7 @@ NvHTTP.prototype = {
             reader.onloadend = function () {
               var obj = {};
               obj["boxart-" + appId] = this.result;
-              console.log(
-                "%c[utils.js, utils.js,  getBoxArt]",
-                "color: gray;",
-                "Returning network-fetched box art"
-              );
+              console.log("%c[utils.js, utils.js,  getBoxArt]", "color: gray;", "Returning network-fetched box art");
               resolve(this.result);
             };
             reader.readAsDataURL(
@@ -697,31 +592,17 @@ NvHTTP.prototype = {
               })
             );
           },
-          (error) => {
-            console.error(
-              "%c[utils.js, utils.js,  getBoxArt]",
-              "color: gray;",
-              "Box-art request failed!",
-              error
-            );
-            reject(error);
-            return;
-          }
+            (error) => {
+              console.error("%c[utils.js, utils.js,  getBoxArt]", "color: gray;", "Box-art request failed!", error);
+              reject(error);
+              return;
+            };
         );
       });
     }
   },
 
-  launchApp: function (
-    appId,
-    mode,
-    sops,
-    rikey,
-    rikeyid,
-    localAudio,
-    surroundAudioInfo,
-    gamepadMask
-  ) {
+  launchApp: function (appId, mode, sops, rikey, rikeyid, localAudio, surroundAudioInfo, gamepadMask) {
     return sendMessage("openUrl", [
       this._baseUrlHttps +
         "/launch?" +
@@ -767,11 +648,7 @@ NvHTTP.prototype = {
 
   quitApp: function () {
     return (
-      sendMessage("openUrl", [
-        this._baseUrlHttps + "/cancel?" + this._buildUidStr(),
-        this.ppkstr,
-        false,
-      ])
+      sendMessage("openUrl", [this._baseUrlHttps + "/cancel?" + this._buildUidStr(), this.ppkstr, false])
         // Refresh server info after quitting because it may silently fail if the
         // session belongs to a different client.
         // TODO: We should probably bubble this up to our caller.
@@ -780,11 +657,7 @@ NvHTTP.prototype = {
   },
 
   updateExternalAddressIP4: function () {
-    console.log(
-      "%c[utils.js, updateExternalAddressIP4]",
-      "color: gray;",
-      "Finding external IPv4 address for " + this.hostname
-    );
+    console.log("%c[utils.js, updateExternalAddressIP4]", "color: gray;", "Finding external IPv4 address for " + this.hostname);
     return sendMessage("STUN").then(
       function (addr) {
         if (addr) {
@@ -792,17 +665,10 @@ NvHTTP.prototype = {
           console.log(
             "%c[utils.js, updateExternalAddressIP4]",
             "color: gray;",
-            "Found external IPv4 address: " +
-              this.hostname +
-              " -> " +
-              this.externalIP
+            "Found external IPv4 address: " + this.hostname + " -> " + this.externalIP
           );
         } else {
-          console.log(
-            "%c[utils.js, updateExternalAddressIP4]",
-            "color: gray;",
-            "External IPv4 address lookup failed"
-          );
+          console.log("%c[utils.js, updateExternalAddressIP4]", "color: gray;", "External IPv4 address lookup failed");
         }
       }.bind(this)
     );
@@ -815,20 +681,12 @@ NvHTTP.prototype = {
         if (this.paired && this.ppkstr) return true;
 
         console.log("paring request received");
-        return sendMessage("pair", [
-          this.serverMajorVersion.toString(),
-          this.address,
-          this.httpPort,
-          randomNumber,
-        ]).then(
+        return sendMessage("pair", [this.serverMajorVersion.toString(), this.address, this.httpPort, randomNumber]).then(
           function (ppkstr) {
             console.log("cpp generated ppkstr : ", ppkstr);
             this.ppkstr = ppkstr;
             return sendMessage("openUrl", [
-              this._baseUrlHttps +
-                "/pair?uniqueid=" +
-                this.clientUid +
-                "&devicename=roth&updateState=1&phrase=pairchallenge",
+              this._baseUrlHttps + "/pair?uniqueid=" + this.clientUid + "&devicename=roth&updateState=1&phrase=pairchallenge",
               this.ppkstr,
               false,
             ]).then(

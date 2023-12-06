@@ -14,6 +14,7 @@ import ErrorPopUp from "src/pages/error";
 
 import TvLogin from "src/pages/guest/tv-login/tvLoginSteps";
 import TvFirstTimeUser from "src/pages/guest/tv-login/tvFirstTimeUser";
+import GamePlay from "src/pages/auth/game-play/gamePlay";
 
 export default function Router() {
   const sessionContext = useContext(SessionContext);
@@ -59,6 +60,7 @@ export default function Router() {
           element: <GamesDetail focusKey="GameDetail" />,
         },
         { path: "/search", element: <SearchGames focusKey="SearchGames" /> },
+        { path: "/game-play", element: <GamePlay /> },
       ],
     },
   ]);

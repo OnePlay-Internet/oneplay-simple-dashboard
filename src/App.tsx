@@ -1,19 +1,21 @@
-import React, {
-  createContext,
-  useEffect,
-  useLayoutEffect,
-  useState,
-} from "react";
+import React, { createContext, useEffect, useLayoutEffect, useRef, useState } from "react";
 import "./App.css";
 import Routes from "./routes";
 import { getProfile } from "./common/services";
-import { API_BASE_URL, NETWORK_CHECK_URL, SESSION_TOKEN_LOCAL_STORAGE, SHOW_GAME_SETTINGS_CHECKED } from "./common/constants";
+import {
+  API_BASE_URL,
+  MOONLIGHT_UID,
+  NETWORK_CHECK_URL,
+  SESSION_TOKEN_LOCAL_STORAGE,
+  SHOW_GAME_SETTINGS_CHECKED,
+} from "./common/constants";
 import { init, setKeyMap, useFocusable } from "@noriginmedia/norigin-spatial-navigation";
 import { useLocation, useNavigate } from "react-router-dom";
 import LoaderPopup from "./pages/loader";
 import { HttpStatusCode } from "axios";
 import ErrorPopUp from "./pages/error";
 import { initCountly, initCountlyUser } from "./common/countly.service";
+import { handleWASMMessages, handleWASMPromiseMessage, sendMessageToWASM } from "./pages/auth/game-play/messages.moonlight";
 export const SessionContext = createContext<{
   sessionToken: string;
   setSessionToken: any;
@@ -22,6 +24,8 @@ export const SessionContext = createContext<{
   setSessionToken: () => {},
 });
 export const NetworkStatusContext = createContext<boolean>(true);
+export const VideoElementContext = createContext<HTMLVideoElement | null>(null);
+export const PairingCertContext = createContext<{ cert: string; privateKey: string }>({ cert: "", privateKey: "" });
 export const CurrentFocusContext = createContext<{
   focusKey: string;
   setFocusKey: Function;
@@ -55,9 +59,12 @@ function App() {
   const userProfileContextValue = { userProfile, setUserProfile };
   const CurrentFocusContextValue = { focusKey, setFocusKey };
   const [showLoading, setShowLoading] = useState(true);
+  const [showWASMModuleLoading, setshowWASMModuleLoading] = useState(true);
   const { pathname, search } = useLocation();
   const [goTo, setGoTo] = useState<string>("");
   const [reloadingNetwork, setReloadingNetwork] = useState<boolean>(false);
+  const videoElement = useRef<HTMLVideoElement>(null);
+  const pairingCert = useRef({ cert: "", privateKey: "" });
   const [networkStatusPopup, setNetworkStatusPopUp] = useState<ErrorPopupPorps>({
     show: false,
     message: "",
@@ -105,7 +112,7 @@ function App() {
         console.log("reloading network .... ");
         return;
       }
-      try {
+      /* try {
         const controller = new AbortController();
         const id = setTimeout(() => controller.abort(), 5 * 1000);
         const internetStatusResponse = await fetch(NETWORK_CHECK_URL, {
@@ -119,12 +126,14 @@ function App() {
         }
       } catch (error) {
         setNetworkStatus(false);
-      }
+      } */
     }, 10 * 1000);
     return () => {
       clearInterval(onlineStatusCheckInterval);
     };
   }, []);
+  const [videoElementState, setVideoElementState] = useState<HTMLVideoElement | null>(null);
+
   const reloadNetwork = async () => {
     console.log("inside reload network");
     setShowLoading(true);
@@ -305,14 +314,70 @@ function App() {
 
     return () => {};
   }, [userProfile]);
+  useEffect(() => {
+    if (!videoElement.current) {
+      return;
+    }
+    setVideoElementState(videoElement.current);
+    createWASMModule();
+  }, []);
+
+  const createWASMModule = async () => {
+    const listenerDiv = document.getElementById("listener");
+    if (listenerDiv) {
+      listenerDiv.addEventListener("message", handleWASMMessages, true);
+    }
+    //@ts-ignore
+    window.handlePromiseMessage = handleWASMPromiseMessage;
+    console.log("createWASMModule.....");
+    //@ts-ignore
+    window.Module = {
+      onRuntimeInitialized: async () => {
+        console.log("WASM runtime initialized");
+        try {
+          //@ts-ignore
+          const pCert = await sendMessageToWASM("makeCert", []);
+          if (pCert && pCert.cert && pCert.privateKey) {
+            console.log("cert created : ", pCert);
+            pairingCert.current = { cert: pCert.cert, privateKey: pCert.privateKey };
+            const httpInitresponse = await sendMessageToWASM("httpInit", [pCert.cert, pCert.privateKey, MOONLIGHT_UID]);
+            console.log("http init : ", httpInitresponse);
+            setshowWASMModuleLoading(false);
+          }
+        } catch (error) {
+          console.log("error onRuntimeInitialized : ", error);
+        }
+
+        //updateStatus("RUNNING");
+
+        // if ("moduleDidLoad" as keyof typeof window) {
+        //   window.moduleDidLoad();
+        // }
+      },
+      onAbort: () => {
+        console.warn("abort called");
+      },
+      onExit: (status: string) => {
+        console.log("onExit called status: " + status);
+      },
+    }; // Module
+    const moonlightWasmScript = document.createElement("script");
+    moonlightWasmScript.src = "/moonlight-wasm.js";
+    document.body.appendChild(moonlightWasmScript);
+  };
   return (
     <SessionContext.Provider value={sessionContextValue}>
       <UserProfileContext.Provider value={userProfileContextValue}>
         <CurrentFocusContext.Provider value={CurrentFocusContextValue}>
           <NetworkStatusContext.Provider value={networkStatus}>
-            {networkStatus && <Routes />}
-            {showLoading && <LoaderPopup focusKeyParam="Loader" />}
-            {networkStatusPopup.show && <ErrorPopUp {...networkStatusPopup} />}
+            <PairingCertContext.Provider value={pairingCert.current}>
+              <video id="nacl_module" autoPlay tabIndex={-1} ref={videoElement} style={{ display: "none" }}></video>
+              <VideoElementContext.Provider value={videoElementState}>
+                {networkStatus && <Routes />}
+                {(showLoading || showWASMModuleLoading) && <LoaderPopup focusKeyParam="Loader" />}
+                {networkStatusPopup.show && <ErrorPopUp {...networkStatusPopup} />}
+              </VideoElementContext.Provider>
+            </PairingCertContext.Provider>
           </NetworkStatusContext.Provider>
         </CurrentFocusContext.Provider>
       </UserProfileContext.Provider>
