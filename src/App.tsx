@@ -15,7 +15,7 @@ import LoaderPopup from "./pages/loader";
 import { HttpStatusCode } from "axios";
 import ErrorPopUp from "./pages/error";
 import { initCountly, initCountlyUser } from "./common/countly.service";
-import { handleWASMMessages, handleWASMPromiseMessage, sendMessageToWASM } from "./pages/auth/game-play/messages.moonlight";
+import { handleWASMPromiseMessage, sendMessageToWASM } from "./pages/auth/game-play/messages.moonlight";
 export const SessionContext = createContext<{
   sessionToken: string;
   setSessionToken: any;
@@ -323,10 +323,6 @@ function App() {
   }, []);
 
   const createWASMModule = async () => {
-    const listenerDiv = document.getElementById("listener");
-    if (listenerDiv) {
-      listenerDiv.addEventListener("message", handleWASMMessages, true);
-    }
     //@ts-ignore
     window.handlePromiseMessage = handleWASMPromiseMessage;
     console.log("createWASMModule.....");
@@ -371,9 +367,15 @@ function App() {
         <CurrentFocusContext.Provider value={CurrentFocusContextValue}>
           <NetworkStatusContext.Provider value={networkStatus}>
             <PairingCertContext.Provider value={pairingCert.current}>
-              <video id="nacl_module" autoPlay tabIndex={-1} ref={videoElement} style={{ display: "none" }}></video>
+              <video
+                id="nacl_module"
+                autoPlay
+                tabIndex={-1}
+                ref={videoElement}
+                style={{ display: "none", position: "absolute", top: 0, left: 0 }}
+              ></video>
               <VideoElementContext.Provider value={videoElementState}>
-                {networkStatus && <Routes />}
+                {networkStatus && !showWASMModuleLoading && <Routes />}
                 {(showLoading || showWASMModuleLoading) && <LoaderPopup focusKeyParam="Loader" />}
                 {networkStatusPopup.show && <ErrorPopUp {...networkStatusPopup} />}
               </VideoElementContext.Provider>

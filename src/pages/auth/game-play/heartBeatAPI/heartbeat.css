@@ -1,0 +1,58 @@
+#heart-beat-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.heart-beat-popup {
+    position: fixed;
+    color: white;
+    font-size: 14px;
+    z-index: 2;
+    transition: transform 500ms ease-in-out;
+    transform:translateX(0%);
+}
+
+#remain-time-wrapper,#remain-timer {
+    top: 10px;
+    right: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.overlay-card {
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(9px);
+    border-radius: 10px;
+    padding: 20px;
+}
+
+#in-stream-message {
+    left: 10px;
+    bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.heart-beat-button{
+    padding: 6px 20px;
+    text-align: center;
+    margin-left: 10px;
+    background: linear-gradient(300.3deg,#0575e6 9.6%,#ff0cf5 92.85%);
+    color: #fff;
+    font-size: 14px;
+    border: none;
+    border-radius: 16px;
+    
+}
+.heart-beat-button:focus{
+    box-shadow: 0 0 0 3px rgba(112,102,224,.5);
+}
+
+.heart-beat-message-wrapper{
+    max-width: 230px;
+    text-align: center;
+}

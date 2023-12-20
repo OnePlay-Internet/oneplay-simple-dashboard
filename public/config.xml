@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <widget xmlns="http://www.w3.org/ns/widgets" xmlns:tizen="http://tizen.org/ns/widgets"
-    id="https://oneplay.in/tizen" version="1.0.4" viewmodes="maximized">
+    id="https://oneplay.in/tizen" version="1.0.5" viewmodes="maximized">
     <access origin="*" subdomains="true"></access>
     <tizen:application id="9xqCvMKehK.OnePlay" package="9xqCvMKehK" required_version="3.0" />
     <name>OnePlay</name>

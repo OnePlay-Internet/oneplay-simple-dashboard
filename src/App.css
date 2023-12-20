@@ -27,7 +27,13 @@
 .App-link {
   color: #61dafb;
 }
-
+.fullscreen {
+    height: 100vh !important;
+    overflow: hidden !important;
+    margin: auto !important;
+    padding: 0 !important;
+    border: none !important;
+}
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);

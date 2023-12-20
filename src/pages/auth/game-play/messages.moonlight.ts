@@ -78,42 +78,10 @@ export const handleWASMPromiseMessage = (callbackId: number, type: string, msg: 
  * @param  {Object} msg An object given by the NaCl module
  * @return {void}
  */
+
 export function handleWASMMessages(msg: any) {
-  console.log("%c[messages.js, handleMessage]", "color:gray;", "Message data: ", msg);
-  /*  if (msg.indexOf("streamTerminated: ") === 0) {
-    // if it's a recognized event, notify the appropriate function
-    // Release our keep awake request
-    if (runningOnChrome()) {
-      chrome.power.releaseKeepAwake();
-    }
-
-     // Show a termination snackbar message if the termination was unexpected
-    var errorCode = parseInt(msg.replace("streamTerminated: ", ""));
-    //if (errorCode !== 0) {
-    snackbarLogLong("Connection terminated unexpectedly.");
-    //}
-    stopHeartBeatAPI();
-    showStreamTerminatedUndexpectedlyDialog();
-  } else if (msg === "Connection Established") {
-    setGameStartedSuccessfully();
-    startHeartBeatAPI();
-    $("#loadingSpinner").css("display", "none");
-    $("body").css("backgroundColor", "transparent");
-    $("#nacl_module").css("display", "");
-    $("#nacl_module").focus();
-
-    // Keep the display awake while streaming
-    if (runningOnChrome()) {
-      chrome.power.requestKeepAwake("display");
-    }
-  } else if (msg.indexOf("ProgressMsg: ") === 0) {
-    $("#loadingMessage").text(msg.replace("ProgressMsg: ", ""));
-  } else if (msg.indexOf("TransientMsg: ") === 0) {
-    snackbarLog(msg.replace("TransientMsg: ", ""));
-  } else if (msg.indexOf("DialogMsg: ") === 0) {
-    // FIXME: Really use a dialog
-    snackbarLogLong(msg.replace("DialogMsg: ", ""));
-  } else if (msg === "displayVideo") {
-    $("#listener").addClass("fullscreen");
-  }   */
+  console.log("%c[messages.moonlight.ts, handleMessage]", "color:gray;", "Message data: ", msg);
 }
+
+//@ts-ignore
+window.handleMessage = handleWASMMessages;

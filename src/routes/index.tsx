@@ -60,7 +60,7 @@ export default function Router() {
           element: <GamesDetail focusKey="GameDetail" />,
         },
         { path: "/search", element: <SearchGames focusKey="SearchGames" /> },
-        { path: "/game-play", element: <GamePlay /> },
+        { path: "/game-play", element: <GamePlay focusKey="GamePlay" /> },
       ],
     },
   ]);

@@ -690,6 +690,9 @@ export default function GamesDetail({ focusKey: focusKeyParam }: FocusabelCompon
   };
 
   const startGameRequest = async () => {
+    /* navigate(
+      `/game-play?host_session_key=123&bitrate_kbps=10&game_fps=60&resolution=1920x768&server_ip=192.168.0.1&audio_port=123&control_port=123&http_port=123&https_port=123&pin_port=123&rtsp_port=123&video_port=123&user_id=123&game_id=${id}&client_token=123`
+    ); */
     startGamePlayStartEvent();
     if (showGameSettings) {
       console.log(gameSettingsValue.current);

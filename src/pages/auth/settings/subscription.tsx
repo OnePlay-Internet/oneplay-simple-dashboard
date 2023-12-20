@@ -236,7 +236,7 @@ const FocusablePlan = (props: any) => {
                 (props.currenSub.subscriptionPackage.total_offered_tokens % 60 > 0
                   ? (props.currenSub.subscriptionPackage.total_offered_tokens % 60).toFixed(0) + "m"
                   : "")}
-              letf.{" "}
+              left.{" "}
             </span>
             <span className="gamesDescription">Expires on {moment(props.currenSub.subscription_active_till).format("MMM DD, YYYY")}</span>
           </div>

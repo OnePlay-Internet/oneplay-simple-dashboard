@@ -1,15 +1,6 @@
 //Initialize function
 var init = function () {
   // TODO:: Do your initialization job
-  console.log("init() called");
-
-  document.addEventListener("visibilitychange", function () {
-    if (document.hidden) {
-      // Something you want to do when hide or exit.
-    } else {
-      // Something you want to do when resume.
-    }
-  });
 
   // add eventListener for keydown
   document.addEventListener("keydown", function (e) {
@@ -38,7 +29,9 @@ var init = function () {
         console.log("mute : " + tizen.tvaudiocontrol.isMute());
         break; */
       case 10009: //RETURN button
-        const urlParams = new URLSearchParams(window.location.search);
+        var confirmExitEvent = new CustomEvent("RemoteReturnClicked");
+        window.dispatchEvent(confirmExitEvent);
+        /*  const urlParams = new URLSearchParams(window.location.search);
         console.log("back : ", urlParams.get("back"));
         if (window.location.pathname === "/" || window.location.pathname === "/home") {
           // var confirmExitEvent = new CustomEvent("ShowConfirmExitDialog");
@@ -52,7 +45,9 @@ var init = function () {
           var confirmExitEvent = new CustomEvent("RemoteReturnClicked");
           window.dispatchEvent(confirmExitEvent);
           //  window.history.go(-1);
-        }
+        } */
+        break;
+      default:
         break;
     }
   });

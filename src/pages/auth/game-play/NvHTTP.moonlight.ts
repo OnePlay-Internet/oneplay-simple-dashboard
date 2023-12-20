@@ -1,4 +1,14 @@
 import { sendMessageToWASM } from "./messages.moonlight";
+import { generateRemoteInputKey, generateRemoteInputKeyId, getConnectedGamepadMask } from "./utils.moonlight";
+export type StreamStatsResponse = {
+  decoder: string;
+  received_fps: string;
+  rendered_fps: string;
+  net_drops: string;
+  net_latency: string;
+  variance: string;
+  decode_time: string;
+};
 
 export class NvHTTP {
   private readonly serverIp: string = "";
@@ -22,6 +32,7 @@ export class NvHTTP {
   private gputype: string = "";
   private numofapps: string = "";
   private supportedDisplayModes: { [key: string]: number[] } = {};
+  public appList: { title: string; id: number }[] = [];
   constructor(
     serverIp: string,
     uniqueId: string,
@@ -83,46 +94,195 @@ export class NvHTTP {
       return false;
     }
   };
+  /* public resumeApp = async (rikey: string, rikeyid: number, surroundAudioInfo: number) => {
+    return await sendMessageToWASM("openUrl", [
+      this.getServerAddress(true) +
+        "/resume?" +
+        this.buildUidStr() +
+        "&rikey=" +
+        rikey +
+        "&rikeyid=" +
+        rikeyid +
+        "&surroundAudioInfo=" +
+        surroundAudioInfo,
+      this.pairKey,
+      false,
+    ]);
+  }; */
+  public launchApp = async (
+    appId: number,
+    mode: string,
+    sops: number,
+    rikey: string,
+    rikeyid: number,
+    localAudio: number,
+    surroundAudioInfo: number,
+    gamepadMask: number
+  ) => {
+    return await sendMessageToWASM("openUrl", [
+      this.getServerAddress(true) +
+        "/launch?" +
+        this.buildUidStr() +
+        "&appid=" +
+        appId +
+        "&mode=" +
+        mode +
+        "&additionalStates=1&sops=" +
+        sops +
+        "&rikey=" +
+        rikey +
+        "&rikeyid=" +
+        rikeyid +
+        "&localAudioPlayMode=" +
+        localAudio +
+        "&surroundAudioInfo=" +
+        surroundAudioInfo +
+        "&remoteControllersBitmap=" +
+        gamepadMask +
+        "&gcmap=" +
+        gamepadMask,
+      this.pairKey,
+      false,
+    ]);
+  };
+  public startGame = async (
+    app: { title: string; id: number },
+    frameRate: string,
+    streamWidth: string,
+    streamHeight: string,
+    bitrate: string
+  ) => {
+    if (!this.pairKey || !this.paired) {
+      console.error("host is not paired");
+      return;
+    }
+    var rikey = generateRemoteInputKey();
+    var rikeyid = generateRemoteInputKeyId();
+    /*  if (this.currentGame === app.id) {
+      // if user wants to launch the already-running app, then we resume it.
+      const resumeResponse = await this.resumeApp(
+        rikey,
+        rikeyid,
+        0x030002 // Surround channel mask << 16 | Surround channel count
+      );
+      if (resumeResponse && typeof resumeResponse === "string" && this.checkXMLResponse(resumeResponse)) {
+        await this.startRequest(frameRate, streamWidth, streamHeight, bitrate, rikey, rikeyid);
+      } else {
+        console.error("Failed to resume the app! Returned error was" + resumeResponse);
+      }
+      return;
+    } */
+    var remote_audio_enabled = 1; // Play audio locally too?
+    var gamepadMask = getConnectedGamepadMask();
+    const launchAppRespone = await this.launchApp(
+      app.id,
+      streamWidth + "x" + streamHeight + "x" + frameRate,
+      1, // DON'T Allow GFE (0) to optimize game settings, or ALLOW (1) to optimize game settings
+      rikey,
+      rikeyid,
+      remote_audio_enabled,
+      0x030002, // Surround channel mask << 16 | Surround channel count
+      gamepadMask
+    );
+    if (launchAppRespone && typeof launchAppRespone === "string" && this.checkXMLResponse(launchAppRespone)) {
+      await this.startRequest(frameRate, streamWidth, streamHeight, bitrate, rikey, rikeyid);
+    } else {
+      console.error("Failed to launch app width id: " + app.id + "\nReturned error was: " + launchAppRespone);
+    }
+  };
+
+  private startRequest = async (
+    frameRate: string,
+    streamWidth: string,
+    streamHeight: string,
+    bitrate: string,
+    rikey: string,
+    rikeyid: number
+  ) => {
+    console.log("inside..startRequest");
+    const framePacingEnabled = 1;
+    const audioSyncEnabled = 1;
+    await sendMessageToWASM("startRequest", [
+      this.serverIp,
+      String(this.httpsPort),
+      streamWidth,
+      streamHeight,
+      frameRate,
+      bitrate,
+      rikey,
+      String(rikeyid),
+      String(this.appVersion),
+      "",
+      framePacingEnabled,
+      audioSyncEnabled,
+      `rtsp://${this.serverIp}:${this.rtspPort}`,
+      String(this.controlPort),
+      String(this.audioPort),
+      String(this.videoPort),
+    ]);
+  };
+
+  private checkXMLResponse = (xmlString: string) => {
+    const parser = new DOMParser();
+    const xml = parser.parseFromString(xmlString, "text/xml");
+
+    const root = xml.querySelector("root");
+    if (!root) {
+      return false;
+    }
+    const statusCode = root.getAttribute("status_code");
+    console.log("parseXMLAppList status code : ", statusCode);
+    if (!statusCode || +statusCode !== 200) {
+      return false;
+    }
+    return true;
+  };
   public getAppList = async () => {
     const appListResponse = await sendMessageToWASM("openUrl", [
       this.getServerAddress(true) + "/applist?" + this.buildUidStr(),
       this.pairKey,
       false,
     ]);
-    console.log("app list : ", appListResponse);
-    /* return sendMessage("openUrl", [this._baseUrlHttps + "/applist?" + this._buildUidStr(), this.ppkstr, false]).then(
-      function (ret) {
-        $xml = this._parseXML(ret);
-        $root = $xml.find("root");
-
-        if ($root.attr("status_code") != 200) {
-          // TODO: Bubble up an error here
-          console.error(
-            "%c[utils.js, utils.js,  getAppListWithCacheFlush]",
-            "color: gray;",
-            "Applist request failed",
-            $root.attr("status_code")
-          );
-          return [];
-        }
-
-        var rootElement = $xml.find("root")[0];
-        var appElements = rootElement.getElementsByTagName("App");
-        var appList = [];
-
-        for (var i = 0, len = appElements.length; i < len; i++) {
-          appList.push({
-            title: appElements[i].getElementsByTagName("AppTitle")[0].innerHTML.trim(),
-            id: parseInt(appElements[i].getElementsByTagName("ID")[0].innerHTML.trim(), 10),
-          });
-        }
-
-        this._memCachedApplist = appList;
-
-        return appList;
-      }.bind(this)
-    ); */
+    if (appListResponse && typeof appListResponse === "string") {
+      this.parseXMLAppList(appListResponse);
+    }
+    return this.appList.length > 0;
   };
+  public getStats = async (): Promise<StreamStatsResponse | null> => {
+    try {
+      const statResponse = await sendMessageToWASM("streamStats", []);
+      if (statResponse) {
+        return statResponse as StreamStatsResponse;
+      }
+    } catch (error) {
+      console.error("Error while getStats : ", error);
+    }
+    return null;
+  };
+  private parseXMLAppList(xmlString: string) {
+    const parser = new DOMParser();
+    const xml = parser.parseFromString(xmlString, "text/xml");
+
+    const root = xml.querySelector("root");
+    if (!root) {
+      return false;
+    }
+    const statusCode = root.getAttribute("status_code");
+    console.log("parseXMLAppList status code : ", statusCode);
+    if (!statusCode || +statusCode !== 200) {
+      return;
+    }
+
+    const appElements = root.getElementsByTagName("App");
+    this.appList.length = 0;
+
+    for (var i = 0, len = appElements.length; i < len; i++) {
+      this.appList.push({
+        title: appElements[i].getElementsByTagName("AppTitle")[0].innerHTML.trim(),
+        id: parseInt(appElements[i].getElementsByTagName("ID")[0].innerHTML.trim(), 10),
+      });
+    }
+  }
   private parseXMLPairedResponse(xmlString: string): boolean {
     const parser = new DOMParser();
     const xml = parser.parseFromString(xmlString, "text/xml");
@@ -165,6 +325,26 @@ export class NvHTTP {
       }
     }
   };
+
+  public sendKeyboardClickEvent = async (args: any[]) => {
+    console.log("sendKeyboardClickEvent : ", args);
+    try {
+      await sendMessageToWASM("keyboardKeyPressed", args);
+      return true;
+    } catch (error) {
+      console.error("keyboard click event failed : " + error);
+      return false;
+    }
+  };
+  public toggleMouseMode = async (): Promise<boolean> => {
+    try {
+      await sendMessageToWASM("toogleMouse", []);
+      return true;
+    } catch (error) {
+      console.error("Toggle mouse failed : " + error);
+      return false;
+    }
+  };
   parseServerInfoXML(responseString: string): boolean {
     const parser = new DOMParser();
     const xml = parser.parseFromString(responseString, "text/xml");
@@ -183,6 +363,7 @@ export class NvHTTP {
       console.log("invalid server UID");
       return false;
     }
+
     this.serverUID = serverUniqueId;
     this.paired = root.getElementsByTagName("PairStatus")[0].innerHTML.trim() === "1" ? true : false;
     this.currentGame = parseInt(root.getElementsByTagName("currentgame")[0].innerHTML.trim(), 10);

@@ -27,6 +27,7 @@ export default function LoaderPopup(props: any) {
         <div className="modal-dialog modal-dialog-centered">
           <div className="modal-content" style={{ backgroundColor: "transparent", alignItems: "center", border: "none" }}>
             <div className="loader-spinner"></div>
+            {props.loaderMessage && <p style={{ color: "white", marginTop: "50px", fontSize: "20px" }}>{props.loaderMessage}</p>}
           </div>
         </div>
       </div>
