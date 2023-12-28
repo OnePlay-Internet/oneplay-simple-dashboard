@@ -316,6 +316,11 @@ body {
 .focusedElement {
   box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 1);
 }
+.focusedWarningElement {
+  box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 1); 
+  border-radius:100%;
+
+}
 .focusedBlueElement {
   box-shadow: 0 0 0 0.25rem rgba(81, 66, 216, 0.45);
 }
@@ -810,7 +815,9 @@ body {
   margin-left: 6px;
   line-height: 14px;
 }
-
+.warning-container{
+  padding:100px;
+}
 .height151 {
   height: 100px !important;
   align-items: center;
