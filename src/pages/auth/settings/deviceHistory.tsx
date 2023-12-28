@@ -5,7 +5,7 @@ import {
 import { useContext, useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { SessionContext } from "src/App";
-import { SESSION_TOKEN_LOCAL_STORAGE, SHOW_GAME_SETTINGS_CHECKED } from "src/common/constants";
+import { CHECK_FREE_SUBSCRIPTION, SESSION_TOKEN_LOCAL_STORAGE, SHOW_GAME_SETTINGS_CHECKED } from "src/common/constants";
 import { getUsersSessions, sessionLogout } from "src/common/services";
 import { scrollToElement, scrollToTop, timeAgo } from "src/common/utils";
 import { StatusPopupContext } from "src/layouts/auth";
@@ -59,6 +59,7 @@ export default function DeviceHistory({ focusKey: focusKeyParam, logCountlyEvent
         }); */
         localStorage.removeItem(SESSION_TOKEN_LOCAL_STORAGE);
         localStorage.removeItem(SHOW_GAME_SETTINGS_CHECKED);
+        localStorage.removeItem(CHECK_FREE_SUBSCRIPTION);
         sessionContext.setSessionToken(null);
 
         navigate("/");
@@ -113,6 +114,7 @@ export default function DeviceHistory({ focusKey: focusKeyParam, logCountlyEvent
     await sessionLogout(`user:${userid}:session:${token}`, sessionContext.sessionToken);
     localStorage.removeItem(SESSION_TOKEN_LOCAL_STORAGE);
     localStorage.removeItem(SHOW_GAME_SETTINGS_CHECKED);
+    localStorage.removeItem(CHECK_FREE_SUBSCRIPTION);
     sessionContext.setSessionToken(null);
     navigate("/");
   };

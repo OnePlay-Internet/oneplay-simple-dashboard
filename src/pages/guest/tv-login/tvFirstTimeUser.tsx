@@ -124,7 +124,7 @@ export default function TvFirstTimeUser({ focusKey: focusKeyParam }: FocusabelCo
               <h3 className="heading">{REGISTER_URL}</h3>
               <div className="mt-5">
                 <div style={{ padding: "10px", backgroundColor: "white", display: "inline-block" }}>
-                  <QRCode value={`https://www.${REGISTER_URL}`} />
+                  <QRCode value={`https://www.${REGISTER_URL}?device=tizen`} />
                 </div>
               </div>
             </div>

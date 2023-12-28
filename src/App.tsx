@@ -4,6 +4,7 @@ import Routes from "./routes";
 import { getProfile } from "./common/services";
 import {
   API_BASE_URL,
+  CHECK_FREE_SUBSCRIPTION,
   MOONLIGHT_UID,
   NETWORK_CHECK_URL,
   SESSION_TOKEN_LOCAL_STORAGE,
@@ -95,6 +96,7 @@ function App() {
           setShowLoading(false);
           localStorage.removeItem(SESSION_TOKEN_LOCAL_STORAGE);
           localStorage.removeItem(SHOW_GAME_SETTINGS_CHECKED);
+          localStorage.removeItem(CHECK_FREE_SUBSCRIPTION);
         } else {
           setUserProfile(profileResp.profile);
           setSessionToken(savedToken);

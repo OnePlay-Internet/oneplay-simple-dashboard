@@ -1,5 +1,4 @@
 import axios from "axios";
-import axiosInstance from "./axiosInstance";
 import { API_BASE_URL, API_CLIENT_URL, GAME_FETCH_LIMIT, SESSION_TOKEN_LOCAL_STORAGE } from "./constants";
 
 export type QRCodeDTO = {
@@ -163,7 +162,6 @@ export async function updateProfile(sessionToken: string, body: { [key: string]:
         formData.append(key, body[key]);
       }
     }
-    console.log("update profile form data : ", formData);
     const profileResp = await axios.put(API_BASE_URL + "accounts/profile", formData, {
       headers: {
         session_token: sessionToken,
@@ -189,7 +187,6 @@ export async function setUserSearchPrivacy(sessionToken: string, search_privacy:
         },
       }
     );
-    console.log("search privacy : ", response.data);
     if (response.status !== 200 && response.status !== 201) {
       return handleNon200Response(response.data.message);
     }
@@ -414,6 +411,46 @@ export async function logout(sessionToken: string): Promise<LogoutResponseDTO> {
     }
   }
 }
+export async function verifyTizenDUID(sessionToken: string, token: string): Promise<LogoutResponseDTO> {
+  try {
+    const verifyTizenDUIDResponse = await axios.post(
+      `${API_BASE_URL}subscriptions/verify_tizen_duid`,
+      { token },
+      {
+        headers: {
+          session_token: sessionToken,
+        },
+      }
+    );
+    if (![200, 201].includes(verifyTizenDUIDResponse.status)) {
+      return handleNon200Response(verifyTizenDUIDResponse.data.msg);
+    }
+    console.log(verifyTizenDUIDResponse.data);
+    return { success: verifyTizenDUIDResponse.data.success };
+  } catch (error: any) {
+    return handleError(error, "verifyTizenDUID");
+  }
+}
+
+export async function activateTizenFreeSubscription(sessionToken: string, token: string): Promise<LogoutResponseDTO> {
+  try {
+    const verifyTizenDUIDResponse = await axios.post(
+      `${API_BASE_URL}subscriptions/create_tizen_subscription`,
+      { token },
+      {
+        headers: {
+          session_token: sessionToken,
+        },
+      }
+    );
+    if (![200, 201].includes(verifyTizenDUIDResponse.status)) {
+      return handleNon200Response(verifyTizenDUIDResponse.data.msg);
+    }
+    return { success: true };
+  } catch (error: any) {
+    return handleError(error, "create tizen subscription");
+  }
+}
 export async function deleteAllSessionData(userId: string, sessionId: string) {
   try {
     const formData = new FormData();
@@ -633,7 +670,6 @@ export async function setPin(host: string, port: string, sessionKey: string): Pr
     if (sessionInfoResp.status !== 200) {
       return handleNon200Response(sessionInfoResp.data.msg);
     }
-    console.log("set pin resp : ", sessionInfoResp);
     return {
       success: true,
       message: sessionInfoResp.data?.msg,
@@ -653,15 +689,12 @@ export async function setPin(host: string, port: string, sessionKey: string): Pr
 function handleError(error: any, operation: string = "") {
   let errorMessage = null;
   if (error.response) {
-    errorMessage =
-      error.response.data?.message ?? error.response.data?.msg ?? null;
+    errorMessage = error.response.data?.message ?? error.response.data?.msg ?? null;
   } else if (!errorMessage && error.message) {
     errorMessage = error.message;
   }
   if (!errorMessage) {
-    errorMessage = `Something went wrong, ${
-      operation ? "could not complete " + operation : ""
-    } `;
+    errorMessage = `Something went wrong, ${operation ? "could not complete " + operation : ""} `;
   }
   return { success: false, message: errorMessage };
 }

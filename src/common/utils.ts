@@ -1,3 +1,6 @@
+import crypto from "crypto";
+import { DUID_KEY } from "./constants";
+
 export function getCoords(elem: HTMLElement) {
   // crossbrowser version
   var box = elem.getBoundingClientRect();
@@ -41,8 +44,6 @@ export function scrollToElement(element: any, offSet: number = 45) {
     behavior: "smooth",
   });
 }
-
-
 
 export function scrollToTop() {
   window.scrollTo({
@@ -117,8 +118,24 @@ export function timeAgo(time: any) {
     //@ts-ignore
     if (seconds < format[0]) {
       if (typeof format[2] == "string") return format[list_choice];
-      else
-        return Math.floor(seconds / format[2]) + " " + format[1] + " " + token;
+      else return Math.floor(seconds / format[2]) + " " + format[1] + " " + token;
     }
   return time;
+}
+
+export function encryptDUID(plainText: string) {
+  //@ts-ignore
+  const jsEncrypt = new JSEncrypt();
+  jsEncrypt.setPublicKey(DUID_KEY);
+
+  return jsEncrypt.encrypt(plainText);
+  /*  return crypto.publicEncrypt(
+    {
+      key: DUID_KEY,
+      padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+      oaepHash: "sha256",
+    },
+    // We convert the data string to a buffer
+    Buffer.from(plainText)
+  ); */
 }

@@ -13,6 +13,7 @@ import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import { StatusPopupContext } from "src/layouts/auth";
+import FreeSubscription from "./freeSubscription";
 export default function Home({ focusKey: focusKeyParam }: FocusabelComponentProps) {
   const [personalizedFeeds, setPersonalizedFeeds] = useState<any[]>([]);
   const [customGames, setCustomGames] = useState<any[]>([]);
@@ -23,7 +24,7 @@ export default function Home({ focusKey: focusKeyParam }: FocusabelComponentProp
   const statusPopupContext = useContext(StatusPopupContext);
   const navigate = useNavigate();
   const [currentTab, setCurrentTab] = useState("For You");
-
+  const [showingFreeSubscriptionPopup, setShowingFreeSubscriptionPopup] = useState(false);
   const [popUp, setPopUp] = useState<ErrorPopupPorps>({
     show: false,
     message: "",
@@ -225,6 +226,11 @@ export default function Home({ focusKey: focusKeyParam }: FocusabelComponentProp
     const onRemoteReturnClicked = (event: any) => {
       console.log("home on remote return clicked ");
       if (statusPopupContext) return;
+      if (showingFreeSubscriptionPopup) {
+        setShowingFreeSubscriptionPopup(false);
+        setFocus("home_header_slider");
+        return;
+      }
       if (popUp.show) {
         hidePopup();
       } else {
@@ -388,7 +394,10 @@ export default function Home({ focusKey: focusKeyParam }: FocusabelComponentProp
         {currentTab === "For You" ? renderRails() : renderCustomResut()}
         {currentTab !== "For You" ? renderWishlist() : null}
       </div>
-
+      <FreeSubscription
+        showingFreeSubscriptionPopup={showingFreeSubscriptionPopup}
+        setShowingFreeSubscriptionPopup={setShowingFreeSubscriptionPopup}
+      />
       {popUp.show && <ErrorPopUp {...popUp} />}
     </FocusContext.Provider>
   );

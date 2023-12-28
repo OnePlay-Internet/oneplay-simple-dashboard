@@ -12,7 +12,7 @@ import axios from "axios";
 import { CurrentFocusContext, SessionContext, UserProfileContext } from "src/App";
 import { FocusContext, useFocusable } from "@noriginmedia/norigin-spatial-navigation";
 import { deleteAllSessionData, getProfile, logout, setUserSearchPrivacy } from "src/common/services";
-import { SESSION_TOKEN_LOCAL_STORAGE, SHOW_GAME_SETTINGS_CHECKED } from "src/common/constants";
+import { CHECK_FREE_SUBSCRIPTION, SESSION_TOKEN_LOCAL_STORAGE, SHOW_GAME_SETTINGS_CHECKED } from "src/common/constants";
 import { useNavigate } from "react-router-dom";
 import ErrorPopUp from "src/pages/error";
 import FAQs from "./faqs";
@@ -107,6 +107,7 @@ export default function General({ focusKey: focusKeyParam, logCountlyEvent }: Fo
 
     localStorage.removeItem(SESSION_TOKEN_LOCAL_STORAGE);
     localStorage.removeItem(SHOW_GAME_SETTINGS_CHECKED);
+    localStorage.removeItem(CHECK_FREE_SUBSCRIPTION);
     userContext.setUserProfile(null);
     sessionContext.setSessionToken(null);
     navigate("/");

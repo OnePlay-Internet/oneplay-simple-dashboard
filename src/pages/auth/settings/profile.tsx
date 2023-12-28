@@ -3,7 +3,7 @@ import defaultUser from "../../../assets/images/user/defaultUser.svg";
 import { SessionContext, UserProfileContext } from "src/App";
 import { getProfile, updateProfile } from "src/common/services";
 import { useNavigate } from "react-router-dom";
-import { SESSION_TOKEN_LOCAL_STORAGE, SHOW_GAME_SETTINGS_CHECKED } from "src/common/constants";
+import { CHECK_FREE_SUBSCRIPTION, SESSION_TOKEN_LOCAL_STORAGE, SHOW_GAME_SETTINGS_CHECKED } from "src/common/constants";
 import { FocusContext, useFocusable } from "@noriginmedia/norigin-spatial-navigation";
 import LoaderPopup from "src/pages/loader";
 import ErrorPopUp from "src/pages/error";
@@ -53,6 +53,7 @@ export default function Profile({ focusKey: focusKeyParam }: FocusabelComponentP
 
         localStorage.removeItem(SESSION_TOKEN_LOCAL_STORAGE);
         localStorage.removeItem(SHOW_GAME_SETTINGS_CHECKED);
+        localStorage.removeItem(CHECK_FREE_SUBSCRIPTION);
         sessionContext.setSessionToken(null);
         navigate("/");
         return;
