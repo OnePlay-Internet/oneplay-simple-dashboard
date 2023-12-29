@@ -1,0 +1,31 @@
+.dialog-box{
+    background-color:black;
+    border-radius: 10px;
+    color:#FFFFF7;
+    padding:12px;
+    position:absolute;
+    top:65px;
+    right:19px;
+    
+}
+.dialog-box::before{
+content: '';
+position: absolute;
+top: -15px;
+right: 8px;
+border-left: 35px solid transparent;
+border-right: 35px solid transparent;
+border-bottom: 20px solid black; 
+}
+
+.warning-button{
+    width:30px;
+    heigth:30px;
+    position:absolute;
+    top:10px;
+    right:50px;
+    border-radius:100%;
+    outline:none;
+    border:none;
+    background-color:black;
+}

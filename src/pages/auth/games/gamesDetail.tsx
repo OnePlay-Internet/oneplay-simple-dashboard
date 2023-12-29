@@ -33,6 +33,8 @@ import {
 import GameSettingsPopup from "./gameSettings";
 import { SHOW_GAME_SETTINGS_CHECKED } from "src/common/constants";
 import { useSearchParams } from "react-router-dom";
+import warningIcon from "../../../assets/images/warning/warning-icon.svg";
+import "../../../assets/css/warning-icon.css";
 export default function GamesDetail({ focusKey: focusKeyParam }: FocusabelComponentProps) {
   const sessionContext = useContext(SessionContext);
   let { id } = useParams();
@@ -45,13 +47,14 @@ export default function GamesDetail({ focusKey: focusKeyParam }: FocusabelCompon
   const [debugInfo, setDebugInfo] = useState("");
   const [playNowButtonText, setPlayNowButtonText] = useState<string>("Play Now");
   const [activeSessionStatus, setActiveSessionStatus] = useState<GameStatusDTO>({
-    is_user_connected: false,
-    is_running: false,
-    game_id: null,
-    game_name: null,
-    session_id: null,
-    success: false,
-  });
+      is_user_connected: false,
+      is_running: false,
+      game_id: null,
+      game_name: null,
+      session_id: null,
+      success: false,
+    });
+  const [showWarningMsg, setShowWarningMsg] = useState<boolean>(false);
   const [startGameSession, setStartGameSession] = useState<string | null>(null);
   const [gameClientToken, setGameClientToken] = useState<string | null>(null);
   const [clientTokenStartTime, setClientTokenStartTime] = useState<number | null>(null);
@@ -83,6 +86,7 @@ export default function GamesDetail({ focusKey: focusKeyParam }: FocusabelCompon
   const [showGameSettings, setShowGameSettings] = useState<boolean>(false);
   const gameSettingsValue = useRef({ resolution: "1280x720", vSync: true, fps: 60, bitRate: 10 });
   const [searchParams] = useSearchParams();
+  const[warningMsgPresent,setWarningMsgPresent]=useState<boolean>(false);
   useEffect(() => {
     setShowGamesettingsChecked(localStorage.getItem(SHOW_GAME_SETTINGS_CHECKED) === "true");
   }, []);
@@ -96,9 +100,9 @@ export default function GamesDetail({ focusKey: focusKeyParam }: FocusabelCompon
     return () => {
       if (gameDetails) {
         endGameLandingViewEvent(gameDetails, searchParams.get("source") ?? "gamesPage", searchParams.get("trigger") ?? "card");
-      }
-    };
-  }, [gameDetails]);
+     }
+   };
+ }, [gameDetails]);
 
   useEffect(() => {
     setFocus("play-now");
@@ -161,8 +165,13 @@ export default function GamesDetail({ focusKey: focusKeyParam }: FocusabelCompon
     } else {
       navigate("/all-games");
     }
+    
   }, [sessionContext.sessionToken, id]);
-
+  useEffect(()=>{
+  if(gameDetails){
+    {gameDetails.warning_message===""?setWarningMsgPresent(true):setWarningMsgPresent(false)}
+  }
+  },[gameDetails])
   useEffect(() => {
     (async () => {
       if (gameClientToken) {
@@ -299,6 +308,8 @@ export default function GamesDetail({ focusKey: focusKeyParam }: FocusabelCompon
       }
     })();
   }, [gameDetails]);
+
+
   const renderSimilarGames = () => {
     return similarGames.length ? (
       <div className="col-12" key={`feed_similar_games`}>
@@ -398,7 +409,45 @@ export default function GamesDetail({ focusKey: focusKeyParam }: FocusabelCompon
       ? gameDetails?.description?.replace(/<[^>]*>|&[^;]+;/gm, "").slice(0, shortDescLength()) ?? ""
       : gameDetails?.description.replace(/<[^>]*>|&[^;]+;/gm, "");
   };
-
+  const getNumberOfWords=(msg:string)=>{
+    const words = msg.split(/\s+/);
+  return words.length;
+  }
+  const getDialogBoxWidthAndHeight=(msg:string)=>{
+  let wordCount:number=getNumberOfWords(msg);
+  let width=500;
+  let height=100;
+  console.log(wordCount);
+  if(wordCount>0 && wordCount<=4){
+  width=200;
+  height=70;
+  }
+  else if(wordCount>4 && wordCount<=10){
+    width=350;
+    height=100;
+    }
+  return {width,height};
+}
+  const renderWarningMsg = (msg: string) => {
+    const {width,height}=getDialogBoxWidthAndHeight(msg);
+    console.log(width);
+    return (
+      <FocusableWarningButton
+        focusKeyParam="btn-display-warning"
+        onClick={toggleWarningMsg}
+        showWarningMsg={showWarningMsg}
+        msg={msg}
+        width={`${width}px`}
+        height={`${height}px`}
+        allowDownArrow={true}
+        allowRightArrow={false}
+        className="dialog-box"
+        setShowWarningMsg={setShowWarningMsg}
+      >
+       
+      </FocusableWarningButton>
+    );
+  };
   const renderSingleStore = (store: any, index: number) => {
     const isSelected = !selectedStore && index === 0 ? "selected" : selectedStore === store.name ? "selected" : "";
 
@@ -443,10 +492,12 @@ export default function GamesDetail({ focusKey: focusKeyParam }: FocusabelCompon
         <div className="borderRadius90 mt-3 blackColor" style={{ width: "fit-content" }}>
           <FocusableButton
             focusKeyParam="play-now"
+            warningMsgPresent={warningMsgPresent}
             onClick={doNothing}
             className="btn blackColor borderRadius90 px-lg-4 border-0 text-white GradientBtnPadding position-relative fullWidthBtn font600"
             allowDownArrow={true}
             allowRightArrow={false}
+
           >
             {gameDetails.status === "coming_soon" ? "Coming Soon" : ""}
             {gameDetails.status === "maintenance" ? "Under Maintenance" : ""}
@@ -460,6 +511,7 @@ export default function GamesDetail({ focusKey: focusKeyParam }: FocusabelCompon
         <>
           <FocusableButton
             focusKeyParam="play-now"
+            warningMsgPresent={warningMsgPresent}
             className="btn btnGradient px-4 m-1"
             onClick={() => {
               activeSessionStatus?.session_id &&
@@ -494,6 +546,7 @@ export default function GamesDetail({ focusKey: focusKeyParam }: FocusabelCompon
             className="btn btnGradient px-4 m-1"
             onClick={startGameRequest}
             focusKeyParam="play-now"
+            warningMsgPresent={warningMsgPresent}
             allowDownArrow={true}
             allowRightArrow={false}
           >
@@ -508,15 +561,17 @@ export default function GamesDetail({ focusKey: focusKeyParam }: FocusabelCompon
       );
     } else {
       return (
-        <FocusableButton
-          className="btn btnGradient px-4 m-1"
-          focusKeyParam="play-now"
-          onClick={doNothing}
-          allowDownArrow={true}
-          allowRightArrow={false}
-        >
-          Loading...
-        </FocusableButton>
+        <>
+          <FocusableButton
+            className="btn btnGradient px-4 m-1"
+            focusKeyParam="play-now"
+            onClick={doNothing}
+            allowDownArrow={true}
+            allowRightArrow={false}
+          >
+            Loading...
+          </FocusableButton>
+        </>
       );
     }
   };
@@ -857,6 +912,9 @@ export default function GamesDetail({ focusKey: focusKeyParam }: FocusabelCompon
       document.getElementById("game-details-info")?.scrollIntoView({ behavior: "smooth", block: "center" });
     }, 150);
   };
+  const toggleWarningMsg = () => {
+    setShowWarningMsg((prev) => !prev);
+  };
   useEffect(() => {
     const onRemoteReturnClicked = (event: any) => {
       if (statusPopupContext) return;
@@ -894,6 +952,10 @@ export default function GamesDetail({ focusKey: focusKeyParam }: FocusabelCompon
                       {gameDetails?.age_rating && gameDetails?.age_rating !== "null" ? " - " + gameDetails?.age_rating : ""}
                       {gameDetails?.is_free === "true" ? " - Free" : ""}
                     </p>
+                    <div>
+                      {gameDetails.warning_message !== "" &&
+                        renderWarningMsg(gameDetails.warning_message)}
+                    </div>
                     {renderButtons()}
                     {renderWarnings()}
                   </div>
@@ -906,6 +968,7 @@ export default function GamesDetail({ focusKey: focusKeyParam }: FocusabelCompon
             <p className="textOffWhite font500" id="game-details-info">
               {getShortDescription()}
               <FocusableButton
+               warningMsgPresent={warningMsgPresent}
                 focusKeyParam="btn-read-more"
                 onClick={toogleReadMore}
                 className="read-more-button"
@@ -1005,6 +1068,48 @@ export default function GamesDetail({ focusKey: focusKeyParam }: FocusabelCompon
   );
 }
 
+const FocusableWarningButton = (props: any) => {
+  const { ref, focused,setFocus } = useFocusable({
+    focusable: true,
+    focusKey: props.focusKeyParam,
+    onFocus: () => {
+      scrollToTop();
+    },
+    onEnterPress: () => {
+      props.onClick();
+    },
+    onBlur:()=>{
+    props.setShowWarningMsg(false);
+    },
+    onArrowPress: (direction, keyProps, detils) => {
+      if (
+        (direction === "up" || direction === "left") &&
+        props.focusKeyParam === "btn-display-warning"
+      ) {
+        setFocus("Sidebar", getScrolledCoords(ref.current));
+        return false;
+      }
+      if (
+        direction === "down" &&
+        props.focusKeyParam === "btn-display-warning" &&
+        props.allowDownArrow
+      ) {
+        setFocus("play-now");
+        return false;
+      }
+      return true;
+    },
+  });
+  return (
+    <>
+    <button ref={ref} onClick={props.onClick} className={"warning-button" +(focused ? " focusedWarningElement" : "")}>
+      <img src={warningIcon} className="img-fluid" alt="" />
+    </button>
+     {props.showWarningMsg && <div className={props.className} style={{width:props.width,height:props.height}}>{props.msg}</div>}
+     </>
+  );
+};
+
 const FocusableButton = (props: any) => {
   const { ref, focused, setFocus } = useFocusable({
     focusable: true,
@@ -1021,20 +1126,33 @@ const FocusableButton = (props: any) => {
       props.onClick();
     },
     onArrowPress: (direction, keyProps, detils) => {
-      if ((direction === "right" && !props.allowRightArrow) || (direction === "down" && !props.allowDownArrow)) {
+      if (
+        (direction === "right" && !props.allowRightArrow) ||
+        (direction === "down" && !props.allowDownArrow)
+      ) {
         return false;
         /*  } else if (props.focusKeyParam === "play-now" && direction === "down") {
         setFocus("checkbox-show-settings");
         //setFocus("btn-read-more");
         return false;
       } */
-      } else if (
-        (props.focusKeyParam === "play-now" && (direction === "left" || direction === "up")) ||
+      } 
+      else if((props.focusKeyParam === "play-now" &&
+      (direction === "left" || direction === "up")) ){
+
+      }
+      else if (
+        (props.focusKeyParam === "play-now" &&
+          (direction === "left" || direction === "up")) ||
         (props.focusKeyParam === "btn-read-more" && direction === "left")
       ) {
-        setFocus("Sidebar", getScrolledCoords(ref.current));
+        props.warningMsgPresent?setFocus("btn-display-warning"):setFocus("Sidebar", getScrolledCoords(ref.current));
         return false;
-      } else if (direction === "right" && props.focusKeyParam === "btn-read-more" && props.allowRightArrow) {
+      } else if (
+        direction === "right" &&
+        props.focusKeyParam === "btn-read-more" &&
+        props.allowRightArrow
+      ) {
         setFocus("store-0");
         return false;
       }

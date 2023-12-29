@@ -1,0 +1,32 @@
+<svg width="210mm" height="297mm" version="1.1" viewBox="0 0 210 297" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <defs>
+  <linearGradient id="linearGradient6185" x1="133.15" x2="74.366" y1="58.571" y2="240.76" gradientUnits="userSpaceOnUse">
+   <stop stop-color="#ff360c" offset="0"/>
+   <stop stop-color="#d40000" offset="1"/>
+  </linearGradient>
+ </defs>
+ <g>
+  <g>
+   <ellipse transform="matrix(.99982 .018857 -.023761 .99972 0 0)" cx="403.71" cy="65.266" rx="102.9" ry="101.88" fill="#2b0000" fill-rule="evenodd" stroke-width=".83269"/>
+   <g stroke="#ff360c">
+    <path transform="matrix(1.0398 -.32003 .32418 1.0117 -54.139 32.734)" d="m185.79 219.13-71.678 36.233-76.305-25.064-36.233-71.678 25.064-76.305 71.678-36.233 76.305 25.064 36.233 71.678z" fill="url(#linearGradient6185)" stroke-width=".24477"/>
+    <rect x="99.023" y="87.135" width="15.888" height="85.215" fill="#2b0000" stroke-width=".22051"/>
+    <rect transform="matrix(-.99982 -.018902 -.008516 -.99996 0 0)" x="-115.22" y="-201.35" width="18.243" height="16.659" fill="#2b0000" stroke-width=".22014"/>
+   </g>
+  </g>
+  <g fill="none" stroke-width=".2904">
+   <path d="m.49957 66.727a34.396 27.214 0 01-20.162 21.549l-13.977-24.866z"/>
+   <path d="m17.271 27.64a15.497 16.631 0 01-9.084 13.169l-6.2975-15.196z"/>
+   <path d="m39.227 43.465a11.019 14.106 0 01-6.4592 11.169l-4.4778-12.888z"/>
+   <path d="m28.216 41.334a10.052.46829 0 01-5.892.37081l-4.0846-.42788z"/>
+   <path d="m-249.31 19.228a80.887 62.366 0 01-47.414 49.384l-32.87-56.985z"/>
+  </g>
+  <path d="m-503.52-34.458a7.9375 6.4256 0 01-4.6528 5.088l-3.2255-5.8711z" fill="#2b0000" fill-rule="evenodd" stroke-width=".2904"/>
+  <g fill="none" stroke-width=".2904">
+   <path d="m-323.07 86.197a37.42 41.199 0 01-21.935 32.623l-15.206-37.644z"/>
+   <path d="m-323.64 30.388a75.834 63.554 0 01-44.452 50.324l-30.816-58.07z"/>
+   <path d="m36.215 25.09a9.5072 2.9033 0 01-5.5729 2.2989l-3.8634-2.6528z"/>
+  </g>
+  <path d="m-256.12 166.83-40.098-18.125 35.745-25.663z" fill-opacity="0" stroke="#ff360c" stroke-width=".243"/>
+ </g>
+</svg>
