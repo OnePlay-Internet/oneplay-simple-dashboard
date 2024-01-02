@@ -60,7 +60,7 @@ function App() {
   const userProfileContextValue = { userProfile, setUserProfile };
   const CurrentFocusContextValue = { focusKey, setFocusKey };
   const [showLoading, setShowLoading] = useState(true);
-  const [showWASMModuleLoading, setshowWASMModuleLoading] = useState(true);
+  const [showWASMModuleLoading, setshowWASMModuleLoading] = useState(false);
   const { pathname, search } = useLocation();
   const [goTo, setGoTo] = useState<string>("");
   const [reloadingNetwork, setReloadingNetwork] = useState<boolean>(false);
@@ -321,7 +321,7 @@ function App() {
       return;
     }
     setVideoElementState(videoElement.current);
-    createWASMModule();
+    //createWASMModule();
   }, []);
 
   const createWASMModule = async () => {

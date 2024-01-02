@@ -2,11 +2,26 @@
     background-color:black;
     border-radius: 10px;
     color:#FFFFF7;
-    padding:12px;
+    
     position:absolute;
     top:65px;
-    right:19px;
-    
+    right:20px;
+    height: auto;
+    width: auto;
+    max-height: 70px;
+    max-width: 600px;
+}
+
+.warning-msg-content{
+display: -webkit-box;
+max-width: 580px;
+width: auto;
+  max-height: 70px;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 10px;
 }
 .dialog-box::before{
 content: '';
@@ -20,12 +35,12 @@ border-bottom: 20px solid black;
 
 .warning-button{
     width:30px;
-    heigth:30px;
+    height:30px;
     position:absolute;
     top:10px;
     right:50px;
     border-radius:100%;
     outline:none;
     border:none;
-    background-color:black;
+    background: black;
 }

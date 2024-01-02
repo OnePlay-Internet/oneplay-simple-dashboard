@@ -15,7 +15,7 @@ import iconStats from "../../../assets/images/icon-gameplay-stats.svg";
 import iconControllerShortcuts from "../../../assets/images/icon-gameplay-controller-shortcuts.svg";
 import iconQuit from "../../../assets/images/icon-gameplay-quit.svg";
 import ErrorPopUp from "src/pages/error";
-import HeartBeatAPI from "./heartBeatAPI/heartBeatAPI";
+import HeartBeatAPI from "./heartBeatAPI/heartBeatAPITest";
 import iconClose from "../../../assets/images/icon-close.svg";
 function GamePlay({ focusKey: focusKeyParam }: { focusKey: string }) {
   const [searchParams] = useSearchParams();
@@ -26,7 +26,7 @@ function GamePlay({ focusKey: focusKeyParam }: { focusKey: string }) {
   const [showKeyboard, setShowKeyboard] = useState<boolean>(false);
   const [showControllerShortcuts, setShowControllerShortcuts] = useState<boolean>(false);
   const [mouseMode, setMouseMode] = useState<boolean>(true);
-  const [showLoader, setShowLoader] = useState<boolean>(true);
+  const [showLoader, setShowLoader] = useState<boolean>(false);
   const [showHeartBeatStat, setShowHeartBeatStat] = useState<boolean>(false);
   const [loaderMessage, setLoaderMessage] = useState<string>("Starting game...");
   const navigate = useNavigate();
@@ -60,7 +60,7 @@ function GamePlay({ focusKey: focusKeyParam }: { focusKey: string }) {
     }
 
     const nv = new NvHTTP(serverIp, MOONLIGHT_UID, hostSessionKey, +httpPort, +httpsPort, +rtspPort, +controlPort, +audioPort, +videoPort);
-    setLoaderMessage("Started pairing...");
+    /* setLoaderMessage("Started pairing...");
     const hasServerInfo = await nv.refreshServerInfo();
     if (!hasServerInfo) {
       return;
@@ -98,7 +98,7 @@ function GamePlay({ focusKey: focusKeyParam }: { focusKey: string }) {
       await nv.startGame(desktopApp, gameFps, selectedRes.split("x")[0], selectedRes.split("x")[1], bitRate);
       setShowLoader(false);
     }
-
+*/
     setNvHttp(nv);
   };
   const onRemoteReturnClicked = useCallback(
@@ -248,6 +248,9 @@ function GamePlay({ focusKey: focusKeyParam }: { focusKey: string }) {
         //@ts-ignore
         window.enableGamepad = false;
       } else {
+        if (mouseMode) {
+          toggleMouseMode();
+        }
         //@ts-ignore
         window.enableGamepad = true;
       }
@@ -298,7 +301,17 @@ function GamePlay({ focusKey: focusKeyParam }: { focusKey: string }) {
       };
     });
   };
-
+  const goBackToGameDetails = useCallback(() => {
+    hidePopup();
+    if (videoElement) {
+      videoElement.style.display = "none";
+    }
+    const listener = document.getElementById("listener");
+    if (listener) {
+      listener.className = "";
+    }
+    navigate(-1);
+  }, [hidePopup, navigate]);
   const showConfirmExitStreamPopup = () => {
     setshowSettings(false);
     //tizen.application.getCurrentApplication().exit();
@@ -318,17 +331,7 @@ function GamePlay({ focusKey: focusKeyParam }: { focusKey: string }) {
           text: "Yes",
           className: "btn grayGradientBtn btn-lg border-0 mt-3",
           focusKey: "btn-cancel-popup",
-          onClick: () => {
-            hidePopup();
-            if (videoElement) {
-              videoElement.style.display = "none";
-            }
-            const listener = document.getElementById("listener");
-            if (listener) {
-              listener.className = "";
-            }
-            navigate(-1);
-          },
+          onClick: goBackToGameDetails,
         },
       ],
       focusKeyParam: "modal-popup-confirm-stream-exit",
@@ -453,6 +456,7 @@ function GamePlay({ focusKey: focusKeyParam }: { focusKey: string }) {
           </div>
         )}
       </div>
+
       {nvHttp && (
         <HeartBeatAPI
           bitrate={searchParams.get("bitrate_kbps") ?? "20"}
@@ -463,6 +467,7 @@ function GamePlay({ focusKey: focusKeyParam }: { focusKey: string }) {
           gameId={searchParams.get("game_id") ?? ""}
           serverIp={searchParams.get("server_ip") ?? ""}
           clientToken={searchParams.get("client_token") ?? ""}
+          goBackToGameDetails={goBackToGameDetails}
         />
       )}
       {showKeyboard && (
