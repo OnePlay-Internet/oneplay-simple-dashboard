@@ -35,6 +35,8 @@ import { SHOW_GAME_SETTINGS_CHECKED } from "src/common/constants";
 import { useSearchParams } from "react-router-dom";
 import warningIcon from "../../../assets/images/warning/warning-icon.svg";
 import "../../../assets/css/warning-icon.css";
+import store from '../../../assets/images/store/store.svg'
+import '../../../assets/css/home.css'
 export default function GamesDetail({ focusKey: focusKeyParam }: FocusabelComponentProps) {
   const sessionContext = useContext(SessionContext);
   let { id } = useParams();
@@ -926,7 +928,7 @@ export default function GamesDetail({ focusKey: focusKeyParam }: FocusabelCompon
                       {moment(gameDetails?.release_date).format("MMM, YYYY")}
 
                       {gameDetails?.age_rating && gameDetails?.age_rating !== "null" ? " - " + gameDetails?.age_rating : ""}
-                      {gameDetails?.is_free === "true" ? " - Free" : ""}
+                      {gameDetails?.is_free === "true" && <span className="freeTag px-x mx-2 tagText">FREE ON <img src={store} className='freeOnStoreIcon'/></span>}
                     </p>
                     <div>{gameDetails.warning_message && renderWarningMsg(gameDetails.warning_message)}</div>
                     {renderButtons()}
@@ -1206,7 +1208,7 @@ const FocusableRailGameWrapper = (props: any) => {
         alt={props.game.title ?? "game_" + props.game.oplay_id}
       />
       {props.game.is_free === "true" && props.game.status !== "coming_soon" ? (
-        <span className="freeTag px-x free tagText">FREE</span>
+        <span className="freeTag px-2 free tagText">FREE ON <img src={store} className='freeOnStoreIcon'/></span>
       ) : null}
       {props.game.status === "coming_soon" ? <span className="redGradient free px-2 tagText">COMING SOON</span> : null}
       {props.game.status === "maintenance" ? (
