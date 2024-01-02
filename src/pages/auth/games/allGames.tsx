@@ -11,6 +11,8 @@ import ErrorPopUp from "src/pages/error";
 import LoaderPopup from "src/pages/loader";
 import { getCoords, getScrolledCoords } from "src/common/utils";
 import { StatusPopupContext } from "src/layouts/auth";
+import store from '../../../assets/images/store/store.svg'
+import '../../../assets/css/home.css'
 export default function AllGames({ focusKey: focusKeyParam }: FocusabelComponentProps) {
   const sessionContext = useContext(SessionContext);
   const currentFocusContext = useContext(CurrentFocusContext);
@@ -423,7 +425,7 @@ const FocusableGameWrapper = (props: any) => {
           placeholder={<img alt={props.game.title} src="/img/placeholder_265x352.svg" className="img-fluid rounded w-100 game-poster" />}
         />
         {props.game.is_free === "true" && props.game.status !== "coming_soon" ? (
-          <span className="freeTag px-x free tagText">FREE</span>
+          <span className="freeTag px-2 free tagText">FREE ON <img src={store} className='freeOnStoreIcon'/></span>
         ) : null}
         {props.game.status === "coming_soon" ? <span className="redGradient free px-2 tagText">COMING SOON</span> : null}
         {props.game.status === "maintenance" ? (

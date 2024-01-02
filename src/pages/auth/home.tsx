@@ -13,6 +13,8 @@ import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import { StatusPopupContext } from "src/layouts/auth";
+import store from '../../assets/images/store/store.svg'
+import '../../assets/css/home.css'
 export default function Home({ focusKey: focusKeyParam }: FocusabelComponentProps) {
   const [personalizedFeeds, setPersonalizedFeeds] = useState<any[]>([]);
   const [customGames, setCustomGames] = useState<any[]>([]);
@@ -474,7 +476,7 @@ const FocusableRailGameWrapper = (props: any) => {
         alt={props.game.title ?? "game_" + props.game.oplay_id}
       />
       {props.game.is_free === "true" && props.game.status !== "coming_soon" ? (
-        <span className="freeTag px-x free tagText">FREE</span>
+        <span className="freeTag px-2 free tagText">FREE ON <img src={store} className='freeOnStoreIcon'/></span>
       ) : null}
       {props.game.status === "coming_soon" ? <span className="redGradient free px-2 tagText">COMING SOON</span> : null}
       {props.game.status === "maintenance" ? (
