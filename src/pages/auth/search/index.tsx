@@ -20,6 +20,8 @@ import LoaderPopup from "src/pages/loader";
 import ErrorPopUp from "src/pages/error";
 import { StatusPopupContext } from "src/layouts/auth";
 import { addSearchResultClickedEvent } from "src/common/countly.service";
+import store from '../../../assets/images/store/store.svg'
+import '../../../assets/css/home.css'
 export default function SearchGames({ focusKey: focusKeyParam }: FocusabelComponentProps) {
   const navigate = useNavigate();
   const sessionContext = useContext(SessionContext);
@@ -406,7 +408,7 @@ const FocusableGameWrapper = (props: any) => {
           }
         />
         {props.game.is_free === "true" && props.game.status !== "coming_soon" ? (
-          <span className="freeTag px-x free tagText">FREE</span>
+          <span className="freeTag px-2 free tagText">FREE ON <img src={store} className='freeOnStoreIcon'/></span>
         ) : null}
         {props.game.status === "coming_soon" ? <span className="redGradient free px-2 tagText">COMING SOON</span> : null}
         {props.game.status === "maintenance" ? (
