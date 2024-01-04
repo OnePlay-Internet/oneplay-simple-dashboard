@@ -1,8 +1,9 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import axios from "axios";
 import "./heartbeat.css";
 import { HEART_BEAT_API } from "src/common/constants";
 import { NvHTTP } from "../NvHTTP.moonlight";
+import ErrorPopUp from "src/pages/error";
 
 type HeartBeatStatistics = {
   user_id: string;
@@ -71,6 +72,7 @@ const HeartBeatAPI = (props: {
   serverIp: string;
   gameId: string;
   clientToken: string;
+  goBackToGameDetails: Function;
 }) => {
   const [remainTimeTextState, setRemainTimeTextState] = useState<"entered" | "rightRemoved">("entered");
   const heartBeatStatistics = useRef<HeartBeatStatistics | null>(null);
@@ -86,6 +88,15 @@ const HeartBeatAPI = (props: {
   const [showRemainTimer, setShowRemainTimer] = useState<boolean>(false);
   const [remainingTime, setRemainingTime] = useState<number>(300);
   const [cpuLoad, setCpuLoad] = useState<number>(0);
+  const [popUp, setPopUp] = useState<ErrorPopupPorps>({
+    show: false,
+    message: "",
+    title: "",
+    returnFocusTo: "",
+    buttons: [],
+    focusKeyParam: "modal-popup",
+    icon: "",
+  });
   useEffect(() => {
     let remainingTimerInterval: NodeJS.Timer | null = setInterval(() => {
       if (remainingTime > 0) {
@@ -413,20 +424,32 @@ const HeartBeatAPI = (props: {
     }
   }, [props.client]); */
 
+  const hidePopup = useCallback(() => {
+    setPopUp((prev) => {
+      if (prev.returnFocusTo) {
+        //setFocus(prev.returnFocusTo);
+      }
+      return { show: false, message: "", title: "", returnFocusTo: "", buttons: [], focusKeyParam: "modal-popup", icon: "" };
+    });
+  }, []);
+
   const showTerminateAlert = (message: string) => {
-    // Swal.fire({
-    //   icon: "warning",
-    //   title: "Attention!",
-    //   text: message,
-    //   showCloseButton: true,
-    //   confirmButtonText: "Top-Up",
-    // }).then((result) => {
-    //   if (result.isConfirmed) {
-    //     goToTopUp(false);
-    //   } else {
-    //     history.back();
-    //   }
-    // });
+    setPopUp({
+      show: true,
+      message: message,
+      title: "Error!",
+      returnFocusTo: "",
+      buttons: [
+        {
+          text: "Ok",
+          className: "btn gradientBtn btn-lg border-0",
+          focusKey: "btn-ok-popup",
+          onClick: props.goBackToGameDetails,
+        },
+      ],
+      focusKeyParam: "modal-popup",
+      icon: "error",
+    });
   };
   const formatRemainTokens = (tokens: number) => {
     let str = "";
@@ -454,22 +477,7 @@ const HeartBeatAPI = (props: {
       dispatchEscapeKeyEvent();
     }
   }, [showRemainTimer]);
-  const goToTopUp = (openInNewTab: boolean) => {
-    if (openInNewTab) {
-      window.open("https://www.oneplay.in/subscription.html", "_blank");
-    } else {
-      window.location.replace("https://www.oneplay.in/subscription.html");
-    }
-  };
-  const subscriptionLinkClikced = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    setTimeout(() => {
-      dispatchEscapeKeyEvent();
-    }, 100);
-    goToTopUp(true);
-    e.preventDefault();
-    e.stopPropagation();
-    return false;
-  };
+
   return (
     <div id="heart-beat-wrapper">
       {heartBeatResponse && (
@@ -485,9 +493,12 @@ const HeartBeatAPI = (props: {
             {formatRemainTokens(remainingTime)}
           </p>
           {showRemainTimer && (
-            <a className="heart-beat-button" href="#" onClick={subscriptionLinkClikced}>
-              Top-Up
-            </a>
+            <>
+              <br />
+              <p>
+                <span>Visit : </span> Oneplay.in/subscription
+              </p>
+            </>
           )}
         </div>
       )}
@@ -501,11 +512,14 @@ const HeartBeatAPI = (props: {
           }}
         >
           <p className="heart-beat-message-wrapper">{streamTimeAlertMessage.message}</p>
-          <a className="heart-beat-button" href="#" onClick={subscriptionLinkClikced}>
-            Top-Up
-          </a>
+          <br />
+          <p>
+            <span>Visit : </span> Oneplay.in/subscription
+          </p>
         </div>
       )}
+
+      {popUp.show && <ErrorPopUp {...popUp} />}
     </div>
   );
 };

@@ -447,19 +447,6 @@ const HeartBeatAPI = (props: {
       icon: "error",
     });
 
-    // Swal.fire({
-    //   icon: "warning",
-    //   title: "Attention!",
-    //   text: message,
-    //   showCloseButton: true,
-    //   confirmButtonText: "Top-Up",
-    // }).then((result) => {
-    //   if (result.isConfirmed) {
-    //     goToTopUp(false);
-    //   } else {
-    //     history.back();
-    //   }
-    // });
   };
   const formatRemainTokens = (tokens: number) => {
     let str = "";

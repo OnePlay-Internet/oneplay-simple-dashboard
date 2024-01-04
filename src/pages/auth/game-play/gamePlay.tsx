@@ -15,7 +15,7 @@ import iconStats from "../../../assets/images/icon-gameplay-stats.svg";
 import iconControllerShortcuts from "../../../assets/images/icon-gameplay-controller-shortcuts.svg";
 import iconQuit from "../../../assets/images/icon-gameplay-quit.svg";
 import ErrorPopUp from "src/pages/error";
-import HeartBeatAPI from "./heartBeatAPI/heartBeatAPITest";
+import HeartBeatAPI from "./heartBeatAPI/heartBeatAPI";
 import iconClose from "../../../assets/images/icon-close.svg";
 function GamePlay({ focusKey: focusKeyParam }: { focusKey: string }) {
   const [searchParams] = useSearchParams();
@@ -60,7 +60,7 @@ function GamePlay({ focusKey: focusKeyParam }: { focusKey: string }) {
     }
 
     const nv = new NvHTTP(serverIp, MOONLIGHT_UID, hostSessionKey, +httpPort, +httpsPort, +rtspPort, +controlPort, +audioPort, +videoPort);
-    /* setLoaderMessage("Started pairing...");
+    setLoaderMessage("Started pairing...");
     const hasServerInfo = await nv.refreshServerInfo();
     if (!hasServerInfo) {
       return;
@@ -98,7 +98,7 @@ function GamePlay({ focusKey: focusKeyParam }: { focusKey: string }) {
       await nv.startGame(desktopApp, gameFps, selectedRes.split("x")[0], selectedRes.split("x")[1], bitRate);
       setShowLoader(false);
     }
-*/
+
     setNvHttp(nv);
   };
   const onRemoteReturnClicked = useCallback(
@@ -473,7 +473,7 @@ function GamePlay({ focusKey: focusKeyParam }: { focusKey: string }) {
       {showKeyboard && (
         <OnScreenKeyboard focusKey="OnScreenKeyboard" toggle={toggleVirtualKeyboard} sendKeyboardClickEvent={sendKeyboardClickEvent} />
       )}
-      {showHeartBeatStat && <div id="heart_beat_stats">Stat Log</div>}
+      {showHeartBeatStat && <div id="heart_beat_stats">Stats: </div>}
       {showLoader ? <LoaderPopup focusKeyParam="Loader" loaderMessage={loaderMessage} /> : null}
       {popUp.show && <ErrorPopUp {...popUp} />}
     </FocusContext.Provider>

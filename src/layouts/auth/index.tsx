@@ -121,7 +121,7 @@ export default function AuthLayout({ focusKey: focusKeyParam }: FocusabelCompone
         setActiveGameSessionStatus(activeSessionStatusResp);
       }
     };
-    const gameStatusCheckInterval = setInterval(getActiveSessionStatus, 5 * 1000);
+    const gameStatusCheckInterval = setInterval(getActiveSessionStatus, 10 * 1000);
     return () => {
       clearInterval(gameStatusCheckInterval);
     };

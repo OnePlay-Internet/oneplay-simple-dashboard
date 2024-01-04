@@ -1,5 +1,5 @@
 import axios from "axios";
-import { API_BASE_URL, API_CLIENT_URL, GAME_FETCH_LIMIT, SESSION_TOKEN_LOCAL_STORAGE } from "./constants";
+import { API_BASE_URL, API_CLIENT_URL, APP_VERSION, GAME_FETCH_LIMIT, SESSION_TOKEN_LOCAL_STORAGE } from "./constants";
 
 export type QRCodeDTO = {
   success: boolean;
@@ -456,7 +456,9 @@ export async function deleteAllSessionData(userId: string, sessionId: string) {
     const formData = new FormData();
     formData.append("user_id", userId);
     formData.append("session_token", sessionId);
-    const deleteAllSessionDataResp = await axios.post(`${API_CLIENT_URL}/services/v2/delete_user_data`, formData);
+    const deleteAllSessionDataResp = await axios.post(`${API_CLIENT_URL}/services/v2/delete_user_data`, formData, {
+      headers: { device: "tizen", app_version: APP_VERSION },
+    });
     if (deleteAllSessionDataResp.status !== 200) {
       return handleNon200Response(deleteAllSessionDataResp.data.msg);
     }
@@ -472,7 +474,9 @@ export async function getAnyActiveSessionStatus(userId: string, sessionId: strin
     const formData = new FormData();
     formData.append("user_id", userId);
     formData.append("session_token", sessionId);
-    const anyActiveSessionResp = await axios.post(`${API_CLIENT_URL}/services/v2/get_any_active_session_status`, formData);
+    const anyActiveSessionResp = await axios.post(`${API_CLIENT_URL}/services/v2/get_any_active_session_status`, formData, {
+      headers: { device: "tizen", app_version: APP_VERSION },
+    });
     if (anyActiveSessionResp.status !== 200) {
       return handleNon200Response(anyActiveSessionResp.data.msg);
     }
@@ -530,7 +534,9 @@ export async function startGame(
     formData.append("session_token", sessionId);
     formData.append("game_id", gameId);
     formData.append("launch_payload", JSON.stringify(payload));
-    const startGameResp = await axios.post(`${API_CLIENT_URL}/services/v2/start_game`, formData);
+    const startGameResp = await axios.post(`${API_CLIENT_URL}/services/v2/start_game`, formData, {
+      headers: { device: "tizen", app_version: APP_VERSION },
+    });
     if (startGameResp.status !== 200) {
       return handleNon200Response(startGameResp.data.msg);
     }
@@ -563,7 +569,9 @@ export async function terminateGame(userId: string, sessionToken: string, sessio
     formData.append("user_id", userId);
     formData.append("session_token", sessionToken);
     formData.append("session_id", sessionId);
-    const terminateGameResp = await axios.post(`${API_CLIENT_URL}/services/v2/terminate_stream`, formData);
+    const terminateGameResp = await axios.post(`${API_CLIENT_URL}/services/v2/terminate_stream`, formData, {
+      headers: { device: "tizen", app_version: APP_VERSION },
+    });
 
     if (terminateGameResp.status !== 200) {
       return handleNon200Response(terminateGameResp.data.msg);
@@ -583,9 +591,11 @@ export async function getGameConfig(userId: string, sessionToken: string): Promi
   formData.append("session_token", sessionToken);
   formData.append("type", "tips");
   formData.append("client_type", "tizen");
-  formData.append("client_version", "1.0.0");
+  formData.append("client_version", APP_VERSION);
   try {
-    const configResp = await axios.post(`${API_CLIENT_URL}/services/v2/get_config`, formData);
+    const configResp = await axios.post(`${API_CLIENT_URL}/services/v2/get_config`, formData, {
+      headers: { device: "tizen", app_version: APP_VERSION },
+    });
     if (configResp.status !== 200) {
       return handleNon200Response(configResp.data.msg);
     }
@@ -612,7 +622,9 @@ export async function getClientToken(userId: string, sessionToken: string, sessi
   formData.append("session_token", sessionToken);
   formData.append("session_id", sessionId);
   try {
-    const clinetTokenResp = await axios.post(`${API_CLIENT_URL}/services/v2/get_session`, formData);
+    const clinetTokenResp = await axios.post(`${API_CLIENT_URL}/services/v2/get_session`, formData, {
+      headers: { device: "tizen", app_version: APP_VERSION },
+    });
     if (clinetTokenResp.status !== 200) {
       return handleNon200Response(clinetTokenResp.data.msg);
     }
@@ -642,7 +654,9 @@ export async function getStreamingSessionInfo(streamSessionToken: string): Promi
   formData.append("stream_session_token", streamSessionToken);
 
   try {
-    const sessionInfoResp = await axios.post(`${API_CLIENT_URL}/client/v2/get_session`, formData);
+    const sessionInfoResp = await axios.post(`${API_CLIENT_URL}/client/v2/get_session`, formData, {
+      headers: { device: "tizen", app_version: APP_VERSION },
+    });
     if (sessionInfoResp.status !== 200) {
       return handleNon200Response(sessionInfoResp.data.msg);
     }

@@ -587,6 +587,7 @@ export default function GamesDetail({ focusKey: focusKeyParam }: FocusabelCompon
   };
 
   const onGetClientToken = async (sessionId: string | null) => {
+    const initTime = Date.now();
     if (gameClientToken) {
       return;
     }
@@ -617,6 +618,7 @@ export default function GamesDetail({ focusKey: focusKeyParam }: FocusabelCompon
     }
     const [userId, sessionToken] = atob(sessionContext.sessionToken)?.split(":");
     if (userId && sessionToken && sessionId) {
+      console.log("get_session requested at : ", new Date().toLocaleString());
       const getClientTokenResp = await getClientToken(userId, sessionToken, sessionId);
       if (!getClientTokenResp.success || getClientTokenResp.code !== 200) {
         setPlayNowButtonText("Play Now");
@@ -642,7 +644,17 @@ export default function GamesDetail({ focusKey: focusKeyParam }: FocusabelCompon
           setGameLoadProgress(getClientTokenResp.data.progress);
           setGameLoadMessage(getClientTokenResp.data.message ?? "Loading...");
         }
-        await onGetClientToken(startGameSession);
+        const currentTime = Date.now();
+        // console.log("get_session diff : ", (currentTime - initTime) / 1000);
+        if (currentTime - initTime > 3 * 1000) {
+          // console.log("took more than 3 sec call get_session immediately.");
+          await onGetClientToken(startGameSession);
+        } else {
+          //console.log("call get_session  after : ", 3 - (currentTime - initTime) / 1000);
+          setTimeout(async () => {
+            await onGetClientToken(startGameSession);
+          }, 3 * 1000 - (currentTime - initTime));
+        }
       }
     }
   };
@@ -716,7 +728,7 @@ export default function GamesDetail({ focusKey: focusKeyParam }: FocusabelCompon
 
   const startQueueTimeout = () => {
     if (queueRunning.current) {
-      queueTimeout.current = setTimeout(startGameRequest, 3 * 1000);
+      queueTimeout.current = setTimeout(startGameRequest, 10 * 1000);
     }
   };
 
